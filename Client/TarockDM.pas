@@ -5,22 +5,26 @@ interface
 uses
   System.SysUtils, System.Classes, WiRL.Client.CustomResource,
   WiRL.Client.Resource, System.Net.HttpClient.Win, WiRL.http.Client,
-  WiRL.Client.Application,  Rest.Neon;
+  WiRL.Client.Application,  Rest.Neon,Classes.Entities, System.JSON,
+  WiRL.Client.Resource.JSON;
 
 type
   TdmTarock = class(TDataModule)
     WiRLClientApplication1: TWiRLClientApplication;
     WiRLClient1: TWiRLClient;
-    crPlayers: TWiRLClientResource;
+    resPlayers: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
   private
+    procedure FillLicensePatchBody(AContent: TMemoryStream;
+      APatchData: TObject);
     { Private declarations }
 
   public
     { Public declarations }
 
     RESTClient:TNeonRESTClient;
-       function GetPlayers:String;
+    function GetPlayers:TPlayers;
+    procedure RegisterPlayer(const AName:String);
 
   end;
 
@@ -33,7 +37,7 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
   {$ELSE}
   WiRL.http.Client.Indy,
   {$ENDIF}
-
+  dialogs,
   WiRL.Rtti.Utils,
   WiRL.Core.JSON;
 
@@ -48,9 +52,66 @@ begin
   RESTClient:=TNeonRESTClient.Create('localhost:8080');
 end;
 
-function TdmTarock.GetPlayers: String;
+function TdmTarock.GetPlayers: TPlayers;
+var response:String;
 begin
-  Result:=crPlayers.GETAsString()
+  Result:=nil;
+
+  resPlayers.GET;
+  if resPlayers.ResponseAsString>'' then begin
+     Result := TPlayers.Create;
+     RESTClient.DeserializeObject(resPlayers.Response, Result);
+  end;
+end;
+
+procedure TdmTarock.FillLicensePatchBody(AContent: TMemoryStream; APatchData: TObject);
+var
+  jsonValue: TJSONValue;
+  content: TStringList;
+begin
+  jsonValue := nil;
+  content := TStringList.Create;
+  try
+    jsonValue := RESTClient.SerializeObject(APatchData);
+    content.Text := TJSONHelper.ToJSON(jsonValue);
+    content.SaveToStream(AContent);
+
+    AContent.Seek(0, soFromBeginning);
+  finally
+    jsonValue.Free;
+    content.Free;
+  end;
+end;
+
+procedure TdmTarock.RegisterPlayer(const AName: String);
+var p:TPlayer;
+    pl:TPlayers;
+begin
+  pl:=TPlayers.Create;
+
+  try
+    p:=TPlayer.Create;
+    p.Name:=AName;
+    pl.Add(p);
+
+    try
+      resPlayers.POST(procedure (AContent: TMemoryStream)
+          begin
+            FillLicensePatchBody(AContent, pl);
+          end
+        );
+
+      if resPlayers.Response.GetValue<String>('status')<>'success' then
+        Showmessage(resPlayers.Response.GetValue<String>('message'));
+
+    except
+      on E: Exception do begin
+        Showmessage(E.Message);
+      end;
+    end;
+  finally
+    FreeAndNil(pl);
+  end;
 end;
 
 end.

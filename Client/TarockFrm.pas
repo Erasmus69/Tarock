@@ -35,17 +35,10 @@ uses System.JSON,TarockDM,Classes.Entities;
 {$R *.dfm}
 
 procedure TfrmTarock.Button1Click(Sender: TObject);
-var p:TPlayer;
-    itm:TPlayer;
-    response:TJSONValue;
 begin
   if csEdit1.Text>'' then begin
-    p:=TPlayer.Create;
-    p.Name:=CSEdit1.Text;
     try
-      response:=dm.RESTClient.PostEntity<TPlayer>('registerplayer',p);
-      if response.GetValue<String>('status')<>'success' then
-        Showmessage(response.GetValue<String>('message'));
+      dm.RegisterPlayer(CSEdit1.Text);
 
     finally
       GetPlayers;
@@ -68,10 +61,15 @@ procedure TfrmTarock.GetPlayers;
 var p:TPlayers;
     itm:TPlayer;
 begin
-  p:=dm.RESTClient.GetObject<TPlayers>('players');
-  Memo1.Lines.Clear;
-  for itm in p do
-    Memo1.Lines.Add(itm.Name);
+//  p:=dm.RESTClient.GetObject<TPlayers>('players');
+  p:=dm.GetPlayers;
+  try
+    Memo1.Lines.Clear;
+    for itm in p do
+      Memo1.Lines.Add(itm.Name);
+  finally
+    FreeAndNil(p);
+  end;
 end;
 
 end.

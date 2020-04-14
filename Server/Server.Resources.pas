@@ -32,21 +32,11 @@ type
     [Produces(TMediaType.APPLICATION_JSON)]
     function GetPlayers: TPlayers;
 
-    [POST, Path('/registerplayer'),Produces(TMediaType.APPLICATION_JSON)]
-    function RegisterPlayer([BodyParam]APlayer:TPlayer):TBaseRESTResponse;
+    [POST, Path('/players'),Produces(TMediaType.APPLICATION_JSON)]
+    function RegisterPlayer([BodyParam]APlayer:TPlayers):TBaseRESTResponse;
 
-    [GET, Path('/masters')]
-    [Produces(TMediaType.APPLICATION_JSON)]
-    function GetMasters: TList<TMaster>;
-
-    [GET, Path('/masters/{AMasterID}'), Produces(TMediaType.APPLICATION_JSON)]
-    function GetMaster([PathParam] AMasterID: string): TMaster;
-
-    [GET, Path('/masters/{AMasterID}/details'), Produces(TMediaType.APPLICATION_JSON)]
-    function GetMasterDetails([PathParam] AMasterID: string): TList<TDetail>;
-
-    [GET, Path('/masters/{AMasterID}/details/{ADeviceID}'), Produces(TMediaType.APPLICATION_JSON)]
-    function GetMasterDetail([PathParam] AMasterID: string; [PathParam] ADeviceID: string): TDetail;
+    [DELETE, Path('/players'),Produces(TMediaType.APPLICATION_JSON)]
+    function DeletePlayer([BodyParam]APlayer:TPlayers):TBaseRESTResponse;
   end;
 
 implementation
@@ -80,42 +70,19 @@ begin
   end;
 end;
 
-function TApiV1Resource.RegisterPlayer(APlayer:TPlayer): TBaseRESTResponse;
+function TApiV1Resource.RegisterPlayer(APlayer:TPlayers): TBaseRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.RegisterPlayer(APlayer);
 end;
 
-{======================================================================================================================}
-function TApiV1Resource.GetMasters: TList<TMaster>;
-{======================================================================================================================}
+function TApiV1Resource.DeletePlayer(APlayer: TPlayers): TBaseRESTResponse;
 begin
-  Result := GetContainer.Resolve<IApiV1Controller>.GetMasters;
+  Result := GetContainer.Resolve<IApiV1Controller>.DeletePlayer(APlayer);
 end;
 
 function TApiV1Resource.GetPlayers: TPlayers;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.GetPlayers;
-end;
-
-{======================================================================================================================}
-function TApiV1Resource.GetMaster(AMasterID: string): TMaster;
-{======================================================================================================================}
-begin
-  Result := GetContainer.Resolve<IApiV1Controller>.GetMaster(AMasterID);
-end;
-
-{======================================================================================================================}
-function TApiV1Resource.GetMasterDetails(AMasterID: string): TList<TDetail>;
-{======================================================================================================================}
-begin
-  Result := GetContainer.Resolve<IApiV1Controller>.GetMasterDetails(AMasterID);
-end;
-
-{======================================================================================================================}
-function TApiV1Resource.GetMasterDetail(AMasterID, ADeviceID: string): TDetail;
-{======================================================================================================================}
-begin
-  Result := GetContainer.Resolve<IApiV1Controller>.GetMasterDetail(AMasterID, ADeviceID);
 end;
 
 initialization

@@ -18,10 +18,10 @@ object dmTarock: TdmTarock
     Left = 176
     Top = 128
   end
-  object crPlayers: TWiRLClientResource
+  object resPlayers: TWiRLClientResourceJSON
     Application = WiRLClientApplication1
     Resource = 'v1/players'
     Left = 320
-    Top = 48
+    Top = 136
   end
 end

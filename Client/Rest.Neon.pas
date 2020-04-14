@@ -24,6 +24,10 @@ type
     constructor Create(ABaseApiURL: String);
     function GetObject<T:class, constructor>(const AResource:String):T;
     function PostEntity<T: class, constructor>(const AResource: string; AEntity: T): TJSONValue;
+
+    class function SerializeObject(const AObject: TObject): TJSONValue;
+    class procedure DeserializeObject(const AJSONValue: TJSONValue; AObject: TObject);
+
     property Request: TCustomRESTRequest read FRESTRequest;
     property Response: TCustomRESTResponse read GetResponse;
     property ErrorMessage: String read FErrorMessage;
@@ -109,6 +113,7 @@ begin
   Self.BaseURL:=Self.BaseURL+REST_APP_PATH;
 end;
 
+
 function TNeonRESTClient.PostEntity<T>(const AResource: string; AEntity: T): TJSONValue;
 begin
   Result := nil;
@@ -149,6 +154,17 @@ begin
   end;
 end;
 
+
+class function TNeonRESTClient.SerializeObject(const AObject: TObject): TJSONValue;
+begin
+  Result := TNeon.ObjectToJSON(AObject, BuildSerializerConfig);
+end;
+
+class procedure TNeonRESTClient.DeserializeObject(const AJSONValue: TJSONValue; AObject: TObject);
+begin
+  TNeon.JSONToObject(AObject, AJSONValue, BuildSerializerConfig);
+end;
+
 function TNeonRESTClient.DoJsonToObject<T>(const AJSONText: String): T;
 begin
   if (AJSONText.Length > 0) then begin
@@ -178,7 +194,6 @@ end;
 
 class function TNeonRESTClient.BuildSerializerConfig: INeonConfiguration;
 var
-  neonVis: TNeonVisibility;
   neonMembers: TNeonMembersSet;
 begin
   Result := TNeonConfiguration.Default;
@@ -194,9 +209,8 @@ begin
 
   // F Prefix setting
   Result.SetIgnoreFieldPrefix(True);
+  Result.SetVisibility([mvPublic, mvPublished]);
 
-  neonVis := [mvPublic,mvPublished];
-  Result.SetVisibility(neonVis);
 
  // Result.GetSerializers.RegisterSerializer(TGUIDSerializer);
 end;
