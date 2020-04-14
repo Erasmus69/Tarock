@@ -17,13 +17,18 @@ uses
   Server.Controller in 'Server.Controller.pas',
   Server.Resources in 'Server.Resources.pas',
   Server.Repository in 'Server.Repository.pas',
-  Server.Wirl.Response in 'Server.Wirl.Response.pas';
+  Server.Wirl.Response in 'Server.Wirl.Response.pas',
+  Server.Entities.Game in 'Server.Entities.Game.pas',
+  Server.Entities.Card in 'Server.Entities.Card.pas',
+  Server.DataModule in 'Server.DataModule.pas' {dm: TDataModule};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  Application.CreateForm(Tdm, dm);
   Application.CreateForm(TFrmMain, FrmMain);
   Application.Run;
+  Server.Entities.Card.TearDown;
 end.

@@ -13,6 +13,8 @@ uses
 , WiRL.http.Response
 , WiRL.Schemas.Swagger
 , Server.Entities
+, Server.Entities.Card
+, Server.Entities.Game
 , Server.WIRL.Response
 ;
 
@@ -37,6 +39,15 @@ type
 
     [DELETE, Path('/players'),Produces(TMediaType.APPLICATION_JSON)]
     function DeletePlayer([BodyParam]APlayer:TPlayers):TBaseRESTResponse;
+
+
+    [GET, Path('/cards')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function GetCards: TCards;
+
+    [POST, Path('/games')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function NewGame: TExtendedRESTResponse;
   end;
 
 implementation
@@ -70,6 +81,11 @@ begin
   end;
 end;
 
+function TApiV1Resource.NewGame:TExtendedRESTResponse;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.NewGame;
+end;
+
 function TApiV1Resource.RegisterPlayer(APlayer:TPlayers): TBaseRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.RegisterPlayer(APlayer);
@@ -78,6 +94,11 @@ end;
 function TApiV1Resource.DeletePlayer(APlayer: TPlayers): TBaseRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.DeletePlayer(APlayer);
+end;
+
+function TApiV1Resource.GetCards: TCards;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.GetCards;
 end;
 
 function TApiV1Resource.GetPlayers: TPlayers;

@@ -38,6 +38,7 @@ implementation
 uses
   Server.Configuration
 , Server.Register
+, Server.Entities.Card
 ;
 
 {$R *.dfm}
@@ -58,6 +59,7 @@ begin
   serverREST := GetContainer.Resolve<TServerREST>;
   serverREST.Active := True;
 
+  Server.Entities.Card.Initialize;
   Caption := 'Server started';
 end;
 
@@ -76,7 +78,7 @@ var
 begin
   serverREST := GetContainer.Resolve<TServerREST>;
   serverREST.Active := False;
-
+  Server.Entities.Card.TearDown;
   Caption := 'Server stopped';
 end;
 

@@ -9,12 +9,18 @@ type TBaseObjClass=class of TBaseObj;
        constructor Create;
      end;
 
+     TBoardPosition=(bpDown,bpLeft,bpUp,bpRight);
+
      TPlayer=class(TBaseObj)
      private
        FName:String;
+       FPosition:TBoardPosition;
      public
        [NeonInclude(Include.Always)]
        property Name:String read FName write FName;
+
+       [NeonIgnore]
+       property Position:TBoardPosition read FPosition write FPosition;
      end;
      TPlayers=TList<TPlayer>;
 

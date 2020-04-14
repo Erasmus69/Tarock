@@ -1,41 +1,12 @@
-object dmTarock: TdmTarock
+object dm: Tdm
   OldCreateOrder = False
-  OnCreate = DataModuleCreate
-  OnDestroy = DataModuleDestroy
-  Height = 304
-  Width = 670
-  object WiRLClientApplication1: TWiRLClientApplication
-    DefaultMediaType = 'application/json'
-    AppName = 'app'
-    Client = WiRLClient1
-    Left = 144
-    Top = 48
-  end
-  object WiRLClient1: TWiRLClient
-    WiRLEngineURL = 'http://localhost:8080/rest'
-    ProxyParams.BasicAuthentication = False
-    ProxyParams.ProxyPort = 0
-    NoProtocolErrorException = False
-    Left = 176
-    Top = 128
-  end
-  object resPlayers: TWiRLClientResourceJSON
-    Application = WiRLClientApplication1
-    Resource = 'v1/players'
-    Left = 320
-    Top = 136
-  end
-  object resCards: TWiRLClientResourceJSON
-    Application = WiRLClientApplication1
-    Resource = 'v1/cards'
-    Left = 480
-    Top = 64
-  end
+  Height = 273
+  Width = 421
   object imCards: TImageList
     Height = 256
     Width = 142
-    Left = 576
-    Top = 176
+    Left = 192
+    Top = 120
     Bitmap = {
       494C01010700090004008E000001FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000003802000000020000010020000000000000C0
@@ -37547,11 +37518,5 @@ object dmTarock: TdmTarock
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000}
-  end
-  object resGames: TWiRLClientResourceJSON
-    Application = WiRLClientApplication1
-    Resource = 'v1/games'
-    Left = 464
-    Top = 128
   end
 end

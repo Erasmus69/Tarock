@@ -21,9 +21,6 @@
         <Projects Include="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Services\ErgoShopService\Service\ErgoShopService.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="D:\PROJECTSME\ERGOME\Program\MainProgram\ErgoApp.dproj">
             <Dependencies/>
         </Projects>
@@ -95,15 +92,6 @@
     <Target Name="TCErgo:Make">
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj" Targets="Make"/>
     </Target>
-    <Target Name="ErgoShopService">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoShopService\Service\ErgoShopService.dproj"/>
-    </Target>
-    <Target Name="ErgoShopService:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoShopService\Service\ErgoShopService.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ErgoShopService:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoShopService\Service\ErgoShopService.dproj" Targets="Make"/>
-    </Target>
     <Target Name="ErgoApp">
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\MainProgram\ErgoApp.dproj"/>
     </Target>
@@ -132,13 +120,13 @@
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\ErgoSystem\ErgoSystem.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="Tarock;TarockServiceDBG;WiRLServerTemplateDBG;AppTemplate;RegistrationTest;TCErgo;ErgoShopService;ErgoApp;ErgoLicenseServerMasterWDBG;ErgoSystem"/>
+        <CallTarget Targets="Tarock;TarockServiceDBG;WiRLServerTemplateDBG;AppTemplate;RegistrationTest;TCErgo;ErgoApp;ErgoLicenseServerMasterWDBG;ErgoSystem"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;WiRLServerTemplateDBG:Clean;AppTemplate:Clean;RegistrationTest:Clean;TCErgo:Clean;ErgoShopService:Clean;ErgoApp:Clean;ErgoLicenseServerMasterWDBG:Clean;ErgoSystem:Clean"/>
+        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;WiRLServerTemplateDBG:Clean;AppTemplate:Clean;RegistrationTest:Clean;TCErgo:Clean;ErgoApp:Clean;ErgoLicenseServerMasterWDBG:Clean;ErgoSystem:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;WiRLServerTemplateDBG:Make;AppTemplate:Make;RegistrationTest:Make;TCErgo:Make;ErgoShopService:Make;ErgoApp:Make;ErgoLicenseServerMasterWDBG:Make;ErgoSystem:Make"/>
+        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;WiRLServerTemplateDBG:Make;AppTemplate:Make;RegistrationTest:Make;TCErgo:Make;ErgoApp:Make;ErgoLicenseServerMasterWDBG:Make;ErgoSystem:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -6,15 +6,22 @@ uses
   System.SysUtils, System.Classes, WiRL.Client.CustomResource,
   WiRL.Client.Resource, System.Net.HttpClient.Win, WiRL.http.Client,
   WiRL.Client.Application,  Rest.Neon,Classes.Entities, System.JSON,
-  WiRL.Client.Resource.JSON;
+  WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls;
 
 type
   TdmTarock = class(TDataModule)
     WiRLClientApplication1: TWiRLClientApplication;
     WiRLClient1: TWiRLClient;
     resPlayers: TWiRLClientResourceJSON;
+    resCards: TWiRLClientResourceJSON;
+    imCards: TImageList;
+    resGames: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
+    procedure DataModuleDestroy(Sender: TObject);
   private
+    FPlayers:TPlayers;
+    FMyName: String;
+    FActGameID: TGUID;
     procedure FillLicensePatchBody(AContent: TMemoryStream;
       APatchData: TObject);
     { Private declarations }
@@ -25,7 +32,11 @@ type
     RESTClient:TNeonRESTClient;
     function GetPlayers:TPlayers;
     procedure RegisterPlayer(const AName:String);
+    procedure StartNewGame;
 
+    property Players:TPlayers read FPlayers;
+    property MyName:String read FMyName write FMyName;
+    property ActGameID:TGUID read FActGameID;
   end;
 
 var
@@ -39,7 +50,9 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
   {$ENDIF}
   dialogs,
   WiRL.Rtti.Utils,
-  WiRL.Core.JSON;
+  WiRL.Core.JSON,
+  Math,
+  Server.Entities.Card;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
@@ -50,18 +63,43 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
 procedure TdmTarock.DataModuleCreate(Sender: TObject);
 begin
   RESTClient:=TNeonRESTClient.Create('localhost:8080');
+  Server.Entities.Card.Initialize;
+
 end;
 
 function TdmTarock.GetPlayers: TPlayers;
 var response:String;
+    myIndex:Integer;
+    i:Integer;
 begin
-  Result:=nil;
-
   resPlayers.GET;
   if resPlayers.ResponseAsString>'' then begin
-     Result := TPlayers.Create;
-     RESTClient.DeserializeObject(resPlayers.Response, Result);
+     FreeAndNil(FPlayers);
+     FPlayers := TPlayers.Create;
+     RESTClient.DeserializeObject(resPlayers.Response, FPlayers);
+
+     if FMyName>'' then begin
+       // reorder to relative board order
+       for i := 0 to FPlayers.Count-1 do begin
+         if FPlayers[i].Name=FMyName then begin
+           myindex:=i;
+           break;
+         end;
+       end;
+
+       for I := 0 to myindex-1 do
+         FPlayers.Move(0,FPlayers.Count-1);
+
+       for i := 0 to Min(FPlayers.Count-1,Ord(High(TBoardPosition))) do
+         FPlayers.Items[i].Position:=TBoardPosition(i);
+     end;
   end;
+  Result:=FPlayers;
+end;
+
+procedure TdmTarock.DataModuleDestroy(Sender: TObject);
+begin
+  Server.Entities.Card.TearDown;
 end;
 
 procedure TdmTarock.FillLicensePatchBody(AContent: TMemoryStream; APatchData: TObject);
@@ -112,6 +150,25 @@ begin
   finally
     FreeAndNil(pl);
   end;
+end;
+
+procedure TdmTarock.StartNewGame;
+begin
+  try
+    resGames.POST(procedure (AContent: TMemoryStream)
+      begin
+      end
+     );
+
+    if resGames.Response.GetValue<String>('status')<>'success' then
+     Showmessage(resGames.Response.GetValue<String>('message'));
+
+  except
+    on E: Exception do begin
+      Showmessage(E.Message);
+    end;
+  end;
+
 end;
 
 end.

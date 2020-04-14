@@ -5,7 +5,8 @@ uses
   TarockFrm in 'TarockFrm.pas' {frmTarock},
   TarockDM in 'TarockDM.pas' {dmTarock: TDataModule},
   Rest.Neon in 'Rest.Neon.pas',
-  Classes.Entities in 'Classes.Entities.pas';
+  Classes.Entities in 'Classes.Entities.pas',
+  Server.Entities.Card in '..\Server\Server.Entities.Card.pas';
 
 {$R *.res}
 

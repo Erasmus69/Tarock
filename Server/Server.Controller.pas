@@ -7,7 +7,9 @@ uses
   System.JSON,
   Spring.Collections,
   Server.Entities,
-  Server.WIRL.Response
+  Server.WIRL.Response,
+  Server.Entities.Card,
+  Server.Entities.Game
 ;
 
 type
@@ -16,6 +18,9 @@ type
     function GetPlayers:TPlayers;
     function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
     function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
+
+    function GetCards:TCards;
+    function NewGame:TExtendedRESTResponse;
   end;
 
   TApiV1Controller = class(TInterfacedObject, IApiV1Controller)
@@ -23,6 +28,9 @@ type
     function GetPlayers:TPlayers;
     function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
     function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
+
+    function GetCards:TCards;
+    function NewGame:TExtendedRESTResponse;
   end;
 
 implementation
@@ -34,9 +42,19 @@ uses
 ;
 { TApiV1Controller }
 
+function TApiV1Controller.GetCards: TCards;
+begin
+  Result := GetContainer.Resolve<IRepository>.GetCards;
+end;
+
 function TApiV1Controller.GetPlayers: TPlayers;
 begin
   Result := GetContainer.Resolve<IRepository>.GetPlayers;
+end;
+
+function TApiV1Controller.NewGame: TExtendedRESTResponse;
+begin
+  Result:=GetContainer.Resolve<IRepository>.NewGame;
 end;
 
 function TApiV1Controller.RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
