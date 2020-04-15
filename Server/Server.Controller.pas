@@ -21,6 +21,8 @@ type
 
     function GetCards:TCards;
     function NewGame:TExtendedRESTResponse;
+    function GetGame(const AID:TGuid):TGame;
+    function Shuffle(AGame:TGame):TGame;
   end;
 
   TApiV1Controller = class(TInterfacedObject, IApiV1Controller)
@@ -31,6 +33,9 @@ type
 
     function GetCards:TCards;
     function NewGame:TExtendedRESTResponse;
+    function GetGame(const AID:TGuid):TGame;
+
+    function Shuffle(AGame:TGame):TGame;
   end;
 
 implementation
@@ -57,11 +62,21 @@ begin
   Result:=GetContainer.Resolve<IRepository>.NewGame;
 end;
 
+function TApiV1Controller.GetGame(const AID:TGuid):TGame;
+begin
+  Result:=GetContainer.Resolve<IRepository>.GetGame(AID);
+end;
+
 function TApiV1Controller.RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
 begin
   Result:=GetContainer.Resolve<IRepository>.RegisterPlayer(APlayer);
 end;
 
+
+function TApiV1Controller.Shuffle(AGame: TGame): TGame;
+begin
+  Result:=AGame;
+end;
 
 function TApiV1Controller.DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
 begin

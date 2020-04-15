@@ -6,7 +6,8 @@ uses
   System.SysUtils, System.Classes, WiRL.Client.CustomResource,
   WiRL.Client.Resource, System.Net.HttpClient.Win, WiRL.http.Client,
   WiRL.Client.Application,  Rest.Neon,Classes.Entities, System.JSON,
-  WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls;
+  WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls,
+  Server.Entities.Game,Server.Entities.Card;
 
 type
   TdmTarock = class(TDataModule)
@@ -21,7 +22,8 @@ type
   private
     FPlayers:TPlayers;
     FMyName: String;
-    FActGameID: TGUID;
+    FActGame: TGame;
+    FMyCards:TCards;
     procedure FillLicensePatchBody(AContent: TMemoryStream;
       APatchData: TObject);
     { Private declarations }
@@ -33,10 +35,12 @@ type
     function GetPlayers:TPlayers;
     procedure RegisterPlayer(const AName:String);
     procedure StartNewGame;
+    function GetActGame:TGame;
 
     property Players:TPlayers read FPlayers;
     property MyName:String read FMyName write FMyName;
-    property ActGameID:TGUID read FActGameID;
+    property ActGame:TGame read FActGame;
+    property MyCards:TCards read FMyCards;
   end;
 
 var
@@ -51,8 +55,7 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
   dialogs,
   WiRL.Rtti.Utils,
   WiRL.Core.JSON,
-  Math,
-  Server.Entities.Card;
+  Math;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
@@ -169,6 +172,35 @@ begin
     end;
   end;
 
+  GetActGame;
+end;
+
+function TdmTarock.GetActGame:TGame;
+begin
+  resGames.PathParamsValues.Clear;
+  resGames.QueryParams.Clear;
+  resGames.PathParamsValues.Values['AGameid'] :=TGUID.Empty.ToString;
+  resGames.GET;
+
+  if resGames.ResponseAsString>'' then begin
+    FreeandNil(FActGame);
+    FActGame:=TGame.Create;
+    RESTClient.DeserializeObject(resGames.Response, FActGame);
+  end;
+  Result:=FActGame;
+
+  if Assigned(FActGame) then begin
+    if FActGame.Player1.PlayerName=FMyName then
+      FMyCards:=FActGame.Player1.Cards
+    else if FActGame.Player2.PlayerName=FMyName then
+      FMyCards:=FActGame.Player2.Cards
+    else if FActGame.Player3.PlayerName=FMyName then
+      FMyCards:=FActGame.Player3.Cards
+    else
+      FMyCards:=FActGame.Player4.Cards
+  end
+  else
+    FMyCards:=nil
 end;
 
 end.

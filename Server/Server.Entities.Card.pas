@@ -12,16 +12,31 @@ type
              S7,S8,S9,S10,SB,SR,SD,SK,C7,C8,C9,C10,CB,CR,CD,CK);
 
   TCard=class(TObject)
-    ID:TCardKey;
-    CType:TCardType;
-    Value:Byte;
-    ImageIndex:Integer;
+  private
+    FFold: Boolean;
+    FID: TCardKey;
+    FValue: Byte;
+    FImageIndex: Integer;
+    FCType: TCardType;
+
+  public
+    property ID:TCardKey read FID write FID;
+    property CType:TCardType read FCType write FCType;
+    property Value:Byte read FValue write FValue;
+    property ImageIndex:Integer read FImageIndex write FImageIndex;
+    property Fold:Boolean read FFold write FFold;
   end;
 
   TCards=class(TObjectDictionary<TCardKey,TCard>)
+  private
+//    function GetItems: TDictionary<TCardKey, TCard>.TValueCollection;
   public
+//    [NeonInclude(Include.Always)]
+//    property Items: TDictionary<TCardKey, TCard>.TValueCollection read GetItems;
+
     function AddItem(AID:TCardKey;ACType:TCardType;AValue:Byte;AImageIdx:Integer=-1):TCard;
     function Clone:TCards;
+    procedure Assign(const ASource:TCards);
   end;
 
 var ALLCARDS:TCards;
@@ -105,16 +120,28 @@ begin
   Result.CType:=ACType;
   Result.Value:=AValue;
   Result.ImageIndex:=AImageIdx;
+  Result.Fold:=False;
   Add(AID,Result);
 end;
 
 function TCards.Clone:TCards;
-var itm:TCard;
 begin
   Result:=TCards.Create([doOwnsValues]);
-
-  for itm in Values do
-    Result.AddItem(itm.ID,itm.CType,itm.Value,itm.ImageIndex);
+  Result.Assign(Self);
 end;
+
+procedure TCards.Assign(const ASource:TCards);
+var itm:TCard;
+begin
+  for itm in ASource.Values do
+    AddItem(itm.ID,itm.CType,itm.Value,itm.ImageIndex);
+end;
+
+(*
+function TCards.GetItems:  TDictionary<TCardKey, TCard>.TValueCollection;
+begin
+  Result:=Values;
+end;    *)
+
 
 end.

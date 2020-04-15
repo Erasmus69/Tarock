@@ -6,9 +6,11 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
-  cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls;
+  cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Server.Entities.Card;
 
 type
+  TCardPosition=(cpMyCards,cpTalon);
+
   TfrmTarock = class(TForm)
     Button1: TButton;
     CSEdit1: TCSEdit;
@@ -31,6 +33,7 @@ type
   private
     { Private declarations }
     procedure GetPlayers;
+    procedure ShowCards(ACards:TCards; APosition:TCardPosition);
   public
     { Public declarations }
   end;
@@ -39,7 +42,7 @@ var
   frmTarock: TfrmTarock;
 
 implementation
-uses System.JSON,TarockDM,Classes.Entities,Server.Entities.Card;
+uses System.JSON,TarockDM,Classes.Entities;
 
 {$R *.dfm}
 
@@ -49,8 +52,8 @@ const
   CARDWIDTH=141;
   MYCARDMOSTTOP=435;
   MYCARDMOSTLEFT=35;
-  MYCARDXOFFSET=60;
-  MYCARDYOFFSET=10;
+  CARDXOFFSET=60;
+  CARDYOFFSET=10;
 
 procedure TfrmTarock.Button1Click(Sender: TObject);
 begin
@@ -88,8 +91,8 @@ begin
        img.Width:=CARDWIDTH;
        img.Top:=imgTop;
        img.Left:=imgLeft;
-       imgLeft:=imgLeft+MYCARDXOFFSET;
-       imgTop:=imgTop+MYCARDYOFFSET;
+       imgLeft:=imgLeft+CARDXOFFSET;
+       imgTop:=imgTop+CARDYOFFSET;
     end;
 
   end;
@@ -98,6 +101,7 @@ end;
 procedure TfrmTarock.Button4Click(Sender: TObject);
 begin
   dm.StartNewGame;
+  ShowCards(dm.MyCards,cpMyCards);
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
@@ -120,6 +124,37 @@ begin
     end;
   end;
 
+end;
+
+procedure TfrmTarock.ShowCards(ACards: TCards; APosition: TCardPosition);
+var i:Integer;
+    imgLeft,imgTop:Integer;
+    img:TImage;
+    card:TCard;
+begin
+
+  if APosition=cpMyCards then begin
+    imgLeft:=MYCARDMOSTLEFT;
+    imgTop:=MYCARDMOSTTOP;
+  end
+  else begin
+
+  end;
+
+  for card in ACards.Values do begin
+    if card.ImageIndex>=0 then begin
+       img:=TImage.Create(Self);
+       img.Parent:=Self;
+       dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
+       img.Height:=CARDHEIGHT;
+       img.Width:=CARDWIDTH;
+       img.Top:=imgTop;
+       img.Left:=imgLeft;
+       imgLeft:=imgLeft+CARDXOFFSET;
+       imgTop:=imgTop+CARDYOFFSET;
+    end;
+
+  end;
 end;
 
 end.

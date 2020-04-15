@@ -20,7 +20,8 @@ uses
   Server.Wirl.Response in 'Server.Wirl.Response.pas',
   Server.Entities.Game in 'Server.Entities.Game.pas',
   Server.Entities.Card in 'Server.Entities.Card.pas',
-  Server.DataModule in 'Server.DataModule.pas' {dm: TDataModule};
+  Server.DataModule in 'Server.DataModule.pas' {dm: TDataModule},
+  Server.Controller.GAme in 'Server.Controller.GAme.pas';
 
 {$R *.res}
 

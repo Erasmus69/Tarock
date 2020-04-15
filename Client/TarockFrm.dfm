@@ -28,7 +28,6 @@ object frmTarock: TfrmTarock
     Height = 667
     Caption = 'clFirstPlayer'
     Properties.Alignment.Horz = taCenter
-    Properties.Angle = 90
   end
   object clSecondPlayer: TCSLabel
     Left = 0
@@ -46,7 +45,6 @@ object frmTarock: TfrmTarock
     Align = alRight
     Caption = 'clThirdPlayer'
     Properties.Alignment.Horz = taCenter
-    Properties.Angle = 270
   end
   object clME: TCSLabel
     Left = 0

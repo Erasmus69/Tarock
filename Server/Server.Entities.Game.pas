@@ -4,57 +4,88 @@ interface
 uses
   Spring, Neon.Core.Attributes,
   System.Generics.Collections,
-  Server.Entities.Card;
+  Server.Entities.Card,
+  Spring.Collections.Stacks;
 
   type
 
   TPlayerCards=class
   private
+
     FPlayerName:String;
+
+  //  [NeonInclude(Include.Always)]
     FCards: TCards;
 
   public
-    property Cards:TCards read FCards write FCards;
-    property  PlayerName:String read FPlayerName;
-    constructor Create(const AName:String);
+    property  PlayerName:String read FPlayerName write FPlayerName;
+   [NeonIgnore]
+    property Cards:TCards read FCards;
+
+    constructor Create(const AName:String='');
     destructor Destroy;override;
-    procedure Shuffle(var ACards:TCards; const ACount:Integer);
+    procedure Assign(const ASource:TPlayerCards);
   end;
 
   TGame=class
+  private
     FID:TGUID;
     FPlayer1:TPlayerCards;
     FPlayer2:TPlayerCards;
     FPlayer3:TPlayerCards;
     FPlayer4:TPlayerCards;
     FTalon:TPlayerCards;
-
-    procedure Shuffle;
+    FActive: Boolean;
+    procedure SetPlayer1(const Value: TPlayerCards);
+    procedure SetPlayer2(const Value: TPlayerCards);
+    procedure SetPlayer3(const Value: TPlayerCards);
+    procedure SetPlayer4(const Value: TPlayerCards);
+    procedure SetTalon(const Value: TPlayerCards);
   public
     [NeonInclude(Include.Always)]
     property ID:TGUID read FID;
+    property Active:Boolean read FActive write FActive;
 
-    constructor Create(const APlayer1,APlayer2,APlayer3,APlayer4:String);
+    [NeonInclude(Include.Always)]
+    property Player1:TPlayerCards read FPlayer1 write SetPlayer1;
+    property Player2:TPlayerCards read FPlayer2 write SetPlayer2;
+    property Player3:TPlayerCards read FPlayer3 write SetPlayer3;
+    property Player4:TPlayerCards read FPlayer4 write SetPlayer4;
+    property Talon:TPlayerCards read FTalon write SetTalon;
+
+    constructor Create;
     destructor Destroy;override;
+    function Clone:TGame;
   end;
-  TGames=TObjectDictionary<TGUID,TGame>;
+  TGames=Spring.Collections.Stacks.TObjectStack<TGame>;
 
 implementation
 uses SysUtils;
 
 { TGame }
 
-constructor TGame.Create(const APlayer1,APlayer2,APlayer3,APlayer4:String);
+function TGame.Clone: TGame;
+begin
+  Result:=TGame.Create;
+  Result.FID:=FID;
+  Result.FActive:=FActive;
+  Result.Player1.Assign(Player1);
+  Result.Player2.Assign(Player2);
+  Result.Player3.Assign(Player3);
+  Result.Player4.Assign(Player4);
+  Result.Talon.Assign(Talon);
+end;
+
+constructor TGame.Create;
 begin
   inherited Create;
   SysUtils.CreateGUID(FID);
-  FPlayer1:=TPlayerCards.Create(APlayer1);
-  FPlayer2:=TPlayerCards.Create(APlayer2);
-  FPlayer3:=TPlayerCards.Create(APlayer3);
-  FPlayer4:=TPlayerCards.Create(APlayer4);
+  FPlayer1:=TPlayerCards.Create;
+  FPlayer2:=TPlayerCards.Create;
+  FPlayer3:=TPlayerCards.Create;
+  FPlayer4:=TPlayerCards.Create;
   FTalon:=TPlayerCards.Create('TALON');
-
-  Shuffle;
+  FActive:=True;
 end;
 
 destructor TGame.Destroy;
@@ -67,44 +98,56 @@ begin
   inherited;
 end;
 
-procedure TGame.Shuffle;
-var cards:TCards;
+
+procedure TGame.SetPlayer1(const Value: TPlayerCards);
 begin
-  cards:=ALLCARDS.Clone;
-  FPlayer1.Shuffle(cards,12);
-  FPlayer2.Shuffle(cards,12);
-  FPlayer3.Shuffle(cards,12);
-  FPlayer4.Shuffle(cards,12);
-  FTalon.Cards:=cards;  // get the rest
+  FreeAndNil(FPlayer1);
+  FPlayer1 := Value;
+end;
+
+procedure TGame.SetPlayer2(const Value: TPlayerCards);
+begin
+  FreeAndNil(FPlayer2);
+  FPlayer2 := Value;
+end;
+
+procedure TGame.SetPlayer3(const Value: TPlayerCards);
+begin
+  FreeAndNil(FPlayer3);
+  FPlayer3 := Value;
+end;
+
+procedure TGame.SetPlayer4(const Value: TPlayerCards);
+begin
+  FreeAndNil(FPlayer4);
+  FPlayer4 := Value;
+end;
+
+procedure TGame.SetTalon(const Value: TPlayerCards);
+begin
+  FreeAndNil(FTalon);
+  FTalon := Value;
 end;
 
 { TPlayerCards }
+
+procedure TPlayerCards.Assign(const ASource: TPlayerCards);
+begin
+  FPlayerName:=ASource.PlayerName;
+  FCards.Assign(ASource.Cards);
+end;
 
 constructor TPlayerCards.Create(const AName: String);
 begin
   inherited Create;
   FPlayerName:=AName;
+  FCards:=TCards.Create([doOwnsValues]);
 end;
 
 destructor TPlayerCards.Destroy;
 begin
   FreeAndNil(FCards);
   inherited;
-end;
-
-procedure TPlayerCards.Shuffle(var ACards: TCards; const ACount: Integer);
-var i,r:Integer;
-    key:TCardKey;
-    itm:TPair<TCardKey,TCard>;
-begin
-  FCards:=TCards.Create([doOwnsValues]);
-
-  for i:=1 to ACount do begin
-    r:=Random(ACards.Count);
-    key:=ACards.Keys.ToArray[r];
-    itm:=ACards.ExtractPair(key);
-    FCards.Add(itm.Key,itm.Value);
-  end;
 end;
 
 end.

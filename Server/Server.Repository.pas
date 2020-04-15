@@ -11,7 +11,8 @@ uses
  Server.Entities,
  Server.Entities.Card,
  Server.Entities.Game,
- Server.WIRL.Response
+ Server.WIRL.Response,
+ Server.Controller.Game
 ;
 
 type
@@ -23,6 +24,7 @@ type
 
     function GetCards:TCards;
     function NewGame:TExtendedRESTResponse;
+    function GetGame(AID:TGuid):TGame;
   end;
 
   TRepository = class(TInterfacedObject, IRepository)
@@ -32,8 +34,10 @@ type
     FLastError: String;
     FPlayers:TPlayers;
     FGames:TGames;
+    FGameController:TGameController;
 
     FLogger: ILogger;
+    function GetActGame: TGame;
 
   public
     constructor Create;
@@ -45,9 +49,14 @@ type
 
     function GetCards:TCards;
     function NewGame:TExtendedRESTResponse;
+    function GetGame(AID:TGuid):TGame;
+
+    property ActGame:TGame read GetActGame;
+    property GameController:TGameController read FGameController;
 
     property LastError: String read FLastError;
     property Logger: ILogger read FLogger write FLogger;
+
   end;
 
 implementation
@@ -79,7 +88,7 @@ begin
   FPlayers.Add(TPlayer.Create('WOLFGANG'));
   FPlayers.Add(TPlayer.Create('LUKI'));
   FPlayers.Add(TPlayer.Create('ANDI'));
-  FGames:=TGames.Create([doOwnsValues]);
+  FGames:=TGames.Create(True);
   Logger.Leave('TRepository.Create');
 end;
 
@@ -90,15 +99,40 @@ begin
   Logger.Enter('TRepository.Destroy');
   FreeAndNil(FPlayers);
   FreeAndNil(FGames);
+  FreeAndNil(FGameController);
 
   inherited;
   Logger.Leave('TRepository.Destroy');
 end;
 
 
+function TRepository.GetActGame: TGame;
+begin
+  Result:=FGames.Peek;
+end;
+
 function TRepository.GetCards: TCards;
 begin
   Result:=ALLCards.Clone;
+end;
+
+function TRepository.GetGame(AID: TGuid): TGame;
+var g:TGame;
+begin
+  if FGames.Count=0 then
+    g:=nil
+  else if AID=TGuid.Empty then
+    g:=FGames.Peek
+  else begin
+    g:=FGames.First(function(const itm:TGame):Boolean begin
+                           Result:=itm.ID=AID;
+                         end);
+  end;
+
+  if Assigned(g) then
+    Result:=g.Clone
+  else
+    Result:=nil;
 end;
 
 function TRepository.GetPlayers: TPlayers;
@@ -120,11 +154,24 @@ function TRepository.NewGame: TExtendedRESTResponse;
 var g:TGame;
 begin
   if FPlayers.Count=4 then begin
-    g:=TGame.Create(FPlayers[0].Name,FPlayers[1].Name,FPlayers[2].Name,FPlayers[3].Name);
-    FGames.Add(g.ID,g);
-    Result:=TExtendedRESTResponse.BuildResponse(True);
-    Result.ID:=g.ID;
-    Result.SomeString:='SDFASD';
+    if (FGames.Count>0) and FGames.Peek.Active then
+      Result:=TExtendedRESTResponse.BuildResponse(False,'A game is just active')
+    else begin
+      g:=TGame.Create;
+      g.Player1.PlayerName:=FPlayers[0].Name;
+      g.Player2.PlayerName:=FPlayers[1].Name;
+      g.Player3.PlayerName:=FPlayers[2].Name;
+      g.Player4.PlayerName:=FPlayers[3].Name;
+
+      FGames.Push(g);
+      Result:=TExtendedRESTResponse.BuildResponse(True);
+      Result.Message:=g.ID.ToString;
+      Result.ID:=g.ID;
+
+      FreeAndNil(FGameController);
+      FGameController:=TGameController.Create(g);
+      FGameController.Shuffle;
+    end;
   end
   else
     Result:=TExtendedRESTResponse.BuildResponse(False,'Needs 4 registered players to create a game');

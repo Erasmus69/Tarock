@@ -48,6 +48,12 @@ type
     [POST, Path('/games')]
     [Produces(TMediaType.APPLICATION_JSON)]
     function NewGame: TExtendedRESTResponse;
+
+    [GET, Path('/games/{AGameID}')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function GetGame([PathParam]AGameID:TGUID): TGame;
+
+
   end;
 
 implementation
@@ -84,6 +90,11 @@ end;
 function TApiV1Resource.NewGame:TExtendedRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.NewGame;
+end;
+
+function TApiV1Resource.GetGame(AGameID:TGUID): TGame;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.GetGame(AGameID);
 end;
 
 function TApiV1Resource.RegisterPlayer(APlayer:TPlayers): TBaseRESTResponse;
