@@ -24,6 +24,7 @@ end;
 
 procedure TGameController.Shuffle;
 
+
   procedure IntShuffle(var ACards: TCards; const APlayerCards:TPlayerCards; const ACount: Integer);
   var i,r:Integer;
       key:TCardKey;
@@ -36,6 +37,7 @@ procedure TGameController.Shuffle;
       itm:=ACards.Extract(ACards.Items[r]);
       APlayerCards.Cards.Add(itm);
     end;
+    APlayerCards.Cards.Sort(TCardsComparer.Create)
   end;
 
 var cards:TCards;

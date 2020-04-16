@@ -7,7 +7,8 @@ uses
   Rest.Neon in 'Rest.Neon.pas',
   Classes.Entities in 'Classes.Entities.pas',
   Server.Entities.Card in '..\Server\Server.Entities.Card.pas',
-  Server.Entities.Game in '..\Server\Server.Entities.Game.pas';
+  Server.Entities.Game in '..\Server\Server.Entities.Game.pas',
+  Classes.CardControl in 'Classes.CardControl.pas';
 
 {$R *.res}
 

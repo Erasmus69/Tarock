@@ -2,7 +2,7 @@ unit Server.Entities.Card;
 
 interface
 uses
-  Spring, Neon.Core.Attributes,
+  Spring, Neon.Core.Attributes, System.Generics.Defaults,
   System.Generics.Collections,Graphics;
 
 type
@@ -27,6 +27,9 @@ type
     property Fold:Boolean read FFold write FFold;
   end;
 
+  TCardsComparer=class(TComparer<TCard>)
+    function Compare(const Left, Right: TCard): Integer; override;
+  end;
   TCards=class(TObjectList<TCard>)
   private
 //    function GetItems: TDictionary<TCardKey, TCard>.TValueCollection;
@@ -150,5 +153,16 @@ begin
   Result:=Values;
 end;    *)
 
+
+{ TCardsComparer }
+
+function TCardsComparer.Compare(const Left, Right: TCard): Integer;
+begin
+  if Ord(Left.CType)=Ord(Right.CType) then begin
+    Result:=Left.Value-Right.Value
+  end
+  else
+    Result:=Ord(Left.CType)-Ord(Right.CType);
+end;
 
 end.

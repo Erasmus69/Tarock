@@ -7,7 +7,8 @@ uses
   WiRL.Client.Resource, System.Net.HttpClient.Win, WiRL.http.Client,
   WiRL.Client.Application,  Rest.Neon,Classes.Entities, System.JSON,
   WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls,
-  Server.Entities.Game,Server.Entities.Card;
+  Server.Entities.Game,Server.Entities.Card, dxGDIPlusClasses, cxClasses,
+  cxGraphics;
 
 type
   TdmTarock = class(TDataModule)
@@ -17,6 +18,10 @@ type
     resCards: TWiRLClientResourceJSON;
     imCards: TImageList;
     resGames: TWiRLClientResourceJSON;
+    imBackCards: TcxImageCollection;
+    BackDown: TcxImageCollectionItem;
+    BackRight: TcxImageCollectionItem;
+    BackLeft: TcxImageCollectionItem;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -163,8 +168,8 @@ begin
       end
      );
 
-    if resGames.Response.GetValue<String>('status')<>'success' then
-     Showmessage(resGames.Response.GetValue<String>('message'));
+//    if resGames.Response.GetValue<String>('status')<>'success' then
+//     Showmessage(resGames.Response.GetValue<String>('message'));
 
   except
     on E: Exception do begin
