@@ -18,13 +18,13 @@ uses
     FCards: TCards;
 
   public
-    property  PlayerName:String read FPlayerName write FPlayerName;
-   [NeonIgnore]
-    property Cards:TCards read FCards;
+    property PlayerName:String read FPlayerName write FPlayerName;
+    property Cards:TCards read FCards write FCards;
 
     constructor Create(const AName:String='');
     destructor Destroy;override;
     procedure Assign(const ASource:TPlayerCards);
+
   end;
 
   TGame=class
@@ -36,22 +36,17 @@ uses
     FPlayer4:TPlayerCards;
     FTalon:TPlayerCards;
     FActive: Boolean;
-    procedure SetPlayer1(const Value: TPlayerCards);
-    procedure SetPlayer2(const Value: TPlayerCards);
-    procedure SetPlayer3(const Value: TPlayerCards);
-    procedure SetPlayer4(const Value: TPlayerCards);
-    procedure SetTalon(const Value: TPlayerCards);
+
   public
-    [NeonInclude(Include.Always)]
-    property ID:TGUID read FID;
+//    [NeonInclude(Include.Always)]
+    property ID:TGUID read FID write FID;
     property Active:Boolean read FActive write FActive;
 
-    [NeonInclude(Include.Always)]
-    property Player1:TPlayerCards read FPlayer1 write SetPlayer1;
-    property Player2:TPlayerCards read FPlayer2 write SetPlayer2;
-    property Player3:TPlayerCards read FPlayer3 write SetPlayer3;
-    property Player4:TPlayerCards read FPlayer4 write SetPlayer4;
-    property Talon:TPlayerCards read FTalon write SetTalon;
+    property Player1:TPlayerCards read FPlayer1 write FPlayer1;
+    property Player2:TPlayerCards read FPlayer2 write FPlayer1;
+    property Player3:TPlayerCards read FPlayer3 write FPlayer1;
+    property Player4:TPlayerCards read FPlayer4 write FPlayer1;
+    property Talon:TPlayerCards read FTalon write FTalon;
 
     constructor Create;
     destructor Destroy;override;
@@ -99,36 +94,6 @@ begin
 end;
 
 
-procedure TGame.SetPlayer1(const Value: TPlayerCards);
-begin
-  FreeAndNil(FPlayer1);
-  FPlayer1 := Value;
-end;
-
-procedure TGame.SetPlayer2(const Value: TPlayerCards);
-begin
-  FreeAndNil(FPlayer2);
-  FPlayer2 := Value;
-end;
-
-procedure TGame.SetPlayer3(const Value: TPlayerCards);
-begin
-  FreeAndNil(FPlayer3);
-  FPlayer3 := Value;
-end;
-
-procedure TGame.SetPlayer4(const Value: TPlayerCards);
-begin
-  FreeAndNil(FPlayer4);
-  FPlayer4 := Value;
-end;
-
-procedure TGame.SetTalon(const Value: TPlayerCards);
-begin
-  FreeAndNil(FTalon);
-  FTalon := Value;
-end;
-
 { TPlayerCards }
 
 procedure TPlayerCards.Assign(const ASource: TPlayerCards);
@@ -141,7 +106,7 @@ constructor TPlayerCards.Create(const AName: String);
 begin
   inherited Create;
   FPlayerName:=AName;
-  FCards:=TCards.Create([doOwnsValues]);
+  FCards:=TCards.Create;
 end;
 
 destructor TPlayerCards.Destroy;

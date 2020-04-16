@@ -82,7 +82,7 @@ begin
   imgLeft:=MYCARDMOSTLEFT;
   imgTop:=MYCARDMOSTTOP;
 
-  for card in ALLCARDS.Values do begin
+  for card in ALLCARDS do begin
     if card.ImageIndex>=0 then begin
        img:=TImage.Create(Self);
        img.Parent:=Self;
@@ -141,7 +141,7 @@ begin
 
   end;
 
-  for card in ACards.Values do begin
+  for card in ACards do begin
     if card.ImageIndex>=0 then begin
        img:=TImage.Create(Self);
        img.Parent:=Self;

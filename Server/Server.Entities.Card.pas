@@ -27,13 +27,13 @@ type
     property Fold:Boolean read FFold write FFold;
   end;
 
-  TCards=class(TObjectDictionary<TCardKey,TCard>)
+  TCards=class(TObjectList<TCard>)
   private
 //    function GetItems: TDictionary<TCardKey, TCard>.TValueCollection;
   public
-//    [NeonInclude(Include.Always)]
+   [NeonInclude(Include.Always)]
 //    property Items: TDictionary<TCardKey, TCard>.TValueCollection read GetItems;
-
+    constructor Create;
     function AddItem(AID:TCardKey;ACType:TCardType;AValue:Byte;AImageIdx:Integer=-1):TCard;
     function Clone:TCards;
     procedure Assign(const ASource:TCards);
@@ -45,10 +45,11 @@ var ALLCARDS:TCards;
   procedure TearDown;
 
 implementation
+uses SysUtils;
 
 procedure Initialize;
 begin
-  ALLCARDS:=TCards.Create([doOwnsValues]);
+  ALLCARDS:=TCards.Create;
   ALLCARDS.AddItem(T1,ctTarock,1,0);
   ALLCARDS.AddItem(T2,ctTarock,2);
   ALLCARDS.AddItem(T3,ctTarock,3);
@@ -121,19 +122,25 @@ begin
   Result.Value:=AValue;
   Result.ImageIndex:=AImageIdx;
   Result.Fold:=False;
-  Add(AID,Result);
+  Add(Result);
 end;
 
 function TCards.Clone:TCards;
 begin
-  Result:=TCards.Create([doOwnsValues]);
+  Result:=TCards.Create;
   Result.Assign(Self);
+end;
+
+constructor TCards.Create;
+begin
+  inherited Create(True);
+  Beep;
 end;
 
 procedure TCards.Assign(const ASource:TCards);
 var itm:TCard;
 begin
-  for itm in ASource.Values do
+  for itm in ASource do
     AddItem(itm.ID,itm.CType,itm.Value,itm.ImageIndex);
 end;
 

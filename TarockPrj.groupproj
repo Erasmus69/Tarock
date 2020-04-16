@@ -30,6 +30,9 @@
         <Projects Include="D:\PROJECTSME\ERGOME\Program\ErgoSystem\ErgoSystem.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -119,14 +122,23 @@
     <Target Name="ErgoSystem:Make">
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\ErgoSystem\ErgoSystem.dproj" Targets="Make"/>
     </Target>
+    <Target Name="DemoSerialization">
+        <MSBuild Projects="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj"/>
+    </Target>
+    <Target Name="DemoSerialization:Clean">
+        <MSBuild Projects="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DemoSerialization:Make">
+        <MSBuild Projects="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Tarock;TarockServiceDBG;WiRLServerTemplateDBG;AppTemplate;RegistrationTest;TCErgo;ErgoApp;ErgoLicenseServerMasterWDBG;ErgoSystem"/>
+        <CallTarget Targets="Tarock;TarockServiceDBG;WiRLServerTemplateDBG;AppTemplate;RegistrationTest;TCErgo;ErgoApp;ErgoLicenseServerMasterWDBG;ErgoSystem;DemoSerialization"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;WiRLServerTemplateDBG:Clean;AppTemplate:Clean;RegistrationTest:Clean;TCErgo:Clean;ErgoApp:Clean;ErgoLicenseServerMasterWDBG:Clean;ErgoSystem:Clean"/>
+        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;WiRLServerTemplateDBG:Clean;AppTemplate:Clean;RegistrationTest:Clean;TCErgo:Clean;ErgoApp:Clean;ErgoLicenseServerMasterWDBG:Clean;ErgoSystem:Clean;DemoSerialization:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;WiRLServerTemplateDBG:Make;AppTemplate:Make;RegistrationTest:Make;TCErgo:Make;ErgoApp:Make;ErgoLicenseServerMasterWDBG:Make;ErgoSystem:Make"/>
+        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;WiRLServerTemplateDBG:Make;AppTemplate:Make;RegistrationTest:Make;TCErgo:Make;ErgoApp:Make;ErgoLicenseServerMasterWDBG:Make;ErgoSystem:Make;DemoSerialization:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
