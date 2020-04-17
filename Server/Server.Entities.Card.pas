@@ -36,7 +36,6 @@ type
   public
    [NeonInclude(Include.Always)]
 //    property Items: TDictionary<TCardKey, TCard>.TValueCollection read GetItems;
-    constructor Create;
     function AddItem(AID:TCardKey;ACType:TCardType;AValue:Byte;AImageIdx:Integer=-1):TCard;
     function Clone:TCards;
     procedure Assign(const ASource:TCards);
@@ -132,12 +131,6 @@ function TCards.Clone:TCards;
 begin
   Result:=TCards.Create;
   Result.Assign(Self);
-end;
-
-constructor TCards.Create;
-begin
-  inherited Create(True);
-  Beep;
 end;
 
 procedure TCards.Assign(const ASource:TCards);

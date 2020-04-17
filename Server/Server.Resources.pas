@@ -51,8 +51,11 @@ type
 
     [GET, Path('/games/{AGameID}')]
     [Produces(TMediaType.APPLICATION_JSON)]
-    function GetGame([PathParam]AGameID:TGUID): TGame;
+    function GetGame([PathParam]AGameID:String): TGame;
 
+ (*   [GET, Path('/games/{AGameID}/cards{AName}')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function GetPlayerCards([PathParam] AGameID:TGUID;[PathParam] AName:String): TPlayerCards;   *)
 
   end;
 
@@ -92,7 +95,7 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.NewGame;
 end;
 
-function TApiV1Resource.GetGame(AGameID:TGUID): TGame;
+function TApiV1Resource.GetGame(AGameID:String): TGame;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.GetGame(AGameID);
 end;
@@ -111,6 +114,11 @@ function TApiV1Resource.GetCards: TCards;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.GetCards;
 end;
+(*
+function TApiV1Resource.GetPlayerCards(AGameID: TGUID; AName: String): TPlayerCards;
+begin
+  Result:=GetContainer.Resolve<IApiV1Controller>.GetPlayerCards(AGameID,AName);
+end; *)
 
 function TApiV1Resource.GetPlayers: TPlayers;
 begin

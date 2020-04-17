@@ -24,7 +24,7 @@ type
 
     function GetCards:TCards;
     function NewGame:TExtendedRESTResponse;
-    function GetGame(AID:TGuid):TGame;
+    function GetGame(AID:String):TGame;
   end;
 
   TRepository = class(TInterfacedObject, IRepository)
@@ -49,7 +49,7 @@ type
 
     function GetCards:TCards;
     function NewGame:TExtendedRESTResponse;
-    function GetGame(AID:TGuid):TGame;
+    function GetGame(AID:String):TGame;
 
     property ActGame:TGame read GetActGame;
     property GameController:TGameController read FGameController;
@@ -116,18 +116,20 @@ begin
   Result:=ALLCards.Clone;
 end;
 
-function TRepository.GetGame(AID: TGuid): TGame;
+function TRepository.GetGame(AID: String): TGame;
 var g:TGame;
 begin
   if FGames.Count=0 then
     g:=nil
-  else if AID=TGuid.Empty then
-    g:=FGames.Peek
-  else begin
+  else// if (AID='0') or (AID='''0''')then
+    g:=FGames.Peek ;
+ (* else
+    g:=nil;  *)
+(*  else begin
     g:=FGames.First(function(const itm:TGame):Boolean begin
-                           Result:=itm.ID=AID;
+                           Result:=itm.ID.ToString=AID;
                          end);
-  end;
+  end; *)
 
   if Assigned(g) then
     Result:=g.Clone
@@ -152,16 +154,22 @@ end;
 
 function TRepository.NewGame: TExtendedRESTResponse;
 var g:TGame;
+    i:Integer;
 begin
   if FPlayers.Count=4 then begin
     if (FGames.Count>0) and FGames.Peek.Active then
       Result:=TExtendedRESTResponse.BuildResponse(False,'A game is just active')
     else begin
       g:=TGame.Create;
-      g.Player1.PlayerName:=FPlayers[0].Name;
-      g.Player2.PlayerName:=FPlayers[1].Name;
-      g.Player3.PlayerName:=FPlayers[2].Name;
-      g.Player4.PlayerName:=FPlayers[3].Name;
+      for i := 0 to 3 do
+        g.Players[i].PlayerName:=FPlayers[i].Name;
+
+
+      { TODO -oAP : rauszuwerfen }
+      g.Players[0].Team:=ttTEam1;
+      g.Players[2].Team:=ttTEam1;
+      g.Players[1].Team:=ttTEam2;
+      g.Players[3].Team:=ttTEam2;
 
       FGames.Push(g);
       Result:=TExtendedRESTResponse.BuildResponse(True);

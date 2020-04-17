@@ -85,9 +85,9 @@ procedure TfrmTarock.bStartGameClick(Sender: TObject);
 begin
   dm.StartNewGame;
   ShowCards(dm.MyCards,cpMyCards);
-  ShowCards(dm.ActGame.Player2.Cards,cpFirstPlayer);
-  ShowCards(dm.ActGame.Player2.Cards,cpSecondPlayer);
-  ShowCards(dm.ActGame.Player2.Cards,cpThirdPlayer);
+  ShowCards(dm.ActGame.Players[2].Cards,cpFirstPlayer);
+  ShowCards(dm.ActGame.Players[2].Cards,cpSecondPlayer);
+  ShowCards(dm.ActGame.Players[2].Cards,cpThirdPlayer);
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);

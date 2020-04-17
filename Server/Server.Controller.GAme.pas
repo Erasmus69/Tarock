@@ -41,13 +41,12 @@ procedure TGameController.Shuffle;
   end;
 
 var cards:TCards;
+    i:Integer;
 begin
   cards:=ALLCARDS.Clone;
   try
-    IntShuffle(cards,FGame.Player1,12);
-    IntShuffle(cards,FGame.Player2,12);
-    IntShuffle(cards,FGame.Player3,12);
-    IntShuffle(cards,FGame.Player4,12);
+    for I := 0 to FGame.Players.Count-1 do
+      IntShuffle(cards,FGame.Players[i],12);
     IntShuffle(cards,FGame.Talon,6);
   finally
     cards.Free

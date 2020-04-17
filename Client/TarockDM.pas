@@ -181,10 +181,11 @@ begin
 end;
 
 function TdmTarock.GetActGame:TGame;
+var i:Integer;
 begin
   resGames.PathParamsValues.Clear;
   resGames.QueryParams.Clear;
-  resGames.PathParamsValues.Values['AGameid'] :=TGUID.Empty.ToString;
+  resGames.PathParamsValues.Values['AGameid'] :='0';
   resGames.GET;
 
   if resGames.ResponseAsString>'' then begin
@@ -195,14 +196,12 @@ begin
   Result:=FActGame;
 
   if Assigned(FActGame) then begin
-    if FActGame.Player1.PlayerName=FMyName then
-      FMyCards:=FActGame.Player1.Cards
-    else if FActGame.Player2.PlayerName=FMyName then
-      FMyCards:=FActGame.Player2.Cards
-    else if FActGame.Player3.PlayerName=FMyName then
-      FMyCards:=FActGame.Player3.Cards
-    else
-      FMyCards:=FActGame.Player4.Cards
+    for i:=1 to 4 do begin
+      if FActGame.Players[i].PlayerName=FMyName then begin
+        FMyCards:=FActGame.Players[i].Cards;
+        Break;
+      end;
+    end
   end
   else
     FMyCards:=nil
