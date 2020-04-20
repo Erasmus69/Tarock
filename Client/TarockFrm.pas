@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
-  cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Server.Entities.Card, cxLabel;
+  cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round;
 
 type
   TCardPosition=(cpMyCards,cpTalon,cpFirstPlayer,cpSecondPlayer,cpThirdPlayer);
@@ -31,15 +31,23 @@ type
     pFirstplayerCards: TPanel;
     pThirdPlayerCards: TPanel;
     pSecondPlayerCards: TPanel;
+    Button3: TButton;
+    imgSecondCard: TImage;
+    Image5: TImage;
+    imgThirdCard: TImage;
+    imgMyCard: TImage;
+    imgFirstCard: TImage;
 
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
     procedure GetPlayers;
     procedure ShowCards(ACards:TCards; APosition:TCardPosition);
+    procedure ShowTurn(const ARound:TGameRound);
   public
     { Public declarations }
   end;
@@ -73,21 +81,43 @@ begin
   end;
 end;
 
+procedure TfrmTarock.Button3Click(Sender: TObject);
+var r:TGameRound;
+begin
+  try
+    r:=dm.GetRound;
+    if r.TurnOn=dm.MyName then
+      dm.PutTurn(T10)
+    else
+      ShowTurn(r);
+  finally
+    r.Free;
+  end;
+end;
+
 procedure TfrmTarock.Button4Click(Sender: TObject);
+var c:TCards;
 begin
   if pTalon.Visible then
     pTalon.Visible:=False
-  else
-    ShowCards(dm.ActGame.Talon.Cards,cpTalon);
+  else begin
+    c:=dm.GetCards('TALON');
+    try
+      ShowCards(c,cpTalon);
+    finally
+      FreeAndNil(c);
+    end;
+  end;
 end;
 
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
 begin
   dm.StartNewGame;
+
   ShowCards(dm.MyCards,cpMyCards);
-  ShowCards(dm.ActGame.Players[2].Cards,cpFirstPlayer);
-  ShowCards(dm.ActGame.Players[2].Cards,cpSecondPlayer);
-  ShowCards(dm.ActGame.Players[2].Cards,cpThirdPlayer);
+//  ShowCards(dm.ActGame.Players[2].Cards,cpFirstPlayer);
+//  ShowCards(dm.ActGame.Players[2].Cards,cpSecondPlayer);
+//  ShowCards(dm.ActGame.Players[2].Cards,cpThirdPlayer);
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
@@ -177,6 +207,23 @@ begin
       end;
       imgTop:=imgTop+BACKCARDXOFFSET;
     end;
+  end;
+end;
+
+procedure TfrmTarock.ShowTurn(const ARound:TGameRound);
+var I: Integer;
+    img:TImage;
+begin
+  for I := 0 to High(ARound.CardsThrown) do begin
+    if i=0 then
+      img:=imgMyCard
+    else if i=1 then
+      img:=imgFirstCard
+    else if i=2 then
+      img:=imgSecondCard
+    else
+      img:=imgThirdCard;
+    dm.imCards.GetBitmap(ALLCARDS.Find(ARound.CardsThrown[i]).ImageIndex,img.Picture.Bitmap);
   end;
 end;
 

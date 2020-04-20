@@ -5,12 +5,17 @@ interface
 uses
   REST.Client,
   REST.Types,
- System.Classes, System.Rtti,
+
+  System.Classes, System.Rtti,
   System.JSON,
+     System.TypInfo,
+  Classes.Entities,
+  Common.Entities.Card,
   Neon.Core.Types
 , Neon.Core.Persistence
 , Neon.Core.Persistence.JSON,
-Classes.Entities;
+
+  Neon.Core.Serializers;
 
 type
   TNeonRESTClient = class(TRESTClient)
@@ -40,7 +45,6 @@ implementation
 uses
   IPPeerClient
 , System.SysUtils
-, System.TypInfo
 , Neon.Core.Utils
 //,  Neon.Core.Serializers.RTL
 ;
@@ -212,7 +216,8 @@ begin
   Result.SetVisibility([mvPublic, mvPublished]);
 
 
- // Result.GetSerializers.RegisterSerializer(TGUIDSerializer);
+ Result.GetSerializers.RegisterSerializer(TGUIDSerializer);
+  Result.GetSerializers.RegisterSerializer(TCardKeySerializer);
 end;
 
 {$ENDREGION}

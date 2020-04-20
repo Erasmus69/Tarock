@@ -9,7 +9,8 @@ uses
  Spring.Logging,
 
  Server.Entities,
- Server.Entities.Card,
+ Common.Entities.Card,
+ Common.Entities.Round,
  Server.Entities.Game,
  Server.WIRL.Response,
  Server.Controller.Game
@@ -22,15 +23,16 @@ type
     function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
     function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
 
-    function GetCards:TCards;
+    function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
-    function GetGame(AID:String):TGame;
+    function GetGame:TGame;
+
+    function GetRound:TGameRound;
+    function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
   end;
 
   TRepository = class(TInterfacedObject, IRepository)
   private
-    FConnection: TRDSQLConnection;
-    FQuery: TRDQuery;
     FLastError: String;
     FPlayers:TPlayers;
     FGames:TGames;
@@ -47,9 +49,12 @@ type
     function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
     function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
 
-    function GetCards:TCards;
+    function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
-    function GetGame(AID:String):TGame;
+    function GetGame:TGame;
+
+    function GetRound:TGameRound;
+    function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
 
     property ActGame:TGame read GetActGame;
     property GameController:TGameController read FGameController;
@@ -111,28 +116,17 @@ begin
   Result:=FGames.Peek;
 end;
 
-function TRepository.GetCards: TCards;
+function TRepository.GetAllCards: TCards;
 begin
-  Result:=ALLCards.Clone;
+  Result:=ALLCards;
 end;
 
-function TRepository.GetGame(AID: String): TGame;
+function TRepository.GetGame: TGame;
 var g:TGame;
 begin
-  if FGames.Count=0 then
-    g:=nil
-  else// if (AID='0') or (AID='''0''')then
-    g:=FGames.Peek ;
- (* else
-    g:=nil;  *)
-(*  else begin
-    g:=FGames.First(function(const itm:TGame):Boolean begin
-                           Result:=itm.ID.ToString=AID;
-                         end);
-  end; *)
-
+  g:=FGames.PeekOrDefault;
   if Assigned(g) then
-    Result:=g.Clone
+    Result:=g
   else
     Result:=nil;
 end;
@@ -142,7 +136,7 @@ begin
   Logger.Enter('TRepository.GetPlayers');
   Result:=Nil;
   try
-    Result:=FPlayers.Clone;
+    Result:=FPlayers;
 
   except
     on E: Exception do
@@ -152,18 +146,24 @@ begin
   Logger.Leave('TRepository.GetPlayers');
 end;
 
+function TRepository.GetRound: TGameRound;
+var g:TGame;
+begin
+  g:=FGames.PeekOrDefault;
+  if Assigned(g) and g.Active then
+    Result:=g.ActRound
+  else
+    raise Exception.Create('No active game');
+end;
+
 function TRepository.NewGame: TExtendedRESTResponse;
 var g:TGame;
-    i:Integer;
 begin
   if FPlayers.Count=4 then begin
     if (FGames.Count>0) and FGames.Peek.Active then
       Result:=TExtendedRESTResponse.BuildResponse(False,'A game is just active')
     else begin
-      g:=TGame.Create;
-      for i := 0 to 3 do
-        g.Players[i].PlayerName:=FPlayers[i].Name;
-
+      g:=TGame.Create(FPlayers);
 
       { TODO -oAP : rauszuwerfen }
       g.Players[0].Team:=ttTEam1;
@@ -179,6 +179,7 @@ begin
       FreeAndNil(FGameController);
       FGameController:=TGameController.Create(g);
       FGameController.Shuffle;
+      FGameController.NewRound('ANDI');      { TODO : zu verschieben }
     end;
   end
   else
@@ -213,6 +214,18 @@ begin
     Result:=TBaseRESTResponse.BuildResponse(True);
 
   Logger.Leave('TRepository.RegisterPlayer');
+end;
+
+function TRepository.Turn(AName: String; ACard: TCardKey): TBaseRESTResponse;
+var nextTurnOn:String;
+begin
+  if not Assigned(FGameController) then
+    raise Exception.Create('No active game');
+
+  nextTurnOn:=FGameController.Turn(AName,ACard);
+  Result:=TBaseRESTResponse.BuildResponse(True);
+  Result.Message:='Next Player is '+nextTurnOn
+
 end;
 
 function TRepository.DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;

@@ -4,8 +4,8 @@ interface
 uses Classes,VCL.Controls,VCL.ExtCtrls;
 
 const
-  CARDHEIGHT=256;
-  CARDWIDTH=141;
+  CARDHEIGHT=154;//256;
+  CARDWIDTH=85;//141;
   CARDUPLIFT=30;
 
 type

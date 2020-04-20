@@ -32,7 +32,7 @@ implementation
 { TServerREST }
 
 uses
-  System.SysUtils
+  System.SysUtils,Common.Entities.Card
 ;
 
 
@@ -57,7 +57,8 @@ begin
       .SetFilters('*')
       .ConfigureSerializer
         .SetUseUTCDate(True)
-        .SetMemberCase(TNeonCase.SnakeCase);
+        .SetMemberCase(TNeonCase.SnakeCase)
+      .GetSerializers.RegisterSerializer(TCardKeySerializer);
 
   Logger.Leave('TServerREST.Create');
 end;

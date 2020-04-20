@@ -19,9 +19,10 @@ uses
   Server.Repository in 'Server.Repository.pas',
   Server.Wirl.Response in 'Server.Wirl.Response.pas',
   Server.Entities.Game in 'Server.Entities.Game.pas',
-  Server.Entities.Card in 'Server.Entities.Card.pas',
+  Common.Entities.Card in '..\Common\Common.Entities.Card.pas',
   Server.DataModule in 'Server.DataModule.pas' {dm: TDataModule},
-  Server.Controller.GAme in 'Server.Controller.GAme.pas';
+  Server.Controller.GAme in 'Server.Controller.GAme.pas',
+  Common.Entities.Round in '..\Common\Common.Entities.Round.pas';
 
 {$R *.res}
 
@@ -31,5 +32,5 @@ begin
   Application.CreateForm(Tdm, dm);
   Application.CreateForm(TFrmMain, FrmMain);
   Application.Run;
-  Server.Entities.Card.TearDown;
+  Common.Entities.Card.TearDown;
 end.

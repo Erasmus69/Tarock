@@ -8,7 +8,8 @@ uses
   Spring.Collections,
   Server.Entities,
   Server.WIRL.Response,
-  Server.Entities.Card,
+  Common.Entities.Card,
+  Common.Entities.Round,
   Server.Entities.Game
 ;
 
@@ -19,11 +20,12 @@ type
     function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
     function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
 
-    function GetCards:TCards;
+    function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
-    function GetGame(AID:String):TGame;
-    function GetPlayerCards(const AGameID:String;const APlayerName:String):TPlayerCards;
+    function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
 
+    function GetRound:TGameRound;
+    function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
   end;
 
   TApiV1Controller = class(TInterfacedObject, IApiV1Controller)
@@ -32,11 +34,13 @@ type
     function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
     function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
 
-    function GetCards:TCards;
+    function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
-    function GetGame(AID:String):TGame;
-    function GetPlayerCards(const AGameID:String;const APlayerName:String):TPlayerCards;
+    function GetGame:TGame;
+    function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
 
+    function GetRound:TGameRound;
+    function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
   end;
 
 implementation
@@ -48,20 +52,25 @@ uses
 ;
 { TApiV1Controller }
 
-function TApiV1Controller.GetCards: TCards;
+function TApiV1Controller.GetAllCards: TCards;
 begin
-  Result := GetContainer.Resolve<IRepository>.GetCards;
+  Result := GetContainer.Resolve<IRepository>.GetAllCards;
 end;
 
-function TApiV1Controller.GetPlayerCards(const AGameID: String;const APlayerName: String): TPlayerCards;
+function TApiV1Controller.GetPlayerCards(AGameID: String; APlayerName: String): TCards;
 var g:TGame;
+    pc:TPlayerCards;
 begin
-  g:=GetGame(AGameID);
-  if Assigned(g) then
-    Result:=g.FindPlayer(APlayerName)
+  g:=GetGame;
+  if Assigned(g) then begin
+    pc:=g.FindPlayer(APlayerName);
+    if Assigned(pc) then
+      Result:=pc.Cards
+    else
+      raise Exception.Create('Player='+APlayerName+' not found');
+  end
   else
-    raise Exception.Create('Error Message');
- //   result:=nil;
+    raise Exception.Create('Game ID='+AGameid+' not found');
 end;
 
 function TApiV1Controller.GetPlayers: TPlayers;
@@ -69,14 +78,19 @@ begin
   Result := GetContainer.Resolve<IRepository>.GetPlayers;
 end;
 
+function TApiV1Controller.GetRound: TGameRound;
+begin
+  Result:=GetContainer.Resolve<IRepository>.GetRound;
+end;
+
 function TApiV1Controller.NewGame: TExtendedRESTResponse;
 begin
   Result:=GetContainer.Resolve<IRepository>.NewGame;
 end;
 
-function TApiV1Controller.GetGame(AID:String):TGame;
+function TApiV1Controller.GetGame:TGame;
 begin
-  Result:=GetContainer.Resolve<IRepository>.GetGame(AID);
+  Result:=GetContainer.Resolve<IRepository>.GetGame;
 end;
 
 function TApiV1Controller.RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
@@ -84,6 +98,11 @@ begin
   Result:=GetContainer.Resolve<IRepository>.RegisterPlayer(APlayer);
 end;
 
+
+function TApiV1Controller.Turn(AName: String; ACard: TCardKey): TBaseRESTResponse;
+begin
+  Result:=GetContainer.Resolve<IRepository>.Turn(AName, ACard);
+end;
 
 function TApiV1Controller.DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
 begin

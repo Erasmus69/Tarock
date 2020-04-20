@@ -13,7 +13,8 @@ uses
 , WiRL.http.Response
 , WiRL.Schemas.Swagger
 , Server.Entities
-, Server.Entities.Card
+, Common.Entities.Card
+, Common.Entities.Round
 , Server.Entities.Game
 , Server.WIRL.Response
 ;
@@ -43,19 +44,27 @@ type
 
     [GET, Path('/cards')]
     [Produces(TMediaType.APPLICATION_JSON)]
-    function GetCards: TCards;
+    function GetAllCards: TCards;
 
     [POST, Path('/games')]
     [Produces(TMediaType.APPLICATION_JSON)]
     function NewGame: TExtendedRESTResponse;
 
-    [GET, Path('/games/{AGameID}')]
+(*    [GET, Path('/games/{AGameID}')]
     [Produces(TMediaType.APPLICATION_JSON)]
-    function GetGame([PathParam]AGameID:String): TGame;
+    function GetGame([PathParam]AGameID:String): TGame;          *)
 
- (*   [GET, Path('/games/{AGameID}/cards{AName}')]
+    [GET, Path('/games/{AGameID}/cards/{AName}')]
     [Produces(TMediaType.APPLICATION_JSON)]
-    function GetPlayerCards([PathParam] AGameID:TGUID;[PathParam] AName:String): TPlayerCards;   *)
+    function GetPlayerCards([PathParam] AGameID:String;[PathParam] AName:String): TCards;
+
+    [GET, Path('/round')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function GetRound: TGameRound;
+
+    [PUT, Path('/round/{AName}/{ACard}')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function Turn([PathParam] AName:String; [PathParam] ACard:Byte): TBaseRESTResponse;
 
   end;
 
@@ -95,14 +104,16 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.NewGame;
 end;
 
-function TApiV1Resource.GetGame(AGameID:String): TGame;
-begin
-  Result := GetContainer.Resolve<IApiV1Controller>.GetGame(AGameID);
-end;
-
 function TApiV1Resource.RegisterPlayer(APlayer:TPlayers): TBaseRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.RegisterPlayer(APlayer);
+end;
+
+function TApiV1Resource.Turn(AName:String; ACard:Byte): TBaseRESTResponse;
+begin
+  if (ACard<Ord(Low(TCardKey))) or (ACard>Ord(High(TCardKey))) then
+    raise Exception.Create('Wrong CardValue');
+  Result := GetContainer.Resolve<IApiV1Controller>.Turn(AName, TCardKey(ACard));
 end;
 
 function TApiV1Resource.DeletePlayer(APlayer: TPlayers): TBaseRESTResponse;
@@ -110,19 +121,32 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.DeletePlayer(APlayer);
 end;
 
-function TApiV1Resource.GetCards: TCards;
+function TApiV1Resource.GetAllCards: TCards;
 begin
-  Result := GetContainer.Resolve<IApiV1Controller>.GetCards;
+  Result := GetContainer.Resolve<IApiV1Controller>.GetAllCards;
+  if Assigned(Result) then
+    Result:=Result.Clone;
 end;
-(*
-function TApiV1Resource.GetPlayerCards(AGameID: TGUID; AName: String): TPlayerCards;
+
+function TApiV1Resource.GetPlayerCards(AGameID: String; AName: String): TCards;
 begin
   Result:=GetContainer.Resolve<IApiV1Controller>.GetPlayerCards(AGameID,AName);
-end; *)
+  if Assigned(Result) then
+    Result:=Result.Clone;
+end;
 
 function TApiV1Resource.GetPlayers: TPlayers;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.GetPlayers;
+  if Assigned(Result) then
+    Result:=Result.Clone;
+end;
+
+function TApiV1Resource.GetRound: TGameRound;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.GetRound;
+  if Assigned(Result) then
+    Result:=Result.Clone;
 end;
 
 initialization

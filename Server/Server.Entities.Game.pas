@@ -4,7 +4,9 @@ interface
 uses
   Spring, Neon.Core.Attributes,
   System.Generics.Collections,
-  Server.Entities.Card,
+  Server.Entities,
+  Common.Entities.Card,
+  Common.Entities.Round,
   Spring.Collections.Stacks;
 
 type
@@ -13,28 +15,28 @@ type
   TPlayerCards=class
   private
     FPlayerName:String;
+    FIndex: Integer;
     FTeam: TTeam;
 
   //  [NeonInclude(Include.Always)]
     FCards: TCards;
+    FScore:Integer;
 
 
   public
-    property PlayerName:String read FPlayerName write FPlayerName;
+    property Index:Integer read FIndex;
+    property PlayerName:String read FPlayerName;
     property Team:TTeam read FTeam write FTeam;
    // [NeonInclude(Include.Always)]
     property Cards:TCards read FCards write FCards;
+ //   property Score read FScore write FScore;
 
-    constructor Create(const AName:String='');
+    constructor Create(const AName:String; const AIndex:Integer);
     destructor Destroy;override;
     procedure Assign(const ASource:TPlayerCards);
   end;
   TPlayersCards=class(TObjectList<TPlayerCards>);
 
-  TGameRound=class
-  public
-//    property Beginner:String read FBeginner write FBeginner;
-  end;
 
   TGameRounds=Spring.Collections.Stacks.TObjectStack<TGameRound>;
 
@@ -45,6 +47,7 @@ type
     FTalon:TPlayerCards;
     FActive: Boolean;
     FRounds: TGameRounds;
+    function GetActRound: TGameRound;
 
   public
 //    [NeonInclude(Include.Always)]
@@ -53,10 +56,9 @@ type
 
     property Players:TPlayersCards read FPlayers write FPlayers;
     property Talon:TPlayerCards read FTalon write FTalon;
-    [NeonIgnore]
     property Rounds:TGameRounds read FRounds write FRounds;
-
-    constructor Create;
+    property ActRound:TGameRound read GetActRound;
+    constructor Create(const APlayers:TPlayers=nil);
     destructor Destroy;override;
     function Clone:TGame;
     function FindPlayer(const APlayerName:String):TPlayerCards;
@@ -83,18 +85,22 @@ begin
   Result.Talon.Assign(Talon);
 end;
 
-constructor TGame.Create;
+constructor TGame.Create(const APlayers:TPlayers);
 var i:Integer;
 begin
   inherited Create;
   SysUtils.CreateGUID(FID);
   FPlayers:=TPlayersCards.Create(True);
-  for i:=0 to 3 do
-   FPlayers.Add(TPlayerCards.Create);
 
-  FTalon:=TPlayerCards.Create('TALON');
+  for i:=0 to 3 do begin
+    if Assigned(APlayers) then
+      FPlayers.Add(TPlayerCards.Create(APlayers[i].Name,i))
+    else
+      FPlayers.Add(TPlayerCards.Create('',i))
+  end;
+  FTalon:=TPlayerCards.Create('TALON',-1);
 
- // FRounds:=TGameRounds.Create;
+  FRounds:=TGameRounds.Create;
 
   FActive:=True;
 end;
@@ -120,27 +126,33 @@ begin
   else begin
      for itm in FPlayers do begin
        if itm.Playername=APlayername then begin
-         REsult:=itm;
+         Result:=itm;
          Break;
        end;
      end;
-
   end;
+end;
+
+function TGame.GetActRound: TGameRound;
+begin
+  Result:=FRounds.PeekOrDefault
 end;
 
 { TPlayerCards }
 
 procedure TPlayerCards.Assign(const ASource: TPlayerCards);
 begin
+  FIndex:=ASource.Index;
   FPlayerName:=ASource.PlayerName;
   FTeam:=ASource.Team;
   FCards.Assign(ASource.Cards);
 end;
 
-constructor TPlayerCards.Create(const AName: String);
+constructor TPlayerCards.Create(const AName:String; const AIndex:Integer);
 begin
   inherited Create;
   FPlayerName:=AName;
+  FIndex:=AIndex;
   FCards:=TCards.Create;
 end;
 

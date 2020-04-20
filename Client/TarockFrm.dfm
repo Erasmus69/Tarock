@@ -65,8 +65,8 @@ object frmTarock: TfrmTarock
       OnClick = Button1Click
     end
     object bStartGame: TButton
-      Left = 1000
-      Top = 5
+      Left = 896
+      Top = 6
       Width = 75
       Height = 25
       Caption = 'StartGame'
@@ -81,6 +81,15 @@ object frmTarock: TfrmTarock
       Caption = 'ShowTalon'
       TabOrder = 4
       OnClick = Button4Click
+    end
+    object Button3: TButton
+      Left = 808
+      Top = 5
+      Width = 75
+      Height = 25
+      Caption = 'Refresh'
+      TabOrder = 5
+      OnClick = Button3Click
     end
   end
   object pLeft: TPanel
@@ -167,20 +176,50 @@ object frmTarock: TfrmTarock
     Height = 753
     Align = alClient
     TabOrder = 5
+    object Image5: TImage
+      Left = 686
+      Top = 5
+      Width = 94
+      Height = 153
+    end
+    object imgThirdCard: TImage
+      Left = 686
+      Top = 297
+      Width = 94
+      Height = 153
+    end
+    object imgMyCard: TImage
+      Left = 566
+      Top = 409
+      Width = 94
+      Height = 153
+    end
+    object imgFirstCard: TImage
+      Left = 439
+      Top = 297
+      Width = 94
+      Height = 153
+    end
+    object imgSecondCard: TImage
+      Left = 566
+      Top = 188
+      Width = 94
+      Height = 153
+    end
     object pMyCards: TPanel
       Left = 1
-      Top = 466
+      Top = 568
       Width = 1189
-      Height = 286
+      Height = 184
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
     end
     object pTalon: TPanel
-      Left = 328
-      Top = 174
-      Width = 641
-      Height = 286
+      Left = 786
+      Top = 216
+      Width = 637
+      Height = 292
       TabOrder = 1
       Visible = False
     end
@@ -188,7 +227,7 @@ object frmTarock: TfrmTarock
       Left = 1
       Top = 41
       Width = 40
-      Height = 425
+      Height = 527
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
@@ -197,7 +236,7 @@ object frmTarock: TfrmTarock
       Left = 1150
       Top = 41
       Width = 40
-      Height = 425
+      Height = 527
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 3

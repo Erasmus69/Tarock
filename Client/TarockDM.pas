@@ -7,7 +7,7 @@ uses
   WiRL.Client.Resource, System.Net.HttpClient.Win, WiRL.http.Client,
   WiRL.Client.Application,  Rest.Neon,Classes.Entities, System.JSON,
   WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls,
-  Server.Entities.Game,Server.Entities.Card, dxGDIPlusClasses, cxClasses,
+  Common.Entities.Card, Common.Entities.Round,   dxGDIPlusClasses, cxClasses,
   cxGraphics;
 
 type
@@ -17,20 +17,20 @@ type
     resPlayers: TWiRLClientResourceJSON;
     resCards: TWiRLClientResourceJSON;
     imCards: TImageList;
-    resGames: TWiRLClientResourceJSON;
+    resPlayerCards: TWiRLClientResourceJSON;
     imBackCards: TcxImageCollection;
     BackDown: TcxImageCollectionItem;
     BackRight: TcxImageCollectionItem;
     BackLeft: TcxImageCollectionItem;
+    resGames: TWiRLClientResourceJSON;
+    resRound: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
     FPlayers:TPlayers;
     FMyName: String;
-    FActGame: TGame;
     FMyCards:TCards;
-    procedure FillLicensePatchBody(AContent: TMemoryStream;
-      APatchData: TObject);
+    procedure FillPlayerPatchBody(AContent: TMemoryStream; APatchData: TObject);
     { Private declarations }
 
   public
@@ -40,11 +40,14 @@ type
     function GetPlayers:TPlayers;
     procedure RegisterPlayer(const AName:String);
     procedure StartNewGame;
-    function GetActGame:TGame;
+    procedure GetMyCards;
+    function GetCards(AName:String):TCards;
+    function GetRound:TGameRound;
+    procedure PutTurn(ACard:TCardKey);
 
     property Players:TPlayers read FPlayers;
     property MyName:String read FMyName write FMyName;
-    property ActGame:TGame read FActGame;
+
     property MyCards:TCards read FMyCards;
   end;
 
@@ -71,7 +74,7 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
 procedure TdmTarock.DataModuleCreate(Sender: TObject);
 begin
   RESTClient:=TNeonRESTClient.Create('localhost:8080');
-  Server.Entities.Card.Initialize;
+  Common.Entities.Card.Initialize;
 
 end;
 
@@ -105,12 +108,40 @@ begin
   Result:=FPlayers;
 end;
 
-procedure TdmTarock.DataModuleDestroy(Sender: TObject);
+function TdmTarock.GetRound: TGameRound;
 begin
-  Server.Entities.Card.TearDown;
+  Result:=Nil;
+  resRound.GET;
+  if resRound.ResponseAsString>'' then begin
+    Result:=TGameRound.Create;
+    RESTClient.DeserializeObject(resRound.Response, Result);
+  end;
 end;
 
-procedure TdmTarock.FillLicensePatchBody(AContent: TMemoryStream; APatchData: TObject);
+procedure TdmTarock.PutTurn(ACard: TCardKey);
+begin
+  try
+    resRound.PathParamsValues.Clear;
+  (*  resRound.PathParamsValues.Values['AName'] :=FMyNAme;
+    resRound.PathParamsValues.Values['ACard'] :=IntToStr(Ord(ACard));   *)
+    resRound.Resource:=Format('v1/round/%s/%d',['ANDI',Ord(ACard)]);
+    resRound.PUT;
+   (* if resRound.Response.GetValue<String>('status')<>'success' then
+      Showmessage(resRound.Response.GetValue<String>('message'));     *)
+  except
+    on E: Exception do begin
+      Showmessage(E.Message);
+    end;
+  end;
+end;
+
+procedure TdmTarock.DataModuleDestroy(Sender: TObject);
+begin
+  Common.Entities.Card.TearDown;
+  FreeAndNil(FMyCards);
+end;
+
+procedure TdmTarock.FillPlayerPatchBody(AContent: TMemoryStream; APatchData: TObject);
 var
   jsonValue: TJSONValue;
   content: TStringList;
@@ -143,7 +174,7 @@ begin
     try
       resPlayers.POST(procedure (AContent: TMemoryStream)
           begin
-            FillLicensePatchBody(AContent, pl);
+            FillPlayerPatchBody(AContent, pl);
           end
         );
 
@@ -168,43 +199,38 @@ begin
       end
      );
 
-//    if resGames.Response.GetValue<String>('status')<>'success' then
-//     Showmessage(resGames.Response.GetValue<String>('message'));
+   if resGames.Response.GetValue<String>('status')<>'success' then
+     Showmessage(resGames.Response.GetValue<String>('message'));
 
   except
     on E: Exception do begin
       Showmessage(E.Message);
     end;
   end;
-
-  GetActGame;
+  GetMyCards;
 end;
 
-function TdmTarock.GetActGame:TGame;
-var i:Integer;
+function TdmTarock.GetCards(AName:String):TCards;
 begin
-  resGames.PathParamsValues.Clear;
-  resGames.QueryParams.Clear;
-  resGames.PathParamsValues.Values['AGameid'] :='0';
-  resGames.GET;
+  Result:=Nil;
+  resPlayerCards.PathParamsValues.Clear;
+  resPlayerCards.QueryParams.Clear;
+//  resPlayerCards.PathParamsValues.Values['AGameid'] :='0';
+//  resPlayerCards.PathParamsValues.Values['AName'] :=FMyNAme;
+  resPlayerCards.Resource:='v1/games/0/cards/'+AName;
+  resPlayerCards.GET;
 
-  if resGames.ResponseAsString>'' then begin
-    FreeandNil(FActGame);
-    FActGame:=TGame.Create;
-    RESTClient.DeserializeObject(resGames.Response, FActGame);
+  if resPlayerCards.ResponseAsString>'' then begin
+    result:=TCards.Create;
+    RESTClient.DeserializeObject(resPlayerCards.Response, result);
   end;
-  Result:=FActGame;
-
-  if Assigned(FActGame) then begin
-    for i:=1 to 4 do begin
-      if FActGame.Players[i].PlayerName=FMyName then begin
-        FMyCards:=FActGame.Players[i].Cards;
-        Break;
-      end;
-    end
-  end
-  else
-    FMyCards:=nil
 end;
+
+procedure TdmTarock.GetMyCards;
+begin
+  FreeandNil(FMyCards);
+  FMyCards:=GetCards(FMyName);
+end;
+
 
 end.
