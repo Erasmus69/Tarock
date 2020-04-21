@@ -24,12 +24,14 @@ type
     BackLeft: TcxImageCollectionItem;
     resGames: TWiRLClientResourceJSON;
     resRound: TWiRLClientResourceJSON;
+    resRoundGet: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
     FPlayers:TPlayers;
     FMyName: String;
     FMyCards:TCards;
+    FTurnOn: String;
     procedure FillPlayerPatchBody(AContent: TMemoryStream; APatchData: TObject);
     { Private declarations }
 
@@ -47,7 +49,7 @@ type
 
     property Players:TPlayers read FPlayers;
     property MyName:String read FMyName write FMyName;
-
+    property TurnOn:String read FTurnOn;
     property MyCards:TCards read FMyCards;
   end;
 
@@ -63,7 +65,8 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
   dialogs,
   WiRL.Rtti.Utils,
   WiRL.Core.JSON,
-  Math;
+  Math,
+  TarockFrm;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
@@ -101,8 +104,27 @@ begin
        for I := 0 to myindex-1 do
          FPlayers.Move(0,FPlayers.Count-1);
 
-       for i := 0 to Min(FPlayers.Count-1,Ord(High(TBoardPosition))) do
+       for i := 0 to Min(FPlayers.Count-1,Ord(High(TBoardPosition))) do begin
          FPlayers.Items[i].Position:=TBoardPosition(i);
+         case FPlayers.Items[i].Position of
+            bpLeft:begin
+                     FPlayers.Items[i].PlayerLabel:=frmTarock.clFirstPlayer;
+                     FPlayers.Items[i].CardImage:=frmTarock.imgFirstCard;
+                    end;
+            bpUp:  begin
+                     FPlayers.Items[i].PlayerLabel:=frmTarock.clSecondPlayer;
+                     FPlayers.Items[i].CardImage:=frmTarock.imgSecondCard;
+                   end;
+            bpRight:begin
+                     FPlayers.Items[i].PlayerLabel:=frmTarock.clThirdPlayer;
+                     FPlayers.Items[i].CardImage:=frmTarock.imgThirdCard;
+                   end;
+            bpDown:begin
+                     FPlayers.Items[i].PlayerLabel:=frmTarock.clME;
+                     FPlayers.Items[i].CardImage:=frmTarock.imgMyCard;
+                   end;
+          end;
+       end;
      end;
   end;
   Result:=FPlayers;
@@ -111,10 +133,18 @@ end;
 function TdmTarock.GetRound: TGameRound;
 begin
   Result:=Nil;
-  resRound.GET;
-  if resRound.ResponseAsString>'' then begin
-    Result:=TGameRound.Create;
-    RESTClient.DeserializeObject(resRound.Response, Result);
+  try
+    resRoundGET.GET;
+    if resRoundGET.ResponseAsString>'' then begin
+      Result:=TGameRound.Create;
+      RESTClient.DeserializeObject(resRoundGET.Response, Result);
+      FTurnOn:=Result.TurnOn;
+    end;
+  except
+    on E:Exception do begin
+ //     Showmessage(E.Message);
+    end;
+
   end;
 end;
 
@@ -124,14 +154,12 @@ begin
     resRound.PathParamsValues.Clear;
   (*  resRound.PathParamsValues.Values['AName'] :=FMyNAme;
     resRound.PathParamsValues.Values['ACard'] :=IntToStr(Ord(ACard));   *)
-    resRound.Resource:=Format('v1/round/%s/%d',['ANDI',Ord(ACard)]);
+    resRound.Resource:=Format('v1/round/%s/%d',[FMyName,Ord(ACard)]);
     resRound.PUT;
+
    (* if resRound.Response.GetValue<String>('status')<>'success' then
       Showmessage(resRound.Response.GetValue<String>('message'));     *)
   except
-    on E: Exception do begin
-      Showmessage(E.Message);
-    end;
   end;
 end;
 
@@ -207,7 +235,6 @@ begin
       Showmessage(E.Message);
     end;
   end;
-  GetMyCards;
 end;
 
 function TdmTarock.GetCards(AName:String):TCards;

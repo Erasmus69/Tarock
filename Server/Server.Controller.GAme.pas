@@ -30,15 +30,21 @@ end;
 
 function TGameController.NewRound(const ABeginner:String):String;
 var r:TGameRound;
+  i: Integer;
 begin
   r:=FGame.Rounds.PeekOrDefault;
   if Assigned(r) and not r.Done then
     raise Exception.Create('Prior Round not closed yet')
   else begin
     r:=TGameRound.Create;
-    FGame.Rounds.Push(r);
-
     r.TurnOn:=ABeginner;
+
+    // reihenfolge der Spieler definieren
+    for i := FGame.FindPlayer(ABeginner).Index to 3 do
+      r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].PlayerName));
+    for i := 0 to FGame.FindPlayer(ABeginner).Index-1 do
+      r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].PlayerName));
+    FGame.Rounds.Push(r);
   end;
 
   Result:=r.TurnOn;
@@ -57,6 +63,7 @@ procedure TGameController.Shuffle;
   procedure IntShuffle(var ACards: TCards; const APlayerCards:TPlayerCards; const ACount: Integer);
   var i,r:Integer;
       itm:TCard;
+      comp:TCardsComparer;
   begin
     APlayerCards.Cards.Clear;
 
@@ -65,7 +72,12 @@ procedure TGameController.Shuffle;
       itm:=ACards.Extract(ACards.Items[r]);
       APlayerCards.Cards.Add(itm);
     end;
-    APlayerCards.Cards.Sort(TCardsComparer.Create)
+    comp:=TCardsComparer.Create;
+    try
+      APlayerCards.Cards.Sort(comp)
+    finally
+      comp.Free;
+    end;
   end;
 
 var cards:TCards;
@@ -93,10 +105,10 @@ begin
   if FGame.ActRound.Done then
     raise Exception.Create('Turn is just complete');
 
-  FGame.ActRound.ThrowCard(ACard);
+  FGame.ActRound.ThrowCard(APlayer,ACard);
 
   if FGame.ActRound.Done then
-    Result:=NewRound(GetWinner(FGame.ActRound))
+    Result:='NONE' //NewRound(GetWinner(FGame.ActRound))
   else
     Result:=NextTurn(FGame.ActRound);
 end;
@@ -105,7 +117,7 @@ function TGameController.GetWinner(ARound:TGameRound):String;
 begin
   //ARound.Winner:='ANDI';
   // Team aktualisieren
-  Result:='HANNES';
+  Result:='ANDI';
 end;
 
 

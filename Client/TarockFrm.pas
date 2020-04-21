@@ -33,21 +33,24 @@ type
     pSecondPlayerCards: TPanel;
     Button3: TButton;
     imgSecondCard: TImage;
-    Image5: TImage;
     imgThirdCard: TImage;
     imgMyCard: TImage;
     imgFirstCard: TImage;
+    tRefresh: TTimer;
 
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure tRefreshTimer(Sender: TObject);
   private
     { Private declarations }
     procedure GetPlayers;
-    procedure ShowCards(ACards:TCards; APosition:TCardPosition);
+    procedure ShowCards;overload;
+    procedure ShowCards(ACards:TCards; APosition:TCardPosition);overload;
     procedure ShowTurn(const ARound:TGameRound);
+    procedure DoThrowCard(Sender:TObject);
   public
     { Public declarations }
   end;
@@ -73,10 +76,11 @@ procedure TfrmTarock.Button1Click(Sender: TObject);
 begin
   if csEdit1.Text>'' then begin
     try
-      dm.RegisterPlayer(CSEdit1.Text);
+    //  dm.RegisterPlayer(CSEdit1.Text);
       dm.MyName:=CSEdit1.Text;
     finally
       GetPlayers;
+      tRefresh.Enabled:=True;
     end;
   end;
 end;
@@ -110,11 +114,18 @@ begin
   end;
 end;
 
+procedure TfrmTarock.DoThrowCard(Sender: TObject);
+begin
+  if dm.TurnOn=dm.MyName then begin
+    dm.PutTurn(TCardControl(Sender).Card.ID);
+    dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
+    ShowCards(dm.MyCards,cpMyCards);
+  end;
+end;
+
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
 begin
   dm.StartNewGame;
-
-  ShowCards(dm.MyCards,cpMyCards);
 //  ShowCards(dm.ActGame.Players[2].Cards,cpFirstPlayer);
 //  ShowCards(dm.ActGame.Players[2].Cards,cpSecondPlayer);
 //  ShowCards(dm.ActGame.Players[2].Cards,cpThirdPlayer);
@@ -129,18 +140,11 @@ end;
 procedure TfrmTarock.GetPlayers;
 var p:TPlayers;
     itm:TPlayer;
-  i: Integer;
 begin
   dm.GetPlayers;
   for itm in dm.Players do begin
-    case itm.Position of
-      bpLeft:clFirstPlayer.Caption:=itm.Name;
-      bpUp:clSecondPlayer.Caption:=itm.Name;
-      bpRight:clThirdPlayer.Caption:=itm.Name;
-      bpDown:clME.Caption:=itm.Name;
-    end;
+    itm.PlayerLabel.Caption:=itm.Name;
   end;
-
 end;
 
 procedure TfrmTarock.ShowCards(ACards: TCards; APosition: TCardPosition);
@@ -176,54 +180,93 @@ begin
                   end;
   end;
 
+  for i:=cardParent.ControlCount-1 downto 0 do begin
+    if cardParent.Controls[i] is TCardControl then
+      cardParent.Controls[i].Free
+  end;
+
   if APosition in [cpMyCards,cpTalon] then begin
     for card in ACards do begin
-      img:=TCardControl.Create(Self);
-      img.Parent:=cardParent;
-      dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
-      img.Top:=CARDUPLIFT;
-      img.Left:=imgLeft;
-      imgLeft:=imgLeft+CARDXOFFSET;
+      if not card.Fold then begin
+        img:=TCardControl.Create(Self,card);
+        img.Parent:=cardParent;
+        dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
+        img.OnDblClick:=DoThrowCard;
+        img.Top:=CARDUPLIFT;
+        img.Left:=imgLeft;
+        imgLeft:=imgLeft+CARDXOFFSET;
+      end;
     end;
   end
   else if APosition=cpSecondPlayer then begin
     imgLeft:=(Width-((ACards.Count-1)*BACKCARDXOFFSET)-CARDWIDTH) div 2;
     for card in ACards do begin
-      with TBackCardControl.Create(Self,backCardKind) do begin
-        Parent:=cardParent;
-        Top:=0;
-        Left:=imgLeft;
+      if not card.Fold then begin
+        with TBackCardControl.Create(Self,backCardKind) do begin
+          Parent:=cardParent;
+          Top:=0;
+          Left:=imgLeft;
+        end;
+        imgLeft:=imgLeft+BACKCARDXOFFSET;
       end;
-      imgLeft:=imgLeft+BACKCARDXOFFSET;
     end;
   end
   else begin
     imgTop:=(pFirstPlayerCards.Height-((ACards.Count-1)*BACKCARDXOFFSET)-CARDWIDTH) div 2;
     for card in ACards do begin
-      with TBackCardControl.Create(Self,backCardKind) do begin
-        Parent:=cardParent;
-        Top:=imgTop;
-        Left:=0;
+      if not card.Fold then begin
+        with TBackCardControl.Create(Self,backCardKind) do begin
+          Parent:=cardParent;
+          Top:=imgTop;
+          Left:=0;
+        end;
+        imgTop:=imgTop+BACKCARDXOFFSET;
       end;
-      imgTop:=imgTop+BACKCARDXOFFSET;
     end;
   end;
 end;
 
-procedure TfrmTarock.ShowTurn(const ARound:TGameRound);
-var I: Integer;
-    img:TImage;
+procedure TfrmTarock.ShowCards;
 begin
-  for I := 0 to High(ARound.CardsThrown) do begin
-    if i=0 then
-      img:=imgMyCard
-    else if i=1 then
-      img:=imgFirstCard
-    else if i=2 then
-      img:=imgSecondCard
-    else
-      img:=imgThirdCard;
-    dm.imCards.GetBitmap(ALLCARDS.Find(ARound.CardsThrown[i]).ImageIndex,img.Picture.Bitmap);
+  ShowCards(dm.MyCards,cpMyCards);
+end;
+
+procedure TfrmTarock.ShowTurn(const ARound:TGameRound);
+var itm:TCardThrown;
+    player:TPlayer;
+begin
+  if ARound=nil then Exit;
+  
+  for itm in ARound.CardsThrown do begin
+     player:=dm.Players.Find(itm.PlayerName);
+     if itm.Card=None then
+        player.CardImage.Picture.Assign(nil)
+     else
+       dm.imCards.GetBitmap(ALLCARDS.Find(itm.Card).ImageIndex,player.CardImage.Picture.Bitmap);
+
+     if player.Name=ARound.TurnOn then
+       player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style+[fsBold]
+     else
+       player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style-[fsBold]
+  end;
+end;
+
+procedure TfrmTarock.tRefreshTimer(Sender: TObject);
+var r:TGameRound;
+begin
+  tRefresh.Enabled:=False;
+  try
+    r:=dm.GetRound;
+    if Assigned(r) then begin  // game is started
+      if not Assigned(dm.MyCards) then begin
+        dm.GetMyCards;
+        ShowCards;
+      end;
+      ShowTurn(r);
+    end;
+  finally
+    r.Free;
+    tRefresh.Enabled:=True;
   end;
 end;
 

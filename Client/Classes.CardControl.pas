@@ -1,7 +1,7 @@
 unit Classes.CardControl;
 
 interface
-uses Classes,VCL.Controls,VCL.ExtCtrls;
+uses Classes,VCL.Controls,VCL.ExtCtrls,Common.Entities.Card;
 
 const
   CARDHEIGHT=154;//256;
@@ -10,11 +10,14 @@ const
 
 type
   TCardControl=class(TImage)
+  private
+    FCard: TCard;
   protected
     procedure MouseDown(Button:TMouseButton;ShiftState:TShiftState;X,Y:Integer);override;
     procedure MouseUp(Button:TMouseButton;ShiftState:TShiftState;X,Y:Integer);override;
   public
-    constructor Create(AOwner:TComponent);override;
+    constructor Create(AOwner:TComponent; const ACard:TCard);
+    property Card:TCard read FCard;
   end;
 
   TBackCardKind=(bckDown,bckLeft,bckRight);
@@ -27,13 +30,14 @@ uses TarockDM;
 
 { TCardControl }
 
-constructor TCardControl.Create(AOwner: TComponent);
+constructor TCardControl.Create(AOwner: TComponent; const ACard:TCard);
 begin
-  inherited;
+  inherited Create(AOwner);
   Height:=CARDHEIGHT;
   Width:=CARDWIDTH;
   Stretch:=True;
   Proportional:=True;
+  FCard:=ACard;
 end;
 
 procedure TCardControl.MouseDown(Button: TMouseButton; ShiftState: TShiftState; X, Y: Integer);

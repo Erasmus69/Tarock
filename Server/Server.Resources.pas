@@ -64,7 +64,7 @@ type
 
     [PUT, Path('/round/{AName}/{ACard}')]
     [Produces(TMediaType.APPLICATION_JSON)]
-    function Turn([PathParam] AName:String; [PathParam] ACard:Byte): TBaseRESTResponse;
+    function Turn([PathParam] AName:String; [PathParam] ACard:Integer): TBaseRESTResponse;
 
   end;
 
@@ -109,7 +109,7 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.RegisterPlayer(APlayer);
 end;
 
-function TApiV1Resource.Turn(AName:String; ACard:Byte): TBaseRESTResponse;
+function TApiV1Resource.Turn(AName:String; ACard:Integer): TBaseRESTResponse;
 begin
   if (ACard<Ord(Low(TCardKey))) or (ACard>Ord(High(TCardKey))) then
     raise Exception.Create('Wrong CardValue');

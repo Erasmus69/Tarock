@@ -40,7 +40,7 @@ object frmTarock: TfrmTarock
       Style.Font.Color = clWindowText
       Style.Font.Height = -20
       Style.Font.Name = 'Tahoma'
-      Style.Font.Style = [fsBold]
+      Style.Font.Style = []
       Style.IsFontAssigned = True
       Properties.Alignment.Horz = taCenter
       Properties.Alignment.Vert = taVCenter
@@ -176,35 +176,33 @@ object frmTarock: TfrmTarock
     Height = 753
     Align = alClient
     TabOrder = 5
-    object Image5: TImage
-      Left = 686
-      Top = 5
-      Width = 94
-      Height = 153
-    end
     object imgThirdCard: TImage
       Left = 686
       Top = 297
-      Width = 94
-      Height = 153
+      Width = 85
+      Height = 154
+      Stretch = True
     end
     object imgMyCard: TImage
       Left = 566
       Top = 409
-      Width = 94
-      Height = 153
+      Width = 85
+      Height = 154
+      Stretch = True
     end
     object imgFirstCard: TImage
       Left = 439
       Top = 297
-      Width = 94
-      Height = 153
+      Width = 85
+      Height = 154
+      Stretch = True
     end
     object imgSecondCard: TImage
       Left = 566
       Top = 188
-      Width = 94
-      Height = 153
+      Width = 85
+      Height = 154
+      Stretch = True
     end
     object pMyCards: TPanel
       Left = 1
@@ -216,8 +214,8 @@ object frmTarock: TfrmTarock
       TabOrder = 0
     end
     object pTalon: TPanel
-      Left = 786
-      Top = 216
+      Left = 802
+      Top = 377
       Width = 637
       Height = 292
       TabOrder = 1
@@ -250,5 +248,11 @@ object frmTarock: TfrmTarock
       BevelOuter = bvNone
       TabOrder = 4
     end
+  end
+  object tRefresh: TTimer
+    Enabled = False
+    OnTimer = tRefreshTimer
+    Left = 1064
+    Top = 256
   end
 end

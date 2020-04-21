@@ -1,7 +1,7 @@
 unit Classes.Entities;
 
 interface
-uses Generics.Collections, Neon.Core.Attributes;
+uses cxLabel,Vcl.ExtCtrls,Generics.Collections;
 
 type TBaseObjClass=class of TBaseObj;
      TBaseObj=Class(TObject)
@@ -15,14 +15,18 @@ type TBaseObjClass=class of TBaseObj;
      private
        FName:String;
        FPosition:TBoardPosition;
+       FCardImage: TImage;
+       FPlayerLabel: TcxLabel;
      public
-       [NeonInclude(Include.Always)]
        property Name:String read FName write FName;
-
-       [NeonIgnore]
        property Position:TBoardPosition read FPosition write FPosition;
+       property PlayerLabel:TcxLabel read FPlayerLabel write FPlayerLabel;
+       property CardImage:TImage read FCardImage write FCardImage;
      end;
-     TPlayers=TList<TPlayer>;
+     TPlayers=class(TObjectList<TPlayer>)
+     public
+       function Find(const APlayerName:String):TPlayer;
+     end;
 
 implementation
 
@@ -33,6 +37,20 @@ constructor TBaseObj.Create;
 begin
   inherited;
 
+end;
+
+{ TPlayers }
+
+function TPlayers.Find(const APlayerName: String): TPlayer;
+var itm:TPlayer;
+begin
+  Result:=Nil;
+  for itm in Self do begin
+    if itm.Name=APlayerName then begin
+      Result:=itm;
+      Break;
+    end;
+  end;
 end;
 
 end.
