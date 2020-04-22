@@ -8,6 +8,8 @@ uses
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
   cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round;
 
+const
+    CSM_REFRESHCARDS=WM_USER+1;
 type
   TCardPosition=(cpMyCards,cpTalon,cpFirstPlayer,cpSecondPlayer,cpThirdPlayer);
 
@@ -31,19 +33,19 @@ type
     pFirstplayerCards: TPanel;
     pThirdPlayerCards: TPanel;
     pSecondPlayerCards: TPanel;
-    Button3: TButton;
     imgSecondCard: TImage;
     imgThirdCard: TImage;
     imgMyCard: TImage;
     imgFirstCard: TImage;
     tRefresh: TTimer;
+    bNewRound: TButton;
 
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
     procedure Button4Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
     procedure tRefreshTimer(Sender: TObject);
+    procedure bNewRoundClick(Sender: TObject);
   private
     { Private declarations }
     procedure GetPlayers;
@@ -51,6 +53,8 @@ type
     procedure ShowCards(ACards:TCards; APosition:TCardPosition);overload;
     procedure ShowTurn(const ARound:TGameRound);
     procedure DoThrowCard(Sender:TObject);
+  protected
+    procedure WndProc(var Message:TMessage);override;
   public
     { Public declarations }
   end;
@@ -85,20 +89,6 @@ begin
   end;
 end;
 
-procedure TfrmTarock.Button3Click(Sender: TObject);
-var r:TGameRound;
-begin
-  try
-    r:=dm.GetRound;
-    if r.TurnOn=dm.MyName then
-      dm.PutTurn(T10)
-    else
-      ShowTurn(r);
-  finally
-    r.Free;
-  end;
-end;
-
 procedure TfrmTarock.Button4Click(Sender: TObject);
 var c:TCards;
 begin
@@ -119,16 +109,18 @@ begin
   if dm.TurnOn=dm.MyName then begin
     dm.PutTurn(TCardControl(Sender).Card.ID);
     dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
-    ShowCards(dm.MyCards,cpMyCards);
+    PostMessage(Handle,CSM_REFRESHCARDS,0,0);
   end;
+end;
+
+procedure TfrmTarock.bNewRoundClick(Sender: TObject);
+begin
+  dm.NewRound
 end;
 
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
 begin
   dm.StartNewGame;
-//  ShowCards(dm.ActGame.Players[2].Cards,cpFirstPlayer);
-//  ShowCards(dm.ActGame.Players[2].Cards,cpSecondPlayer);
-//  ShowCards(dm.ActGame.Players[2].Cards,cpThirdPlayer);
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
@@ -268,6 +260,13 @@ begin
     r.Free;
     tRefresh.Enabled:=True;
   end;
+end;
+
+procedure TfrmTarock.WndProc(var Message: TMessage);
+begin
+  inherited;
+  if Message.Msg=CSM_REFRESHCARDS then
+    ShowCards(dm.MyCards,cpMyCards)
 end;
 
 end.

@@ -28,6 +28,7 @@ type
     function GetGame:TGame;
 
     function GetRound:TGameRound;
+    function NewRound: TBaseRESTResponse;
     function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
   end;
 
@@ -54,6 +55,7 @@ type
     function GetGame:TGame;
 
     function GetRound:TGameRound;
+    function NewRound: TBaseRESTResponse;
     function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
 
     property ActGame:TGame read GetActGame;
@@ -113,7 +115,7 @@ end;
 
 function TRepository.GetActGame: TGame;
 begin
-  Result:=FGames.Peek;
+  Result:=FGames.PeekOrDefault;
 end;
 
 function TRepository.GetAllCards: TCards;
@@ -124,7 +126,7 @@ end;
 function TRepository.GetGame: TGame;
 var g:TGame;
 begin
-  g:=FGames.PeekOrDefault;
+  g:=ActGame;
   if Assigned(g) then
     Result:=g
   else
@@ -149,8 +151,8 @@ end;
 function TRepository.GetRound: TGameRound;
 var g:TGame;
 begin
-  g:=FGames.PeekOrDefault;
-  if Assigned(g) and g.Active then
+  g:=ActGame;
+  if Assigned(g) then
     Result:=g.ActRound
   else
     raise Exception.Create('No active game');
@@ -160,7 +162,7 @@ function TRepository.NewGame: TExtendedRESTResponse;
 var g:TGame;
 begin
   if FPlayers.Count=4 then begin
-    if (FGames.Count>0) and FGames.Peek.Active then
+    if Assigned(ActGame) and ActGame.Active then
       Result:=TExtendedRESTResponse.BuildResponse(False,'A game is just active')
     else begin
       g:=TGame.Create(FPlayers);
@@ -170,6 +172,7 @@ begin
       g.Players[2].Team:=ttTEam1;
       g.Players[1].Team:=ttTEam2;
       g.Players[3].Team:=ttTEam2;
+      g.Beginner:='ANDI';
 
       FGames.Push(g);
       Result:=TExtendedRESTResponse.BuildResponse(True);
@@ -179,11 +182,26 @@ begin
       FreeAndNil(FGameController);
       FGameController:=TGameController.Create(g);
       FGameController.Shuffle;
-      FGameController.NewRound('ANDI');      { TODO : zu verschieben }
+      FGameController.NewRound;
     end;
   end
   else
     Result:=TExtendedRESTResponse.BuildResponse(False,'Needs 4 registered players to create a game');
+end;
+
+function TRepository.NewRound: TBaseRESTResponse;
+begin
+  try
+    if not Assigned(FGameController) then
+      Result:=TBaseRESTResponse.BuildResponse(False,'No active Game')
+    else begin
+      FGameController.NewRound;
+      Result:=TBaseRESTResponse.BuildResponse(True,'Beginner is '+ActGame.ActRound.TurnOn);
+    end;
+  except
+    on E:Exception do
+      Result:=TBaseRESTResponse.BuildResponse(False,E.Message)
+  end;
 end;
 
 function TRepository.RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
@@ -220,12 +238,12 @@ function TRepository.Turn(AName: String; ACard: TCardKey): TBaseRESTResponse;
 var nextTurnOn:String;
 begin
   if not Assigned(FGameController) then
-    raise Exception.Create('No active game');
-
-  nextTurnOn:=FGameController.Turn(AName,ACard);
-  Result:=TBaseRESTResponse.BuildResponse(True);
-  Result.Message:='Next Player is '+nextTurnOn
-
+    Result:=TBaseRESTResponse.BuildResponse(False,'No active Game')
+  else begin
+    nextTurnOn:=FGameController.Turn(AName,ACard);
+    Result:=TBaseRESTResponse.BuildResponse(True);
+    Result.Message:=nextTurnOn
+  end;
 end;
 
 function TRepository.DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;

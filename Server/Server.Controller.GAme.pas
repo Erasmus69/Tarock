@@ -9,14 +9,15 @@ type
   TGameController=class
   private
     FGame:TGame;
-    function GetWinner(ARound: TGameRound): String;
-
+    function DetermineWinner(ACards: TCardsThrown): String;
+    procedure CheckGameTerminated;
   public
     constructor Create(AGame:TGame);
     procedure Shuffle;
-    function NewRound(const ABeginner:String):String;
+    function NewRound:String;
     function Turn(APlayer:String; ACard:TCardKey):String;
     function NextTurn(const ARound:TGameRound):String;
+    procedure CloseRound;
   end;
 
 implementation
@@ -28,21 +29,24 @@ begin
   FGame:=AGame;
 end;
 
-function TGameController.NewRound(const ABeginner:String):String;
+function TGameController.NewRound:String;
 var r:TGameRound;
   i: Integer;
 begin
-  r:=FGame.Rounds.PeekOrDefault;
+  r:=FGame.ActRound;
   if Assigned(r) and not r.Done then
     raise Exception.Create('Prior Round not closed yet')
   else begin
     r:=TGameRound.Create;
-    r.TurnOn:=ABeginner;
+    if Assigned(FGame.ActRound) then
+      r.TurnOn:=FGame.ActRound.Winner
+    else
+      r.TurnOn:=FGame.Beginner;
 
     // reihenfolge der Spieler definieren
-    for i := FGame.FindPlayer(ABeginner).Index to 3 do
+    for i := FGame.FindPlayer(r.TurnOn).Index to 3 do
       r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].PlayerName));
-    for i := 0 to FGame.FindPlayer(ABeginner).Index-1 do
+    for i := 0 to FGame.FindPlayer(r.TurnOn).Index-1 do
       r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].PlayerName));
     FGame.Rounds.Push(r);
   end;
@@ -107,17 +111,61 @@ begin
 
   FGame.ActRound.ThrowCard(APlayer,ACard);
 
-  if FGame.ActRound.Done then
-    Result:='NONE' //NewRound(GetWinner(FGame.ActRound))
+  if FGame.ActRound.Done then begin
+    CloseRound;
+    Result:='The Winner is '+FGame.ActRound.Winner
+  end
   else
-    Result:=NextTurn(FGame.ActRound);
+    Result:='Next Player is '+NextTurn(FGame.ActRound);
 end;
 
-function TGameController.GetWinner(ARound:TGameRound):String;
+procedure TGameController.CloseRound;
 begin
-  //ARound.Winner:='ANDI';
-  // Team aktualisieren
-  Result:='ANDI';
+  if FGame.ActRound.Done then
+    FGame.ActRound.Winner:=DetermineWinner(FGame.ActRound.CardsThrown);
+
+  CheckGameTerminated;
+end;
+
+function TGameController.DetermineWinner(ACards: TCardsThrown):String;
+   function ActCardWins(const AActCard:TCard; const AFormerCard:TCard):Boolean;
+    begin
+      if not Assigned(AFormerCard) then
+        Result:=True
+      else if AActCard.CType=AFormerCard.CType then
+        Result:=AActCard.Value>AFormerCard.Value
+      else
+        Result:=AActCard.CType=ctTarock
+    end;
+
+var c:TCardThrown;
+    strongestCard,actCard:TCard;
+begin
+  if ACards.Exists(T1) and ACards.Exists(T21) and ACards.Exists(T22) then  // whole Trull present
+    Result:=ACards.Find(T1).PlayerName       // Pagat wins
+  else begin
+    strongestCard:=nil;
+    for c in ACards do begin
+      actCard:=ALLCARDS.Find(c.Card);
+      if ActCardWins(actCard,strongestCard) then begin
+        Result:=c.PlayerName;
+        strongestCard:=actCard;
+      end
+    end;
+  end;
+end;
+
+procedure TGameController.CheckGameTerminated;
+begin
+  if not FGame.Active then Exit;
+
+  if FGame.PositiveGame and (FGame.Rounds.Count>=12) then
+    FGame.Active:=False
+  else if not FGame.PositiveGame then begin
+//    if FGame.ActRound.Winner then
+
+  end;
+
 end;
 
 

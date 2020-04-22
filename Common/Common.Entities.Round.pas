@@ -17,19 +17,25 @@ type
     constructor Create(const AName:String);overload;
     procedure Assign(const ASource:TCardThrown);
   end;
+  TCardsThrown=class(TObjectList<TCardThrown>)
+    function Exists(const ACard:TCardKey):Boolean;
+    function Find(const ACard:TCardKey):TCardThrown;
+  end;
 
   TGameRound=class
   private
-    FCardsThrown: TObjectList<TCardThrown>;
+    FCardsThrown: TCardsThrown;
     FTurnOn: String;
+    FWinner: String;
     function GetDone: Boolean;
   public
     property TurnOn:String read FTurnOn write FTurnOn;
      [NeonInclude(Include.Always)]
-    property CardsThrown: TObjectList<TCardThrown> read FCardsThrown write FCardsThrown;
+    property CardsThrown:TCardsThrown read FCardsThrown write FCardsThrown;
     [NeonIgnore]
     property Done:Boolean read GetDone;
-
+    [NeonIgnore]
+    property Winner:String read FWinner write FWinner;
     function Clone:TGameRound;
     procedure ThrowCard(APlayer:String; ACard:TCardKey);
     constructor Create;
@@ -56,7 +62,7 @@ end;
 constructor TGameRound.Create;
 begin
   inherited;
-  FCardsThrown:=TObjectList<TCardThrown>.Create(True);
+  FCardsThrown:=TCardsThrown.Create(True);
 end;
 
 destructor TGameRound.Destroy;
@@ -100,6 +106,26 @@ constructor TCardThrown.Create(const AName: String);
 begin
   inherited Create;
   FPlayerName:=AName;
+end;
+
+{ TCardsThrown }
+
+function TCardsThrown.Exists(const ACard: TCardKey): Boolean;
+begin
+  Result:=Assigned(Find(ACard));
+end;
+
+function TCardsThrown.Find(const ACard: TCardKey): TCardThrown;
+var itm:TCardThrown;
+begin
+  Result:=nil;
+
+  for itm in Self do begin
+    if itm.Card=ACard then begin
+      Result:=itm;
+      Exit;
+    end;
+  end;
 end;
 
 end.

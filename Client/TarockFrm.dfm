@@ -82,14 +82,14 @@ object frmTarock: TfrmTarock
       TabOrder = 4
       OnClick = Button4Click
     end
-    object Button3: TButton
-      Left = 808
-      Top = 5
+    object bNewRound: TButton
+      Left = 815
+      Top = 6
       Width = 75
       Height = 25
-      Caption = 'Refresh'
+      Caption = 'New Round'
       TabOrder = 5
-      OnClick = Button3Click
+      OnClick = bNewRoundClick
     end
   end
   object pLeft: TPanel

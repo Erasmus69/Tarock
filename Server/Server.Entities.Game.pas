@@ -47,6 +47,8 @@ type
     FTalon:TPlayerCards;
     FActive: Boolean;
     FRounds: TGameRounds;
+    FBeginner: String;
+    FPositiveGame: Boolean;
     function GetActRound: TGameRound;
 
   public
@@ -58,6 +60,9 @@ type
     property Talon:TPlayerCards read FTalon write FTalon;
     property Rounds:TGameRounds read FRounds write FRounds;
     property ActRound:TGameRound read GetActRound;
+    property Beginner:String read FBeginner write FBeginner;
+    property PositiveGame:Boolean read FPositiveGame write FPositiveGame;
+
     constructor Create(const APlayers:TPlayers=nil);
     destructor Destroy;override;
     function Clone:TGame;
@@ -101,7 +106,7 @@ begin
   FTalon:=TPlayerCards.Create('TALON',-1);
 
   FRounds:=TGameRounds.Create;
-
+  FPositiveGame:=True;
   FActive:=True;
 end;
 

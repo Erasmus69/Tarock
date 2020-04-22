@@ -23,8 +23,9 @@ type
     BackRight: TcxImageCollectionItem;
     BackLeft: TcxImageCollectionItem;
     resGames: TWiRLClientResourceJSON;
-    resRound: TWiRLClientResourceJSON;
+    resRoundPut: TWiRLClientResourceJSON;
     resRoundGet: TWiRLClientResourceJSON;
+    resRoundPost: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -46,6 +47,7 @@ type
     function GetCards(AName:String):TCards;
     function GetRound:TGameRound;
     procedure PutTurn(ACard:TCardKey);
+    procedure NewRound;
 
     property Players:TPlayers read FPlayers;
     property MyName:String read FMyName write FMyName;
@@ -148,14 +150,24 @@ begin
   end;
 end;
 
+procedure TdmTarock.NewRound;
+begin
+ // try
+    resRoundPost.PathParamsValues.Clear;
+    resRoundPost.POST;
+
+   if resRoundPost.Response.GetValue<String>('status')<>'success' then
+      Showmessage(resRoundPost.Response.GetValue<String>('message'));
+ // except
+ // end;
+end;
+
 procedure TdmTarock.PutTurn(ACard: TCardKey);
 begin
   try
-    resRound.PathParamsValues.Clear;
-  (*  resRound.PathParamsValues.Values['AName'] :=FMyNAme;
-    resRound.PathParamsValues.Values['ACard'] :=IntToStr(Ord(ACard));   *)
-    resRound.Resource:=Format('v1/round/%s/%d',[FMyName,Ord(ACard)]);
-    resRound.PUT;
+    resRoundPut.PathParamsValues.Clear;
+    resRoundPut.Resource:=Format('v1/round/%s/%d',[FMyName,Ord(ACard)]);
+    resRoundPut.PUT;
 
    (* if resRound.Response.GetValue<String>('status')<>'success' then
       Showmessage(resRound.Response.GetValue<String>('message'));     *)

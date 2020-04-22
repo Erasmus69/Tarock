@@ -62,6 +62,11 @@ type
     [Produces(TMediaType.APPLICATION_JSON)]
     function GetRound: TGameRound;
 
+    [POST, Path('/round')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function NewRound: TBaseRESTResponse;
+
+
     [PUT, Path('/round/{AName}/{ACard}')]
     [Produces(TMediaType.APPLICATION_JSON)]
     function Turn([PathParam] AName:String; [PathParam] ACard:Integer): TBaseRESTResponse;
@@ -102,6 +107,11 @@ end;
 function TApiV1Resource.NewGame:TExtendedRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.NewGame;
+end;
+
+function TApiV1Resource.NewRound: TBaseRESTResponse;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.NewRound;
 end;
 
 function TApiV1Resource.RegisterPlayer(APlayer:TPlayers): TBaseRESTResponse;

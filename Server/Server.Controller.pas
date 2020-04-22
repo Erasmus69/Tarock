@@ -25,6 +25,7 @@ type
     function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
 
     function GetRound:TGameRound;
+    function NewRound: TBaseRESTResponse;
     function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
   end;
 
@@ -40,6 +41,7 @@ type
     function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
 
     function GetRound:TGameRound;
+    function NewRound: TBaseRESTResponse;
     function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
   end;
 
@@ -86,6 +88,11 @@ end;
 function TApiV1Controller.NewGame: TExtendedRESTResponse;
 begin
   Result:=GetContainer.Resolve<IRepository>.NewGame;
+end;
+
+function TApiV1Controller.NewRound: TBaseRESTResponse;
+begin
+  Result:=GetContainer.Resolve<IRepository>.NewRound;
 end;
 
 function TApiV1Controller.GetGame:TGame;
