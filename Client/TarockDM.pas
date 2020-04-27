@@ -8,7 +8,7 @@ uses
   WiRL.Client.Application,  Rest.Neon,Classes.Entities, System.JSON,
   WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls,
   Common.Entities.Card, Common.Entities.Round,   dxGDIPlusClasses, cxClasses,
-  cxGraphics;
+  cxGraphics,Common.Entities.GameType;
 
 type
   TdmTarock = class(TDataModule)
@@ -33,6 +33,8 @@ type
     FMyName: String;
     FMyCards:TCards;
     FTurnOn: String;
+    FBeginner: String;
+    FActualBet: Smallint;
     procedure FillPlayerPatchBody(AContent: TMemoryStream; APatchData: TObject);
     { Private declarations }
 
@@ -52,7 +54,9 @@ type
     property Players:TPlayers read FPlayers;
     property MyName:String read FMyName write FMyName;
     property TurnOn:String read FTurnOn;
+    property Beginner:String read FBeginner;
     property MyCards:TCards read FMyCards;
+    property ActualBet:Smallint read FActualBet;
   end;
 
 var
@@ -80,6 +84,7 @@ procedure TdmTarock.DataModuleCreate(Sender: TObject);
 begin
   RESTClient:=TNeonRESTClient.Create('localhost:8080');
   Common.Entities.Card.Initialize;
+  Common.Entities.GameType.Initialize;
 
 end;
 
@@ -178,6 +183,7 @@ end;
 procedure TdmTarock.DataModuleDestroy(Sender: TObject);
 begin
   Common.Entities.Card.TearDown;
+  Common.Entities.GameType.TearDown;
   FreeAndNil(FMyCards);
 end;
 
@@ -240,8 +246,12 @@ begin
      );
 
    if resGames.Response.GetValue<String>('status')<>'success' then
-     Showmessage(resGames.Response.GetValue<String>('message'));
-
+     Showmessage(resGames.Response.GetValue<String>('message'))
+   else begin
+     FBeginner:=resGames.Response.GetValue<String>('message');
+     FTurnOn:=FBeginner;
+     FActualBet:=0;
+   end;
   except
     on E: Exception do begin
       Showmessage(E.Message);

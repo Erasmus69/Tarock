@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
-  cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round;
+  cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round,
+  cxMemo,GamesSelectFra;
 
 const
     CSM_REFRESHCARDS=WM_USER+1;
@@ -39,6 +40,7 @@ type
     imgFirstCard: TImage;
     tRefresh: TTimer;
     bNewRound: TButton;
+    mGameInfo: TcxMemo;
 
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -48,11 +50,15 @@ type
     procedure bNewRoundClick(Sender: TObject);
   private
     { Private declarations }
+    FGameSelect:TfraGameSelect;
+
     procedure GetPlayers;
     procedure ShowCards;overload;
     procedure ShowCards(ACards:TCards; APosition:TCardPosition);overload;
     procedure ShowTurn(const ARound:TGameRound);
     procedure DoThrowCard(Sender:TObject);
+    procedure GameInfo(const AInfo:String);
+    procedure ShowGameSelect;
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -121,12 +127,25 @@ end;
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
 begin
   dm.StartNewGame;
+  mGameInfo.Lines.Clear;
+  GameInfo(dm.Beginner+' hat die Vorhand');
+  ShowGameSelect;
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
 begin
   dm.MyName:=CSEdit1.Text;
+  mGameInfo.Lines.Clear;
   GetPlayers;
+  if dm.Players.Count<4 then
+    GameInfo('Wir warten auf andere Spieler')
+  else
+    GameInfo('Starte das Spiel');
+end;
+
+procedure TfrmTarock.GameInfo(const AInfo: String);
+begin
+  mGameInfo.Lines.Add(AInfo);
 end;
 
 procedure TfrmTarock.GetPlayers;
@@ -216,6 +235,17 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TfrmTarock.ShowGameSelect;
+begin
+  FreeAndNil(FGameSelect);
+
+  FGameSelect:=TfraGameSelect.Create(Self);
+  FGameSelect.Top:=(pBoard.Height-FGameSelect.Height) div 2;
+  FGameSelect.Left:=(pBoard.Width-FGameSelect.Width) div 2;
+  FGameSelect.Parent:=pBoard;
+  FGameSelect.Show;
 end;
 
 procedure TfrmTarock.ShowCards;

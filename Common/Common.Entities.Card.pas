@@ -36,16 +36,12 @@ type
     function Compare(const Left, Right: TCard): Integer; override;
   end;
   TCards=class(TObjectList<TCard>)
-  private
   public
-   [NeonInclude(Include.Always)]
     function AddItem(AID:TCardKey;ACType:TCardType;AValue:Byte;AImageIdx:Integer=-1):TCard;
     function Clone:TCards;
     procedure Assign(const ASource:TCards);
     function Find(AID:TCardKey):TCard;
   end;
-
-//  TCardsStack=array[1..4] of TCardKey;
 
   TCardKeySerializer=class(TCustomSerializer)
   protected

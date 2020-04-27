@@ -15,6 +15,7 @@ uses
 , Server.Entities
 , Common.Entities.Card
 , Common.Entities.Round
+, Common.Entities.Bet
 , Server.Entities.Game
 , Server.WIRL.Response
 ;
@@ -57,6 +58,14 @@ type
     [GET, Path('/games/{AGameID}/cards/{AName}')]
     [Produces(TMediaType.APPLICATION_JSON)]
     function GetPlayerCards([PathParam] AGameID:String;[PathParam] AName:String): TCards;
+
+    [GET, Path('/bets')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function GetBets: TBets;
+
+    [Path('/bets')]
+    [POST, Consumes(TMediaType.APPLICATION_JSON), Produces(TMediaType.APPLICATION_JSON)]
+    function NewBet([BodyParam]ABet: TBet): TBaseRESTResponse;
 
     [GET, Path('/round')]
     [Produces(TMediaType.APPLICATION_JSON)]
@@ -104,6 +113,11 @@ begin
   end;
 end;
 
+function TApiV1Resource.NewBet(ABet: TBet): TBaseRESTResponse;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.NewBet(ABet);
+end;
+
 function TApiV1Resource.NewGame:TExtendedRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.NewGame;
@@ -134,6 +148,13 @@ end;
 function TApiV1Resource.GetAllCards: TCards;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.GetAllCards;
+  if Assigned(Result) then
+    Result:=Result.Clone;
+end;
+
+function TApiV1Resource.GetBets: TBets;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.GetBets;
   if Assigned(Result) then
     Result:=Result.Clone;
 end;

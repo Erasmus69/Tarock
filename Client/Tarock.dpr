@@ -8,7 +8,9 @@ uses
   Classes.Entities in 'Classes.Entities.pas',
   Common.Entities.Card in '..\Common\Common.Entities.Card.pas',
   Classes.CardControl in 'Classes.CardControl.pas',
-  Common.Entities.Round in '..\Common\Common.Entities.Round.pas';
+  Common.Entities.Round in '..\Common\Common.Entities.Round.pas',
+  Common.Entities.GameType in '..\Common\Common.Entities.GameType.pas',
+  GamesSelectFra in 'GamesSelectFra.pas' {fraGameSelect: TFrame};
 
 {$R *.res}
 

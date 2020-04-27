@@ -10,6 +10,7 @@ uses
   Server.WIRL.Response,
   Common.Entities.Card,
   Common.Entities.Round,
+  Common.Entities.Bet,
   Server.Entities.Game
 ;
 
@@ -23,6 +24,9 @@ type
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
     function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
+
+    function GetBets:TBets;
+    function NewBet(const AParam: TBet): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -39,6 +43,9 @@ type
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
     function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
+
+    function GetBets:TBets;
+    function NewBet(const AParam: TBet): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -57,6 +64,11 @@ uses
 function TApiV1Controller.GetAllCards: TCards;
 begin
   Result := GetContainer.Resolve<IRepository>.GetAllCards;
+end;
+
+function TApiV1Controller.GetBets: TBets;
+begin
+  Result := GetContainer.Resolve<IRepository>.GetBets;
 end;
 
 function TApiV1Controller.GetPlayerCards(AGameID: String; APlayerName: String): TCards;
@@ -83,6 +95,11 @@ end;
 function TApiV1Controller.GetRound: TGameRound;
 begin
   Result:=GetContainer.Resolve<IRepository>.GetRound;
+end;
+
+function TApiV1Controller.NewBet(const AParam: TBet): TBaseRESTResponse;
+begin
+  Result:=GetContainer.Resolve<IRepository>.NewBet(AParam);
 end;
 
 function TApiV1Controller.NewGame: TExtendedRESTResponse;

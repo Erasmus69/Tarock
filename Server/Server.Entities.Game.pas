@@ -3,14 +3,16 @@ unit Server.Entities.Game;
 interface
 uses
   Spring, Neon.Core.Attributes,
-  System.Generics.Collections,
+  Generics.Collections,
   Server.Entities,
   Common.Entities.Card,
   Common.Entities.Round,
+  Common.Entities.Bet,
   Spring.Collections.Stacks;
 
 type
   TTeam=(ttTeam1,ttTeam2);
+  TBetState=(btNone,btBet,btPass,btHold);
 
   TPlayerCards=class
   private
@@ -21,7 +23,7 @@ type
   //  [NeonInclude(Include.Always)]
     FCards: TCards;
     FScore:Integer;
-
+    FBetState: TBetState;
 
   public
     property Index:Integer read FIndex;
@@ -29,6 +31,7 @@ type
     property Team:TTeam read FTeam write FTeam;
    // [NeonInclude(Include.Always)]
     property Cards:TCards read FCards write FCards;
+    property BetState:TBetState read FBetState write FBetState;
  //   property Score read FScore write FScore;
 
     constructor Create(const AName:String; const AIndex:Integer);
@@ -49,6 +52,8 @@ type
     FRounds: TGameRounds;
     FBeginner: String;
     FPositiveGame: Boolean;
+    FBets: TBets;
+    FStarter: String;
     function GetActRound: TGameRound;
 
   public
@@ -58,9 +63,12 @@ type
 
     property Players:TPlayersCards read FPlayers write FPlayers;
     property Talon:TPlayerCards read FTalon write FTalon;
+    property Bets:TBets read FBets write FBets;
+
     property Rounds:TGameRounds read FRounds write FRounds;
     property ActRound:TGameRound read GetActRound;
     property Beginner:String read FBeginner write FBeginner;
+    property Starter:String read FStarter write FStarter;
     property PositiveGame:Boolean read FPositiveGame write FPositiveGame;
 
     constructor Create(const APlayers:TPlayers=nil);
@@ -105,6 +113,7 @@ begin
   end;
   FTalon:=TPlayerCards.Create('TALON',-1);
 
+  FBets:=TBets.Create(True);
   FRounds:=TGameRounds.Create;
   FPositiveGame:=True;
   FActive:=True;
@@ -115,7 +124,7 @@ var i:Integer;
 begin
   FreeAndNil(FPlayers);
   FreeAndNil(FTalon);
-
+  FreeAndNil(FBets);
   FreeAndNil(FRounds);
 
   inherited;
@@ -158,6 +167,8 @@ begin
   inherited Create;
   FPlayerName:=AName;
   FIndex:=AIndex;
+  FBetState:=btNone;
+
   FCards:=TCards.Create;
 end;
 

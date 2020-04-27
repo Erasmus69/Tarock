@@ -216,7 +216,7 @@ begin
   Result.SetVisibility([mvPublic, mvPublished]);
 
 
- Result.GetSerializers.RegisterSerializer(TGUIDSerializer);
+  Result.GetSerializers.RegisterSerializer(TGUIDSerializer);
   Result.GetSerializers.RegisterSerializer(TCardKeySerializer);
 end;
 

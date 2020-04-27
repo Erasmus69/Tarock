@@ -107,6 +107,7 @@
         <BT_BuildType>Debug</BT_BuildType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_UNSUPPORTED_CONSTRUCT>error</DCC_UNSUPPORTED_CONSTRUCT>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppEnableHighDPI>true</AppEnableHighDPI>
     </PropertyGroup>
@@ -137,6 +138,8 @@
         </DCCReference>
         <DCCReference Include="Server.Controller.GAme.pas"/>
         <DCCReference Include="..\Common\Common.Entities.Round.pas"/>
+        <DCCReference Include="..\Common\Common.Entities.GameType.pas"/>
+        <DCCReference Include="..\Common\Common.Entities.Bet.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -158,8 +161,11 @@
                     <Source Name="MainSource">TarockServiceDBG.dpr</Source>
                 </Source>
                 <Excluded_Packages>
+                    <Excluded_Packages Name="D:\PROJECTSME\LIBRARY\BIN\Win32\DelphiHelpExpert240.bpl">File D:\PROJECTSME\LIBRARY\BIN\Win32\DelphiHelpExpert240.bpl not found</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\DataExplorerFireDACPlugin240.bpl">FireDAC Data Explorer Integration</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclDataSnapFireDAC240.bpl">Embarcadero DataSnap FireDAC</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclemsclientfiredac240.bpl">Embarcadero EMS Client FireDAC Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclFireDAC240.bpl">Embarcadero FireDAC Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclFireDACEnt240.bpl">Embarcadero FireDAC C\S Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclFireDACEntExt240.bpl">Embarcadero FireDAC Ext C\S Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclFMXFireDAC240.bpl">Embarcadero FMX FireDAC Components</Excluded_Packages>
@@ -167,13 +173,12 @@
                     <Excluded_Packages Name="$(BDSBIN)\dclIntraweb_140_240.bpl">IntraWeb 14.0 Design Package for RAD Studio XE6</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k240.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp240.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclVclFireDAC240.bpl">Embarcadero VCL FireDAC Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\fmxstyledesigner240.bpl">Embarcadero Style Designer Package</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\hgide240.bpl">Embarcadero Mercurial Integration</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\svnide240.bpl">Embarcadero Subversion Integration</Excluded_Packages>
                     <Excluded_Packages Name="D:\PROJECTSME\LIBRARY\BIN\Win32\dclDAD1724.bpl">ReportBuilder Data Access Environment</Excluded_Packages>
                     <Excluded_Packages Name="D:\PROJECTSME\LIBRARY\TeeChart\Delphi24\Delphi24.win32\Bin\DclTeeMaker124.bpl">TeeMaker</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclBindCompFireDAC240.bpl">LiveBinding Expression Components FireDac</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclbindcompfmx240.bpl">Embarcadero LiveBindings Components FireMonkey</Excluded_Packages>
                 </Excluded_Packages>
                 <VersionInfo>
                     <VersionInfo Name="IncludeVerInfo">True</VersionInfo>

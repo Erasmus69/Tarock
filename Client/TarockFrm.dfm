@@ -214,8 +214,8 @@ object frmTarock: TfrmTarock
       TabOrder = 0
     end
     object pTalon: TPanel
-      Left = 802
-      Top = 377
+      Left = 274
+      Top = 231
       Width = 637
       Height = 292
       TabOrder = 1
@@ -248,6 +248,15 @@ object frmTarock: TfrmTarock
       BevelOuter = bvNone
       TabOrder = 4
     end
+  end
+  object mGameInfo: TcxMemo
+    Left = 992
+    Top = 45
+    Lines.Strings = (
+      'mGameInfo')
+    TabOrder = 6
+    Height = 173
+    Width = 233
   end
   object tRefresh: TTimer
     Enabled = False

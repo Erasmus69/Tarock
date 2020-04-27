@@ -11,6 +11,7 @@ uses
  Server.Entities,
  Common.Entities.Card,
  Common.Entities.Round,
+ Common.Entities.Bet,
  Server.Entities.Game,
  Server.WIRL.Response,
  Server.Controller.Game
@@ -26,6 +27,9 @@ type
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
+
+    function GetBets:TBets;
+    function NewBet(const AParam: TBet): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -53,6 +57,9 @@ type
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
+
+    function GetBets:TBets;
+    function NewBet(const ABet: TBet): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -123,6 +130,14 @@ begin
   Result:=ALLCards;
 end;
 
+function TRepository.GetBets: TBets;
+begin
+  if Assigned(ActGame) then
+    Result:=ActGame.Bets
+  else
+    Result:=Nil;
+end;
+
 function TRepository.GetGame: TGame;
 var g:TGame;
 begin
@@ -158,6 +173,25 @@ begin
     raise Exception.Create('No active game');
 end;
 
+function TRepository.NewBet(const ABet: TBet): TBaseRESTResponse;
+var s:String;
+begin
+  try
+    if not Assigned(FGameController) then
+      Result:=TBaseRESTResponse.BuildResponse(False,'No active Game')
+    else begin
+      s:=FGameController.NewBet(ABet);
+      Result:=TBaseRESTResponse.BuildResponse(True);
+      Result.Message:='Turn is on '+s;
+    end;
+  except
+    on E:Exception do begin
+      Result:=TBaseRESTResponse.BuildResponse(False,E.Message);
+      Result.Message:=E.Message;
+    end;
+  end;
+end;
+
 function TRepository.NewGame: TExtendedRESTResponse;
 var g:TGame;
 begin
@@ -173,16 +207,15 @@ begin
       g.Players[1].Team:=ttTEam2;
       g.Players[3].Team:=ttTEam2;
       g.Beginner:='ANDI';
-
       FGames.Push(g);
+
       Result:=TExtendedRESTResponse.BuildResponse(True);
-      Result.Message:=g.ID.ToString;
+      Result.Message:=g.Beginner;
       Result.ID:=g.ID;
 
       FreeAndNil(FGameController);
       FGameController:=TGameController.Create(g);
       FGameController.Shuffle;
-      FGameController.NewRound;
     end;
   end
   else

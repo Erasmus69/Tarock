@@ -36,10 +36,10 @@ var
 implementation
 
 uses
-  Server.Configuration
-, Server.Register
-, Common.Entities.Card
-;
+  Server.Configuration,
+  Server.Register,
+  Common.Entities.Card,
+  Common.Entities.GameType;
 
 {$R *.dfm}
 
@@ -60,6 +60,7 @@ begin
   serverREST.Active := True;
 
   Common.Entities.Card.Initialize;
+  Common.Entities.GameType.Initialize;
   Caption := 'Server started';
 end;
 
@@ -79,6 +80,7 @@ begin
   serverREST := GetContainer.Resolve<TServerREST>;
   serverREST.Active := False;
   Common.Entities.Card.TearDown;
+  Common.Entities.GameType.TearDown;
   Caption := 'Server stopped';
 end;
 

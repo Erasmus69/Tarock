@@ -22,7 +22,9 @@ uses
   Common.Entities.Card in '..\Common\Common.Entities.Card.pas',
   Server.DataModule in 'Server.DataModule.pas' {dm: TDataModule},
   Server.Controller.GAme in 'Server.Controller.GAme.pas',
-  Common.Entities.Round in '..\Common\Common.Entities.Round.pas';
+  Common.Entities.Round in '..\Common\Common.Entities.Round.pas',
+  Common.Entities.GameType in '..\Common\Common.Entities.GameType.pas',
+  Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas';
 
 {$R *.res}
 
@@ -33,4 +35,5 @@ begin
   Application.CreateForm(TFrmMain, FrmMain);
   Application.Run;
   Common.Entities.Card.TearDown;
+  Common.Entities.GameType.TearDown;
 end.

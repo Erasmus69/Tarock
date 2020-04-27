@@ -1,6 +1,8 @@
 unit Server.Wirl.Response;
 
 interface
+uses Neon.Core.Attributes;
+
 type
   TBaseRESTResponse = class
   private
