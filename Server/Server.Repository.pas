@@ -8,25 +8,26 @@ uses
  Spring.Collections,
  Spring.Logging,
 
- Server.Entities,
+ Common.Entities.Player,
  Common.Entities.Card,
  Common.Entities.Round,
  Common.Entities.Bet,
  Server.Entities.Game,
+ Common.Entities.GameSituation,
  Server.WIRL.Response,
- Server.Controller.Game
-;
+ Server.Controller.Game;
 
 type
-  IRepository = interface
+  IRepository= interface
   ['{52DC4164-4347-4D49-9CB3-D19E910062D9}']
-    function GetPlayers:TPlayers;
-    function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
-    function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
+    function GetPlayers:TPlayers<TPlayer>;
+    function RegisterPlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+    function DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
 
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
+    function GetGameSituation: TGameSituation<TPlayer>;
 
     function GetBets:TBets;
     function NewBet(const AParam: TBet): TBaseRESTResponse;
@@ -39,7 +40,7 @@ type
   TRepository = class(TInterfacedObject, IRepository)
   private
     FLastError: String;
-    FPlayers:TPlayers;
+    FPlayers:TPlayers<TPlayer>;
     FGames:TGames;
     FGameController:TGameController;
 
@@ -50,13 +51,14 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    function GetPlayers:TPlayers;
-    function RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
-    function DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
+    function GetPlayers:TPlayers<TPlayer>;
+    function RegisterPlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+    function DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
 
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
+    function GetGameSituation: TGameSituation<TPlayer>;
 
     function GetBets:TBets;
     function NewBet(const ABet: TBet): TBaseRESTResponse;
@@ -97,7 +99,7 @@ begin
   configuration := GetContainer.Resolve<TConfiguration>;
   compNameSuffix := IntToStr(Integer(Pointer(TThread.Current))) + '_' + IntToStr(TThread.GetTickCount);
 
-  FPlayers:=TPlayers.Create(True);
+  FPlayers:=TPlayers<TPlayer>.Create(True);
   FPlayers.Add(TPlayer.Create('HANNES'));
   FPlayers.Add(TPlayer.Create('WOLFGANG'));
   FPlayers.Add(TPlayer.Create('LUKI'));
@@ -148,7 +150,16 @@ begin
     Result:=nil;
 end;
 
-function TRepository.GetPlayers: TPlayers;
+function TRepository.GetGameSituation: TGameSituation<TPlayer>;
+begin
+  if Assigned(ActGame) then begin
+    Result:=ActGame.Situation.Clone;
+  end
+  else
+    Result:=nil;
+end;
+
+function TRepository.GetPlayers: TPlayers<TPlayer>;
 begin
   Logger.Enter('TRepository.GetPlayers');
   Result:=Nil;
@@ -206,16 +217,17 @@ begin
       g.Players[2].Team:=ttTEam1;
       g.Players[1].Team:=ttTEam2;
       g.Players[3].Team:=ttTEam2;
-      g.Beginner:='ANDI';
+      g.Situation.Beginner:='ANDI';
       FGames.Push(g);
 
       Result:=TExtendedRESTResponse.BuildResponse(True);
-      Result.Message:=g.Beginner;
+      Result.Message:=g.Situation.Beginner;
       Result.ID:=g.ID;
 
       FreeAndNil(FGameController);
       FGameController:=TGameController.Create(g);
       FGameController.Shuffle;
+      g.Situation.State:=gsBidding;
     end;
   end
   else
@@ -237,7 +249,7 @@ begin
   end;
 end;
 
-function TRepository.RegisterPlayer(const APlayer:TPlayers):TBaseRESTResponse;
+function TRepository.RegisterPlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
 var p:TPlayer;
 begin
   Result:=nil;
@@ -279,7 +291,7 @@ begin
   end;
 end;
 
-function TRepository.DeletePlayer(const APlayer:TPlayers):TBaseRESTResponse;
+function TRepository.DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
 var p,p2:TPlayer;
 begin
   Result:=nil;

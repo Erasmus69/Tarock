@@ -26,6 +26,8 @@ type
     property Talon:TTalon read FTalon;
     property TeamKind:TTeamKind read FTeamKind;
     property Value:Smallint read FValue;
+
+    function Clone:TGameType;
   end;
 
   TGameTypes=class(TDictionary<String,TGameType>)
@@ -143,6 +145,21 @@ begin
   except
     Result:=nil;
   end;
+end;
+
+{ TGameType }
+
+function TGameType.Clone: TGameType;
+begin
+  Result:=TGameType.Create;
+  Result.FGameTypeid:=FGameTypeId;
+  Result.FName:=FName;
+  Result.FByFirstPlayer:=FByFirstPlayer;
+  Result.FPositive:=FPositive;
+  Result.FJustColors:=FJustColors;
+  Result.FTalon:=FTalon;
+  Result.FTeamKind:=FTeamKind;
+  Result.FValue:=FValue;
 end;
 
 end.

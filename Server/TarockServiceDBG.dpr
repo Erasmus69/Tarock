@@ -13,7 +13,7 @@ uses
   Classes.DailyFileLogAppender in 'Classes.DailyFileLogAppender.pas',
   Server.WiRL in 'Server.WiRL.pas',
   Classes.Dataset.Helpers in 'Classes.Dataset.Helpers.pas',
-  Server.Entities in 'Server.Entities.pas',
+  Common.Entities.Player in '..\Common\Common.Entities.Player.pas',
   Server.Controller in 'Server.Controller.pas',
   Server.Resources in 'Server.Resources.pas',
   Server.Repository in 'Server.Repository.pas',
@@ -24,7 +24,8 @@ uses
   Server.Controller.GAme in 'Server.Controller.GAme.pas',
   Common.Entities.Round in '..\Common\Common.Entities.Round.pas',
   Common.Entities.GameType in '..\Common\Common.Entities.GameType.pas',
-  Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas';
+  Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas',
+  Common.Entities.Gamesituation in '..\Common\Common.Entities.Gamesituation.pas';
 
 {$R *.res}
 

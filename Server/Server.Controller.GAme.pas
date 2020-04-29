@@ -27,7 +27,8 @@ type
   end;
 
 implementation
-uses System.SysUtils, System.Generics.Collections,Common.Entities.GameType;
+uses System.SysUtils, System.Generics.Collections,Common.Entities.GameType,
+     Common.Entities.Player,Common.Entities.GameSituation;
 
 constructor TGameController.Create(AGame: TGame);
 begin
@@ -80,7 +81,7 @@ begin
     else if ABet.GameTypeID='PASS' then
       InsertBet(ABet,actBet.BestBet)
     else begin
-      if (value>actBet.BestBet) or ((value=actBet.BestBet) and (ABet.Player=FGame.Beginner)) then begin
+      if (value>actBet.BestBet) or ((value=actBet.BestBet) and (ABet.Player=FGame.Situation.Beginner)) then begin
         InsertBet(ABet,value);
         player.BetState:=btBet;
       end
@@ -88,7 +89,7 @@ begin
         raise Exception.Create('Your bet must be higher than actual one')
     end;
   end
-  else if ABet.Player<>FGame.Beginner then
+  else if ABet.Player<>FGame.Situation.Beginner then
     raise Exception.Create('Is not your turn')
   else begin
     InsertBet(ABet,value);
@@ -129,13 +130,13 @@ begin
     if Assigned(FGame.ActRound) then
       r.TurnOn:=FGame.ActRound.Winner
     else
-      r.TurnOn:=FGame.Starter;
+      r.TurnOn:=FGame.Situation.Starter;
 
     // reihenfolge der Spieler definieren
     for i := FGame.FindPlayer(r.TurnOn).Index to 3 do
-      r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].PlayerName));
+      r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].Name));
     for i := 0 to FGame.FindPlayer(r.TurnOn).Index-1 do
-      r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].PlayerName));
+      r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].Name));
     FGame.Rounds.Push(r);
   end;
 
@@ -147,7 +148,7 @@ var player:TPlayerCards;
 begin
   player:=FGame.FindPlayer(APlayerName);
   if Assigned(player) then
-    Result:=FGame.Players[(player.Index+1) mod 4].PlayerName
+    Result:=FGame.Players[(player.Index+1) mod 4].Name
   else
     raise Exception.Create('Unknown Player '+APlayerName);
 end;
@@ -272,7 +273,7 @@ begin
   if passed=3 then begin
     for player in FGame.Players do begin
       if player.BetState=btBet then begin
-        winningPlayer:=player.PlayerName;
+        winningPlayer:=player.Name;
         Result:=True;
         Break;
       end;
@@ -280,9 +281,11 @@ begin
   end;
 
   if Result then begin
-    FGame.Starter:=winningPlayer;//DetermineBetWinner;
+    FGame.Situation.Starter:=winningPlayer;//DetermineBetWinner;
+    FGame.Situation.State:=gsBet;
    // FGame.Beginner:=winningPlayer;
     NewRound;
+    FGame.Situation.State:=gsPlaying;
   end;
 
 end;
@@ -297,7 +300,8 @@ begin
 //    if FGame.ActRound.Winner then
 
   end;
-
+  if not FGame.Active then
+    FGame.Situation.State:=gsNone;
 end;
 
 

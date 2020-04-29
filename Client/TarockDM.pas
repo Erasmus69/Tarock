@@ -5,10 +5,11 @@ interface
 uses
   System.SysUtils, System.Classes, WiRL.Client.CustomResource,
   WiRL.Client.Resource, System.Net.HttpClient.Win, WiRL.http.Client,
-  WiRL.Client.Application,  Rest.Neon,Classes.Entities, System.JSON,
+  WiRL.Client.Application,  Rest.Neon,System.JSON,
   WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls,
   Common.Entities.Card, Common.Entities.Round,   dxGDIPlusClasses, cxClasses,
-  cxGraphics,Common.Entities.GameType;
+  cxGraphics,Common.Entities.GameType,Common.Entities.Player,Common.Entities.GameSituation,
+  Classes.Entities;
 
 type
   TdmTarock = class(TDataModule)
@@ -26,6 +27,7 @@ type
     resRoundPut: TWiRLClientResourceJSON;
     resRoundGet: TWiRLClientResourceJSON;
     resRoundPost: TWiRLClientResourceJSON;
+    resGameSituation: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -35,6 +37,7 @@ type
     FTurnOn: String;
     FBeginner: String;
     FActualBet: Smallint;
+    FGameSituation: TGameSituation<Common.Entities.Player.TPlayer>;
     procedure FillPlayerPatchBody(AContent: TMemoryStream; APatchData: TObject);
     { Private declarations }
 
@@ -47,6 +50,7 @@ type
     procedure StartNewGame;
     procedure GetMyCards;
     function GetCards(AName:String):TCards;
+    procedure RefreshGameSituation;
     function GetRound:TGameRound;
     procedure PutTurn(ACard:TCardKey);
     procedure NewRound;
@@ -57,6 +61,7 @@ type
     property Beginner:String read FBeginner;
     property MyCards:TCards read FMyCards;
     property ActualBet:Smallint read FActualBet;
+    property GameSituation: TGameSituation<Common.Entities.Player.TPlayer> read FGameSituation;
   end;
 
 var
@@ -203,6 +208,18 @@ begin
   finally
     jsonValue.Free;
     content.Free;
+  end;
+end;
+
+procedure TdmTarock.RefreshGameSituation;
+begin
+  resGameSituation.GET;
+
+  if resGameSituation.ResponseAsString>'' then begin
+    FreeAndNil(FGameSituation);
+    FGameSituation:=TGameSituation<Common.Entities.Player.TPlayer>.Create;
+
+    RESTClient.DeserializeObject(resGameSituation.Response, FGameSituation);
   end;
 end;
 

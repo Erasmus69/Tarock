@@ -10,7 +10,9 @@ uses
   Classes.CardControl in 'Classes.CardControl.pas',
   Common.Entities.Round in '..\Common\Common.Entities.Round.pas',
   Common.Entities.GameType in '..\Common\Common.Entities.GameType.pas',
-  GamesSelectFra in 'GamesSelectFra.pas' {fraGameSelect: TFrame};
+  GamesSelectFra in 'GamesSelectFra.pas' {fraGameSelect: TFrame},
+  Common.Entities.Gamesituation in '..\Common\Common.Entities.Gamesituation.pas',
+  Common.Entities.Player in '..\Common\Common.Entities.Player.pas';
 
 {$R *.res}
 

@@ -129,6 +129,7 @@ begin
   dm.StartNewGame;
   mGameInfo.Lines.Clear;
   GameInfo(dm.Beginner+' hat die Vorhand');
+  dm.RefreshGameSituation;
   ShowGameSelect;
 end;
 
