@@ -13,7 +13,8 @@ uses
   GamesSelectFra in 'GamesSelectFra.pas' {fraGameSelect: TFrame},
   Common.Entities.Gamesituation in '..\Common\Common.Entities.Gamesituation.pas',
   Common.Entities.Player in '..\Common\Common.Entities.Player.pas',
-  Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas';
+  Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas',
+  ConnectionErrorFrm in 'ConnectionErrorFrm.pas' {frmConnectionError};
 
 {$R *.res}
 
@@ -22,5 +23,6 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TdmTarock, dm);
   Application.CreateForm(TfrmTarock, frmTarock);
+  Application.CreateForm(TfrmConnectionError, frmConnectionError);
   Application.Run;
 end.

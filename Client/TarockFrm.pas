@@ -62,6 +62,7 @@ type
     procedure GameInfo(const AInfo:String);
     procedure ShowGameSelect;
     procedure ShowBiddingState;
+    procedure ReactiveServerConnection;
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -73,7 +74,8 @@ var
 
 implementation
 uses System.JSON,TarockDM,Classes.Entities,Classes.CardControl,
-  Common.Entities.GameSituation, Common.Entities.GameType;
+  Common.Entities.GameSituation, Common.Entities.GameType, ConnectionErrorFrm,
+  WiRL.http.Client.Interfaces;
 
 {$R *.dfm}
 
@@ -350,18 +352,52 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
 begin
   tRefresh.Enabled:=False;
   try
-    dm.RefreshGameSituation;
-    if (dm.GameSituation.State<>gsNone) and not Assigned(dm.Players) then
-      Setup;
+    try
+      dm.RefreshGameSituation;
+      if (dm.GameSituation.State<>gsNone) and not Assigned(dm.Players) then
+        Setup;
 
-    case  dm.GameSituation.State  of
-      gsNone:   Setup;
-      gsBidding:Bidding;
-      gsPlaying:Playing;
-
+      case  dm.GameSituation.State  of
+        gsNone:   Setup;
+        gsBidding:Bidding;
+        gsPlaying:Playing;
+      end;
+    except
+      on E:EWiRLSocketException do
+        ReactiveServerConnection;
+      else
+        Raise;
     end;
   finally
     tRefresh.Enabled:=True;
+  end;
+end;
+
+procedure TfrmTarock.ReactiveServerConnection;
+var frm:TfrmConnectionError;
+  i: Integer;
+begin
+  tRefresh.Enabled:=False;
+  frm:=TfrmConnectionError.Create(Self);
+  try
+    frm.Show;
+    while True do begin
+      for i :=0 to 50 do begin
+        Sleep(100);
+        Application.ProcessMessages;
+      end;
+
+      try
+        dm.RefreshGameSituation;
+        Break;
+      except
+        on E:EWiRLSocketException do
+        else
+          Raise;
+      end;
+    end;
+  finally
+    FreeAndNil(frm);
   end;
 end;
 

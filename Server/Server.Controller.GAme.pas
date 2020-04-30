@@ -127,7 +127,8 @@ begin
     if Assigned(FGame.ActRound) then
       r.TurnOn:=FGame.ActRound.Winner
     else
-      r.TurnOn:=FGame.Situation.Starter;
+      r.TurnOn:=FGame.Situation.TurnOn;
+    FGame.Situation.TurnOn:=r.TurnOn;
 
     // reihenfolge der Spieler definieren
     for i := FGame.FindPlayer(r.TurnOn).Index to 3 do
@@ -255,6 +256,18 @@ begin
 end;
 
 function TGameController.CheckBetTerminated: Boolean;
+
+  function WinningGame(ABets:TBets):String;
+  var i: Integer;
+  begin
+    for i:=ABets.Count-1 downto 0  do begin
+       if ABets[i].GameTypeID<>'PASS' then begin
+         result:=ABets[i].GameTypeID;
+         break;
+       end;
+    end;
+  end;
+
 var passed:Smallint;
     player:TPlayerCards;
     winningPlayer:String;
@@ -271,6 +284,7 @@ begin
     for player in FGame.Players do begin
       if player.BetState=btBet then begin
         winningPlayer:=player.Name;
+
         Result:=True;
         Break;
       end;
@@ -278,14 +292,16 @@ begin
   end;
 
   if Result then begin
-    FGame.Situation.Starter:=winningPlayer;//DetermineBetWinner;
-    FGame.Situation.TurnOn:=FGame.Situation.Starter;
+    FGame.Situation.Game:=ALLGames.Find(WinningGame(FGame.Bets));
+    if FGame.Situation.Game.Positive then
+      FGame.Situation.TurnOn:=FGame.Situation.Beginner
+    else
+      FGame.Situation.TurnOn:=winningPlayer;
     FGame.Situation.State:=gsBet;
-   // FGame.Beginner:=winningPlayer;
+
     NewRound;
     FGame.Situation.State:=gsPlaying;
   end;
-
 end;
 
 procedure TGameController.CheckGameTerminated;

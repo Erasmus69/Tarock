@@ -239,13 +239,17 @@ end;
 
 procedure TdmTarock.RefreshGameSituation;
 begin
-  resGameSituation.GET;
+  try
+    resGameSituation.GET;
 
-  if resGameSituation.ResponseAsString>'' then begin
-    FreeAndNil(FGameSituation);
-    FGameSituation:=TGameSituation<Common.Entities.Player.TPlayer>.Create;
+    if resGameSituation.ResponseAsString>'' then begin
+      FreeAndNil(FGameSituation);
+      FGameSituation:=TGameSituation<Common.Entities.Player.TPlayer>.Create;
 
-    RESTClient.DeserializeObject(resGameSituation.Response, FGameSituation);
+      RESTClient.DeserializeObject(resGameSituation.Response, FGameSituation);
+    end;
+  except
+    Raise;
   end;
 end;
 

@@ -4,7 +4,7 @@ interface
 uses System.Generics.Collections,Common.Entities.Player,Common.Entities.GameType;
 
 type
-  TGameState=(gsNone,gsBidding,gsBet,gsPlaying);
+  TGameState=(gsNone,gsBidding,gsBet,gsReadyToPlay,gsPlaying,gsTerminated);
 
   TGameSituation<T:TPlayer>=class(TObject)
   private
@@ -12,7 +12,6 @@ type
     FGame: TGameType;
     FPlayers: TPlayers<T>;
     FState: TGameState;
-    FStarter: String;
     FTurnOn: String;
     FBestBet: Smallint;
   public
@@ -21,15 +20,18 @@ type
     property BestBet:Smallint read FBestBet write FBestBet;
     property Players: TPlayers<T> read FPlayers write FPlayers;
     property State: TGameState read FState write FState;
-    property Starter: String read FStarter write FStarter;
     property TurnOn:String read FTurnOn write FTurnOn;
     constructor Create;
+    destructor Destroy;override;
 
     function Clone:TGameSituation<TPlayer>;
     function FirstPlayerGamesEnabled:Boolean;
   end;
 
 implementation
+
+uses
+  System.SysUtils;
 
 { TGameSituation }
 
@@ -39,8 +41,8 @@ var itm:T;
 begin
   Result:=TGameSituation<TPlayer>.Create;
   Result.Beginner:=FBeginner;
-  Result.Starter:=FStarter;
   Result.TurnOn:=FTurnOn;
+  Result.BestBet:=FBestBet;
 
   for itm in FPlayers do begin
     itm2:=TPlayer.Create(itm.Name);
@@ -60,17 +62,23 @@ begin
   FState:=gsNone;
 end;
 
+destructor TGameSituation<T>.Destroy;
+begin
+  FreeAndNil(FPlayers);
+  inherited;
+end;
+
 function TGameSituation<T>.FirstPlayerGamesEnabled: Boolean;
 var player:TPlayer;
 begin
   if (State=gsBidding) then begin
     Result:=True;
     for player in Players do begin
-      if (player.Name=Beginner) and (player.BetState<>bsHold) then begin
+      if (player.Name=Beginner) and (player.BetState<>btHold) then begin
          Result:=False;
          Break;
       end
-      else if (player.Name<>Beginner) and (player.BetState<>bsPass) then begin
+      else if (player.Name<>Beginner) and (player.BetState<>btPass) then begin
         Result:=False;
         Break;
       end;

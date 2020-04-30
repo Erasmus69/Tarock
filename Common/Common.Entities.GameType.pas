@@ -68,7 +68,7 @@ begin
   ALLGames:=TGameTypes.Create;
   ALLGames.AddItem('RUFER','Königrufer',1,True,tkPair,True);
   ALLGames.AddItem('TRISCH','Fahren (Trischaken)',1,False,tkSolo,True);
-  ALLGames.AddItem('63','Sechser-Dreier',6,True,tkSolo,True,tk6Talon);
+  ALLGames.AddItem('63','Sechser-Dreier',1,True,tkSolo,True,tk6Talon);
 
   ALLGames.AddItem('SUPRA','Supra (Solorufer)',2,True,tkPair,False,tkNoTalon);
   ALLGames.AddItem('PICC','Piccolo',2,False,tkSolo);

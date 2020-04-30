@@ -22,7 +22,6 @@ type
     property GameTypeID:String read FGameTypeID write FGameTypeID;
 //    [NeonIgnore]
     property AddBets:TAddBets read FAddBets write FAddBets;
-//    property BestBet:Smallint read FBestBet write FBestBet;
 
     procedure Assign(const ASource:TBet);
   end;

@@ -121,6 +121,10 @@
         <DCCReference Include="..\Common\Common.Entities.Gamesituation.pas"/>
         <DCCReference Include="..\Common\Common.Entities.Player.pas"/>
         <DCCReference Include="..\Common\Common.Entities.Bet.pas"/>
+        <DCCReference Include="ConnectionErrorFrm.pas">
+            <Form>frmConnectionError</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
