@@ -51,14 +51,17 @@ type
   private
     { Private declarations }
     FGameSelect:TfraGameSelect;
+    FBetsShownIdx:Integer;
 
     procedure GetPlayers;
     procedure ShowCards;overload;
     procedure ShowCards(ACards:TCards; APosition:TCardPosition);overload;
-    procedure ShowTurn(const ARound:TGameRound);
+    procedure ShowThrow(const ARound:TGameRound);
+    procedure ShowTurn;
     procedure DoThrowCard(Sender:TObject);
     procedure GameInfo(const AInfo:String);
     procedure ShowGameSelect;
+    procedure ShowBiddingState;
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -69,7 +72,8 @@ var
   frmTarock: TfrmTarock;
 
 implementation
-uses System.JSON,TarockDM,Classes.Entities,Classes.CardControl;
+uses System.JSON,TarockDM,Classes.Entities,Classes.CardControl,
+  Common.Entities.GameSituation, Common.Entities.GameType;
 
 {$R *.dfm}
 
@@ -90,7 +94,6 @@ begin
       dm.MyName:=CSEdit1.Text;
     finally
       GetPlayers;
-      tRefresh.Enabled:=True;
     end;
   end;
 end;
@@ -112,7 +115,7 @@ end;
 
 procedure TfrmTarock.DoThrowCard(Sender: TObject);
 begin
-  if dm.TurnOn=dm.MyName then begin
+  if dm.GameSituation.TurnOn=dm.MyName then begin
     dm.PutTurn(TCardControl(Sender).Card.ID);
     dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
     PostMessage(Handle,CSM_REFRESHCARDS,0,0);
@@ -127,21 +130,13 @@ end;
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
 begin
   dm.StartNewGame;
-  mGameInfo.Lines.Clear;
-  GameInfo(dm.Beginner+' hat die Vorhand');
-  dm.RefreshGameSituation;
-  ShowGameSelect;
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
 begin
   dm.MyName:=CSEdit1.Text;
   mGameInfo.Lines.Clear;
-  GetPlayers;
-  if dm.Players.Count<4 then
-    GameInfo('Wir warten auf andere Spieler')
-  else
-    GameInfo('Starte das Spiel');
+  tRefresh.Enabled:=True;
 end;
 
 procedure TfrmTarock.GameInfo(const AInfo: String);
@@ -254,7 +249,7 @@ begin
   ShowCards(dm.MyCards,cpMyCards);
 end;
 
-procedure TfrmTarock.ShowTurn(const ARound:TGameRound);
+procedure TfrmTarock.ShowThrow(const ARound:TGameRound);
 var itm:TCardThrown;
     player:TPlayer;
 begin
@@ -274,21 +269,98 @@ begin
   end;
 end;
 
+procedure TfrmTarock.ShowBiddingState;
+var i: Integer;
+begin
+  for i := FBetsShownIdx+1 to dm.Bets.Count-1 do begin
+    if dm.Bets[i].GameTypeID='PASS' then
+      GameInfo(Format('%s hat gepasst',[dm.Bets[i].Player]))
+    else if dm.Bets[i].GameTypeID='HOLD' then
+      GameInfo(Format('%s hat das Spiel aufgenommen',[dm.Bets[i].Player]))
+    else
+      GameInfo(Format('%s lizitiert %s',[dm.Bets[i].Player,ALLGAMES.Find(dm.Bets[i].GameTypeID).Name]))
+  end;
+  FBetsShownIdx:=dm.Bets.Count-1;
+end;
+
+procedure TfrmTarock.ShowTurn;
+var player:TPlayer;
+begin
+  for player in dm.Players do begin
+    if Assigned(dm.GameSituation) and (dm.GameSituation.TurnOn=player.Name) then
+      player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style+[fsBold]
+    else
+      player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style-[fsBold]
+  end;
+end;
+
 procedure TfrmTarock.tRefreshTimer(Sender: TObject);
-var r:TGameRound;
+  procedure Setup;
+  begin
+    if not Assigned(dm.Players) or (dm.Players.Count<dm.GameSituation.Players.Count) then
+      GetPlayers;
+
+    mGameInfo.Lines.Clear;
+    if dm.GameSituation.Players.Count<4 then begin
+      GameInfo('Wir warten auf weitere Spieler');
+
+    end
+    else
+      GameInfo('Starte das Spiel');
+  end;
+
+  procedure Bidding;
+  begin
+    if not Assigned(FGameSelect) then begin
+      bStartGame.Enabled:=False;
+      mGameInfo.Lines.Clear;
+      GameInfo('Neues Spiel gestartet');
+      GameInfo(dm.GameSituation.Beginner+' hat die Vorhand');
+      ShowGameSelect;
+      FBetsShownIdx:=-1;
+    end;
+
+    dm.GetBets;
+    if FBetsShownIdx<dm.Bets.Count-1 then
+      FGameSelect.RefreshGames;
+    FGameSelect.CheckMyTurn;
+    ShowBiddingState;
+    ShowTurn;
+  end;
+
+  procedure Playing;
+  var r:TGameRound;
+  begin
+    try
+      r:=dm.GetRound;
+      if Assigned(r) then begin  // game is started
+        if not Assigned(dm.MyCards) then begin
+          dm.GetMyCards;
+          ShowCards;
+        end;
+        ShowThrow(r);
+        ShowTurn;
+      end;
+    finally
+      r.Free;
+    end;
+  end;
+
+
 begin
   tRefresh.Enabled:=False;
   try
-    r:=dm.GetRound;
-    if Assigned(r) then begin  // game is started
-      if not Assigned(dm.MyCards) then begin
-        dm.GetMyCards;
-        ShowCards;
-      end;
-      ShowTurn(r);
+    dm.RefreshGameSituation;
+    if (dm.GameSituation.State<>gsNone) and not Assigned(dm.Players) then
+      Setup;
+
+    case  dm.GameSituation.State  of
+      gsNone:   Setup;
+      gsBidding:Bidding;
+      gsPlaying:Playing;
+
     end;
   finally
-    r.Free;
     tRefresh.Enabled:=True;
   end;
 end;

@@ -9,7 +9,7 @@ uses
   WiRL.Client.Resource.JSON, System.ImageList, Vcl.ImgList, Vcl.Controls,
   Common.Entities.Card, Common.Entities.Round,   dxGDIPlusClasses, cxClasses,
   cxGraphics,Common.Entities.GameType,Common.Entities.Player,Common.Entities.GameSituation,
-  Classes.Entities;
+  Classes.Entities,  Common.Entities.Bet;
 
 type
   TdmTarock = class(TDataModule)
@@ -28,17 +28,18 @@ type
     resRoundGet: TWiRLClientResourceJSON;
     resRoundPost: TWiRLClientResourceJSON;
     resGameSituation: TWiRLClientResourceJSON;
+    resNewBet: TWiRLClientResourceJSON;
+    resBets: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
     FPlayers:TPlayers;
     FMyName: String;
     FMyCards:TCards;
-    FTurnOn: String;
-    FBeginner: String;
-    FActualBet: Smallint;
     FGameSituation: TGameSituation<Common.Entities.Player.TPlayer>;
-    procedure FillPlayerPatchBody(AContent: TMemoryStream; APatchData: TObject);
+    FBets: TBets;
+    procedure FillBody(AContent: TMemoryStream; APatchData: TObject);
+    function GetIAmBeginner: Boolean;
     { Private declarations }
 
   public
@@ -51,16 +52,19 @@ type
     procedure GetMyCards;
     function GetCards(AName:String):TCards;
     procedure RefreshGameSituation;
+
+    procedure NewBet(const AGameTypeId:String);
+    procedure GetBets;
+
     function GetRound:TGameRound;
     procedure PutTurn(ACard:TCardKey);
     procedure NewRound;
 
     property Players:TPlayers read FPlayers;
+    property Bets:TBets read FBets;
     property MyName:String read FMyName write FMyName;
-    property TurnOn:String read FTurnOn;
-    property Beginner:String read FBeginner;
+    property IAmBeginner:Boolean read GetIAmBeginner;
     property MyCards:TCards read FMyCards;
-    property ActualBet:Smallint read FActualBet;
     property GameSituation: TGameSituation<Common.Entities.Player.TPlayer> read FGameSituation;
   end;
 
@@ -150,13 +154,35 @@ begin
     if resRoundGET.ResponseAsString>'' then begin
       Result:=TGameRound.Create;
       RESTClient.DeserializeObject(resRoundGET.Response, Result);
-      FTurnOn:=Result.TurnOn;
     end;
   except
     on E:Exception do begin
  //     Showmessage(E.Message);
     end;
 
+  end;
+end;
+
+procedure TdmTarock.NewBet(const AGameTypeId: String);
+var b:TBet;
+begin
+  try
+    b:=TBet.Create;
+    b.Player:=MyName;
+    b.GameTypeID:=AGameTypeid;
+
+    resNewBet.POST(procedure (AContent: TMemoryStream)
+          begin
+            FillBody(AContent, b);
+          end
+        );
+
+    if resNewBet.Response.GetValue<String>('status')<>'success' then
+      Showmessage(resNewBet.Response.GetValue<String>('message'));
+ // except
+ // end;
+  finally
+    FreeAndNil(b);
   end;
 end;
 
@@ -192,7 +218,7 @@ begin
   FreeAndNil(FMyCards);
 end;
 
-procedure TdmTarock.FillPlayerPatchBody(AContent: TMemoryStream; APatchData: TObject);
+procedure TdmTarock.FillBody(AContent: TMemoryStream; APatchData: TObject);
 var
   jsonValue: TJSONValue;
   content: TStringList;
@@ -237,7 +263,7 @@ begin
     try
       resPlayers.POST(procedure (AContent: TMemoryStream)
           begin
-            FillPlayerPatchBody(AContent, pl);
+            FillBody(AContent, pl);
           end
         );
 
@@ -263,17 +289,26 @@ begin
      );
 
    if resGames.Response.GetValue<String>('status')<>'success' then
-     Showmessage(resGames.Response.GetValue<String>('message'))
-   else begin
-     FBeginner:=resGames.Response.GetValue<String>('message');
-     FTurnOn:=FBeginner;
-     FActualBet:=0;
-   end;
+     Showmessage(resGames.Response.GetValue<String>('message'));
   except
     on E: Exception do begin
       Showmessage(E.Message);
     end;
   end;
+end;
+
+procedure TdmTarock.GetBets;
+begin
+  resBets.PathParamsValues.Clear;
+  resBets.QueryParams.Clear;
+  resBets.GET;
+
+  if resBets.ResponseAsString>'' then begin
+    FreeAndNil(FBets);
+    FBets:=TBets.Create;
+    RESTClient.DeserializeObject(resBets.Response, FBets);
+  end;
+
 end;
 
 function TdmTarock.GetCards(AName:String):TCards;
@@ -290,6 +325,11 @@ begin
     result:=TCards.Create;
     RESTClient.DeserializeObject(resPlayerCards.Response, result);
   end;
+end;
+
+function TdmTarock.GetIAmBeginner: Boolean;
+begin
+  Result:=GameSituation.Beginner=MyName;
 end;
 
 procedure TdmTarock.GetMyCards;

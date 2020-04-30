@@ -16,16 +16,13 @@ type
     FPlayer: String;
     FGameTypeID: String;
     FAddBets: TAddBets;
-    FTurnOn: String;
-    FBestBet: Smallint;
 
   public
     property Player:String read FPlayer write FPlayer;
     property GameTypeID:String read FGameTypeID write FGameTypeID;
 //    [NeonIgnore]
     property AddBets:TAddBets read FAddBets write FAddBets;
-    property TurnOn:String read FTurnOn write FTurnOn;
-    property BestBet:Smallint read FBestBet write FBestBet;
+//    property BestBet:Smallint read FBestBet write FBestBet;
 
     procedure Assign(const ASource:TBet);
   end;
@@ -33,11 +30,25 @@ type
   TBets=class(TObjectList<TBet>)
   public
     function Clone:TBets;
+    function AllPassed:Boolean;
   end;
 
 implementation
 
 { TBets }
+
+function TBets.AllPassed: Boolean;
+var
+  itm: TBet;
+begin
+  result:=True;
+  for itm in Self do begin
+    if (itm.GameTypeID<>'HOLD') and (itm.GameTypeid<>'PASS') then begin
+      Result:=False;
+      Break;
+    end;
+  end;
+end;
 
 function TBets.Clone: TBets;
 var bets:TBets;
@@ -59,8 +70,6 @@ procedure TBet.Assign(const ASource: TBet);
 begin
   Player:=ASource.Player;
   GameTypeID:=ASource.GameTypeID;
-  TurnOn:=ASource.TurnOn;
-  BestBet:=ASource.BestBet;
   AddBets:=ASource.AddBets;
 end;
 

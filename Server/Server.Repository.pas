@@ -78,11 +78,7 @@ type
 implementation
 
 uses
-  Math
-, Classes.Dataset.Helpers
-, Server.Configuration
-, Server.Register
-;
+  Math, Classes.Dataset.Helpers, Server.Configuration, Server.Register;
 
 { TRepository }
 
@@ -155,8 +151,11 @@ begin
   if Assigned(ActGame) then begin
     Result:=ActGame.Situation.Clone;
   end
-  else
-    Result:=nil;
+  else begin
+    Result:=TGameSituation<TPlayer>.Create;
+    Result.State:=gsNone;
+    Result.Players:=FPlayers.Clone<TPlayer>;
+  end;
 end;
 
 function TRepository.GetPlayers: TPlayers<TPlayer>;
@@ -228,6 +227,8 @@ begin
       FGameController:=TGameController.Create(g);
       FGameController.Shuffle;
       g.Situation.State:=gsBidding;
+      g.Situation.BestBet:=0;
+      g.Situation.TurnOn:=g.Situation.Beginner;
     end;
   end
   else

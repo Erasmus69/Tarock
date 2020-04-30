@@ -38,17 +38,15 @@ end;
 
 function TGameController.NewBet(ABet: TBet):String;
 
-  procedure InsertBet(const ABet:TBet; ABestBet:SmallInt);
+  procedure InsertBet(const ABet:TBet);
   var newBet:TBet;
   begin
     newBet:=TBet.Create;
     newBet.Assign(ABet);
-    newBet.BestBet:=ABestBet;
     FGame.Bets.Add(newBet);
   end;
 
-var actBet:TBet;
-    value:Integer;
+var value:Integer;
     player:TPlayerCards;
     i: Integer;
     game:TGameType;
@@ -69,9 +67,7 @@ begin
      raise Exception.Create('Unknown Player '+ABet.Player);
 
   if FGame.Bets.Count>0 then begin
-    actBet:=FGame.Bets.Last;
-
-    if actBet.TurnOn<>ABet.Player then
+    if FGame.Situation.TurnOn<>ABet.Player then
       raise Exception.Create('Is not your turn')
     else if ABet.GameTypeID='HOLD' then
       raise Exception.Create('Just first bet can be a HOLD')
@@ -79,10 +75,11 @@ begin
       raise Exception.Create('You cannot bet anymore')
 
     else if ABet.GameTypeID='PASS' then
-      InsertBet(ABet,actBet.BestBet)
+      InsertBet(ABet)
     else begin
-      if (value>actBet.BestBet) or ((value=actBet.BestBet) and (ABet.Player=FGame.Situation.Beginner)) then begin
-        InsertBet(ABet,value);
+      if (value>FGame.Situation.BestBet) or ((value=FGame.Situation.BestBet) and (ABet.Player=FGame.Situation.Beginner)) then begin
+        InsertBet(ABet);
+        FGame.Situation.BestBet:=value;
         player.BetState:=btBet;
       end
       else
@@ -92,7 +89,8 @@ begin
   else if ABet.Player<>FGame.Situation.Beginner then
     raise Exception.Create('Is not your turn')
   else begin
-    InsertBet(ABet,value);
+    InsertBet(ABet);
+    FGame.Situation.BestBet:=value;
     if ABet.GameTypeID='HOLD' then
       player.BetState:=btHold;
   end;
@@ -103,19 +101,18 @@ begin
   if not CheckBetTerminated then begin
     actPlayer:=ABet.Player;
     for i := 1 to 4 do begin
-      ABet.TurnOn:=NextPlayer(actPlayer);
+      FGame.Situation.TurnOn:=NextPlayer(actPlayer);
 
-      if FGame.FindPlayer(ABet.TurnOn).BetState<>btPass then
+      if FGame.FindPlayer(FGame.Situation.TurnOn).BetState<>btPass then
         Break
       else
-        actPlayer:=ABet.TurnOn;
+        actPlayer:=FGame.Situation.TurnOn;
     end;
   end
   else
-    ABet.TurnOn:='NONE';
+    FGame.Situation.TurnOn:='NONE';
 
-  FGame.Bets.Last.TurnOn:=ABet.TurnOn;
-  Result:=ABet.TurnOn;
+  Result:=FGame.Situation.TurnOn;
 end;
 
 function TGameController.NewRound:String;
@@ -282,6 +279,7 @@ begin
 
   if Result then begin
     FGame.Situation.Starter:=winningPlayer;//DetermineBetWinner;
+    FGame.Situation.TurnOn:=FGame.Situation.Starter;
     FGame.Situation.State:=gsBet;
    // FGame.Beginner:=winningPlayer;
     NewRound;

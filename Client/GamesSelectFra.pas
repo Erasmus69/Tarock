@@ -20,11 +20,20 @@ type
     gcID: TcxGridColumn;
     gcName: TcxGridColumn;
     gcValue: TcxGridColumn;
+    bHold: TcxButton;
+    bPass: TcxButton;
+    procedure bBetClick(Sender: TObject);
+    procedure bHoldClick(Sender: TObject);
+    procedure bPassClick(Sender: TObject);
   private
+
     { Private declarations }
   public
     { Public declarations }
     constructor Create(AOwner:TComponent);override;
+    procedure CheckMyTurn;
+    procedure RefreshGames;
+
   end;
 
 implementation
@@ -34,16 +43,34 @@ uses Generics.Collections,Common.Entities.GameType,TarockDM;
 
 { TfraGameSelect }
 
+procedure TfraGameSelect.bBetClick(Sender: TObject);
+begin
+  if gvGames.DataController.FocusedRecordIndex>=0 then begin
+    dm.NewBet(gvGames.DataController.Values[gvGames.DataController.FocusedRecordIndex,gcId.Index]);
+  end;
+end;
+
 constructor TfraGameSelect.Create(AOwner: TComponent);
-var r:Integer;
 begin
   inherited;
+  RefreshGames;
+  bHold.Visible:=dm.IAmBeginner;
+  CheckMyTurn;
+end;
 
+procedure TfraGameSelect.RefreshGames;
+var r:Integer;
+    showFirstPlays,show63:Boolean;
+begin
   r:=0;
+  showFirstPlays:=dm.IAmBeginner and dm.GameSituation.FirstPlayerGamesEnabled;
+  show63:=dm.IAmBeginner and (not Assigned(dm.Bets) or (dm.Bets.Count=0));
+
   gvGames.BeginUpdate;
   try
     ALLGAMES.ForEach(procedure (const AGame:TPair<String,TGameType>) begin
-                       if not  AGame.Value.ByFirstPlayer and (AGame.Value.Value>dm.ActualBet) then begin
+                       if (not  AGame.Value.ByFirstPlayer or showFirstPlays or ((AGame.Key='63') and show63)) and
+                          ((AGame.Value.Value>dm.GameSituation.BestBet) or ((AGame.Value.Value=dm.GameSituation.BestBet) and dm.IAmBeginner)) then begin
                           inc(r);
                           gvGames.DataController.RecordCount:=r;
                           gvGames.DataController.Values[r-1,gcID.Index]:=AGame.Value.GameTypeid;
@@ -54,8 +81,23 @@ begin
   finally
     gvGames.EndUpdate;
   end;
-  bBet.Enabled:=dm.TurnOn=dm.MyName;
+end;
 
+procedure TfraGameSelect.bHoldClick(Sender: TObject);
+begin
+  dm.NewBet('HOLD');
+end;
+
+procedure TfraGameSelect.bPassClick(Sender: TObject);
+begin
+  dm.NewBet('PASS');
+end;
+
+procedure TfraGameSelect.CheckMyTurn;
+begin
+  bBet.Enabled:=dm.GameSituation.TurnOn=dm.MyName;
+  bHold.Enabled:=bBet.Enabled and Assigned(dm.Bets) and (dm.Bets.Count=0);
+  bPass.Enabled:=bBet.Enabled;
 end;
 
 end.

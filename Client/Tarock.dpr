@@ -12,7 +12,8 @@ uses
   Common.Entities.GameType in '..\Common\Common.Entities.GameType.pas',
   GamesSelectFra in 'GamesSelectFra.pas' {fraGameSelect: TFrame},
   Common.Entities.Gamesituation in '..\Common\Common.Entities.Gamesituation.pas',
-  Common.Entities.Player in '..\Common\Common.Entities.Player.pas';
+  Common.Entities.Player in '..\Common\Common.Entities.Player.pas',
+  Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas';
 
 {$R *.res}
 

@@ -39,6 +39,7 @@ object fraGameSelect: TfraGameSelect
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
+    OnClick = bBetClick
   end
   object rdGames: TcxGrid
     Left = 16
@@ -87,5 +88,37 @@ object fraGameSelect: TfraGameSelect
     object rdGamesLevel1: TcxGridLevel
       GridView = gvGames
     end
+  end
+  object bHold: TcxButton
+    Left = 16
+    Top = 352
+    Width = 90
+    Height = 33
+    Anchors = [akLeft, akBottom]
+    Caption = 'Nehme Auf'
+    TabOrder = 3
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    OnClick = bHoldClick
+  end
+  object bPass: TcxButton
+    Left = 391
+    Top = 352
+    Width = 90
+    Height = 33
+    Anchors = [akLeft, akBottom]
+    Caption = 'Passe'
+    TabOrder = 4
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    OnClick = bPassClick
   end
 end
