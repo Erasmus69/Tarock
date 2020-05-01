@@ -23,17 +23,23 @@ type
     function NewRound:String;
     function Turn(APlayer:String; ACard:TCardKey):String;
     function NextTurn(const ARound:TGameRound):String;
+
+    procedure SetKing(const ACard:TCardKey);
+    procedure ChangeCards(const ACards:TCards);
     procedure CloseRound;
   end;
 
 implementation
 uses System.SysUtils, System.Generics.Collections,Common.Entities.GameType,
-     Common.Entities.Player,Common.Entities.GameSituation;
+     Common.Entities.Player,Common.Entities.GameSituation, dialogs;
 
 constructor TGameController.Create(AGame: TGame);
 begin
   inherited Create;
   FGame:=AGame;
+  FGame.Situation.GameInfo.Clear;
+  FGame.Situation.GameInfo.Add('Neues Spiel gestartet');
+  FGame.Situation.GameInfo.Add(FGame.Situation.Beginner+' hat die Vorhand');
 end;
 
 function TGameController.NewBet(ABet: TBet):String;
@@ -44,6 +50,13 @@ function TGameController.NewBet(ABet: TBet):String;
     newBet:=TBet.Create;
     newBet.Assign(ABet);
     FGame.Bets.Add(newBet);
+
+    if ABet.GameTypeID='PASS' then
+      FGame.Situation.GameInfo.Add(Format('%s hat gepasst',[ABet.Player]))
+    else if ABet.GameTypeID='HOLD' then
+      FGame.Situation.GameInfo.Add(Format('%s hat das Spiel aufgenommen',[ABet.Player]))
+    else
+      FGame.Situation.GameInfo.Add(Format('%s lizitiert %s',[ABet.Player,ALLGAMES.Find(ABet.GameTypeID).Name]))
   end;
 
 var value:Integer;
@@ -92,7 +105,9 @@ begin
     InsertBet(ABet);
     FGame.Situation.BestBet:=value;
     if ABet.GameTypeID='HOLD' then
-      player.BetState:=btHold;
+      player.BetState:=btHold
+    else
+      player.BetState:=btBet;
   end;
 
   if ABet.GameTypeID='PASS' then
@@ -108,9 +123,7 @@ begin
       else
         actPlayer:=FGame.Situation.TurnOn;
     end;
-  end
-  else
-    FGame.Situation.TurnOn:='NONE';
+  end;
 
   Result:=FGame.Situation.TurnOn;
 end;
@@ -155,6 +168,46 @@ function TGameController.NextTurn(const ARound: TGameRound): String;
 begin
   ARound.TurnOn:=NextPlayer(ARound.TurnOn);
   Result:=ARound.TurnOn;
+end;
+
+procedure TGameController.SetKing(const ACard: TCardKey);
+  function KingName(const ACard:TCardKey):String;
+  begin
+    case ACard of
+      HK:Result:='Herz-König';
+      CK:Result:='Kreuz-König';
+      SK:Result:='Pik-König';
+      DK:Result:='Karo-König';
+    end;
+  end;
+
+var player:TPlayerCards;
+begin
+  if FGame.Situation.State=gsCallKing then begin
+    if ACard in [HK,CK,SK,DK] then begin
+      FGame.Situation.KingSelected:=ACard;
+      FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' hat den '+KingName(ACard)+' gerufen');
+
+      // Get Teams
+      for player in FGame.Players do begin
+        if player.Name=FGame.Situation.Gamer then
+          player.Team:=ttTeam1
+        else if player.Cards.Exists(FGame.Situation.KingSelected) then
+           player.Team:=ttTeam1
+        else
+          player.Team:=ttTeam2;
+      end;
+
+      if FGame.ActGame.Talon<>tkNoTalon then
+        FGame.Situation.State:=gsGetTalon
+      else
+        FGame.Situation.State:=gsFinalBet;
+    end
+    else
+      raise Exception.Create('It is not a king-card');
+  end
+  else
+    raise Exception.Create('you cannot choice a king now');
 end;
 
 procedure TGameController.Shuffle;
@@ -255,6 +308,77 @@ begin
   end;
 end;
 
+procedure TGameController.ChangeCards(const ACards: TCards);
+var player:TPlayerCards;
+    otherplayer:String;
+    card: TCard;
+    cthrown: TCardThrown;
+    layDown:TCard;
+    forOtherTeam,forMyTeam:TGameRound;
+begin
+  try
+    if FGame.Situation.State=gsGetTalon then begin
+      otherPlayer:='';
+      for player in FGame.Players do begin
+        if player.Team=ttTeam2 then begin
+          otherPlayer:=player.Name;
+          Break;
+        end;
+      end;
+
+      player:=FGame.Players.Find(FGame.Situation.Gamer);
+      if not Assigned(player) then
+        raise Exception.Create('Actual gamer '+FGame.Situation.Gamer+' not found');
+
+      for card in ACards do begin
+        if card.ID in [HK,CK,DK,SK] then
+          raise Exception.Create('Kings cannot be layed away');
+      end;
+
+      for card in FGame.Talon.Cards do
+        player.Cards.AddItem(card.ID,card.CType,card.Value,card.ImageIndex);
+
+      forMyTeam:=TGameRound.Create;
+      FGame.Rounds.Push(forMyTeam);
+      if FGame.ActGame.Talon=tk3Talon then begin
+        forOtherTeam:=TGameRound.Create;
+        FGame.Rounds.Push(forOtherTeam);
+      end
+      else
+        forOtherTeam:=Nil;
+
+      for card in ACards do begin
+        laydown:=player.Cards.Find(card.ID);
+        layDown:=player.Cards.Extract(layDown);
+
+        cthrown:= TCardThrown.Create('');
+        cthrown.Card:=laydown.ID;
+        if card.Fold and (FGame.ActGame.Talon=tk3Talon)then begin  // cards belongs to other team
+          cthrown.PlayerName:=otherplayer;
+          forOtherTeam.CardsThrown.Add(cthrown);
+          FGame.Talon.Cards.Find(card.ID).Fold:=True;  // sign that belongs to other team
+        end
+        else begin                                     // cards belongs to my team
+          cthrown.PlayerName:=FGame.Situation.Gamer;
+          forMyTeam.CardsThrown.Add(cthrown);
+          if laydown.CType=ctTarock then begin
+            if not Assigned(FGame.Situation.CardsLayedDown) then
+              FGame.Situation.CardsLayedDown:=TCards.Create(True);
+            FGame.Situation.CardsLayedDown.AddItem(laydown.ID,laydown.CType,laydown.Value,laydown.ImageIndex);
+          end;
+        end;
+        laydown.Free;
+      end;
+
+      FGame.Situation.State:=gsFinalBet;
+    end
+    else
+      raise Exception.Create('you cannot can cards with talon now');
+  finally
+    ACards.Free;
+  end;
+end;
+
 function TGameController.CheckBetTerminated: Boolean;
 
   function WinningGame(ABets:TBets):String;
@@ -270,7 +394,6 @@ function TGameController.CheckBetTerminated: Boolean;
 
 var passed:Smallint;
     player:TPlayerCards;
-    winningPlayer:String;
 begin
   Result:=False;
   passed:=0;
@@ -279,11 +402,11 @@ begin
       Inc(passed);
   end;
 
-  winningPlayer:='';
+  FGame.Situation.Gamer:='';
   if passed=3 then begin
     for player in FGame.Players do begin
       if player.BetState=btBet then begin
-        winningPlayer:=player.Name;
+        FGame.Situation.Gamer:=player.Name;
 
         Result:=True;
         Break;
@@ -292,15 +415,31 @@ begin
   end;
 
   if Result then begin
-    FGame.Situation.Game:=ALLGames.Find(WinningGame(FGame.Bets));
-    if FGame.Situation.Game.Positive then
-      FGame.Situation.TurnOn:=FGame.Situation.Beginner
-    else
-      FGame.Situation.TurnOn:=winningPlayer;
-    FGame.Situation.State:=gsBet;
+    FGame.ActGame:=ALLGames.Find(WinningGame(FGame.Bets));
+    FGame.Situation.GameType:=FGame.ActGame.GameTypeid;
+    FGame.Situation.TurnOn:=FGame.Situation.Gamer;
+    FGame.Situation.GameInfo.Clear;
+    FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' spielt '+FGame.ActGame.Name);
 
-    NewRound;
-    FGame.Situation.State:=gsPlaying;
+    if FGame.ActGame.Positive and (FGame.ActGame.TeamKind=tkPair) then
+      FGame.Situation.State:=gsCallKing        // teams will be build later
+    else begin
+      // Get Teams
+      for player in FGame.Players do begin
+        if player.Name=FGame.Situation.Gamer then
+          player.Team:=ttTeam1
+        else
+          player.Team:=ttTeam2;
+      end;
+
+      if not FGame.ActGame.Positive then
+        FGame.Situation.State:=gsFinalBet
+
+      else if FGame.ActGame.Talon<>tkNoTalon then
+        FGame.Situation.State:=gsGetTalon
+      else
+        FGame.Situation.State:=gsFinalBet
+    end;
   end;
 end;
 

@@ -14,7 +14,9 @@ uses
   Common.Entities.Gamesituation in '..\Common\Common.Entities.Gamesituation.pas',
   Common.Entities.Player in '..\Common\Common.Entities.Player.pas',
   Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas',
-  ConnectionErrorFrm in 'ConnectionErrorFrm.pas' {frmConnectionError};
+  ConnectionErrorFrm in 'ConnectionErrorFrm.pas' {frmConnectionError},
+  KingSelectFra in 'KingSelectFra.pas' {fraKingSelect: TFrame},
+  TalonSelectFra in 'TalonSelectFra.pas' {fraTalonSelect: TFrame};
 
 {$R *.res}
 

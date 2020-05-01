@@ -71,6 +71,14 @@ type
     [POST, Consumes(TMediaType.APPLICATION_JSON), Produces(TMediaType.APPLICATION_JSON)]
     function NewBet([BodyParam]ABet: TBet): TBaseRESTResponse;
 
+    [Path('/king/{ACard}')]
+    [PUT, Produces(TMediaType.APPLICATION_JSON)]
+    function SetKing([PathParam] ACard:Integer):TBaseRESTResponse;
+
+    [Path('/changecards')]
+    [PUT, Consumes(TMediaType.APPLICATION_JSON), Produces(TMediaType.APPLICATION_JSON)]
+    function ChangeCards([BodyParam]ACards: TCards):TBaseRESTResponse;
+
     [GET, Path('/round')]
     [Produces(TMediaType.APPLICATION_JSON)]
     function GetRound: TGameRound;
@@ -79,6 +87,8 @@ type
     [Produces(TMediaType.APPLICATION_JSON)]
     function NewRound: TBaseRESTResponse;
 
+    [POST, Path('/gameinfo/{AMessage}')]
+    procedure NewGameInfo([PathParam]AMessage:String);
 
     [PUT, Path('/round/{AName}/{ACard}')]
     [Produces(TMediaType.APPLICATION_JSON)]
@@ -127,6 +137,11 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.NewGame;
 end;
 
+procedure TApiV1Resource.NewGameInfo(AMessage: String);
+begin
+  GetContainer.Resolve<IApiV1Controller>.NewGameInfo(AMessage);
+end;
+
 function TApiV1Resource.NewRound: TBaseRESTResponse;
 begin
   Result := GetContainer.Resolve<IApiV1Controller>.NewRound;
@@ -138,11 +153,23 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.RegisterPlayer(APlayer);
 end;
 
+function TApiV1Resource.SetKing(ACard: Integer): TBaseRESTResponse;
+begin
+  if (ACard<Ord(Low(TCardKey))) or (ACard>Ord(High(TCardKey))) then
+    raise Exception.Create('Wrong CardValue');
+  Result := GetContainer.Resolve<IApiV1Controller>.SetKing(TCardKey(ACard));
+end;
+
 function TApiV1Resource.Turn(AName:String; ACard:Integer): TBaseRESTResponse;
 begin
   if (ACard<Ord(Low(TCardKey))) or (ACard>Ord(High(TCardKey))) then
     raise Exception.Create('Wrong CardValue');
   Result := GetContainer.Resolve<IApiV1Controller>.Turn(AName, TCardKey(ACard));
+end;
+
+function TApiV1Resource.ChangeCards(ACards: TCards): TBaseRESTResponse;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.ChangeCards(ACards);
 end;
 
 function TApiV1Resource.DeletePlayer([BodyParam]APlayer:TPlayers<TPlayer>):

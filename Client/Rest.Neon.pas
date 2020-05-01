@@ -217,7 +217,7 @@ begin
 
 
   Result.GetSerializers.RegisterSerializer(TGUIDSerializer);
-  Result.GetSerializers.RegisterSerializer(TCardKeySerializer);
+ // Result.GetSerializers.RegisterSerializer(TCardKeySerializer);
 end;
 
 {$ENDREGION}

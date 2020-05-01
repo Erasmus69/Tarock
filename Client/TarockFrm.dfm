@@ -80,7 +80,6 @@ object frmTarock: TfrmTarock
       Height = 25
       Caption = 'ShowTalon'
       TabOrder = 4
-      OnClick = Button4Click
     end
     object bNewRound: TButton
       Left = 815
@@ -213,14 +212,6 @@ object frmTarock: TfrmTarock
       BevelOuter = bvNone
       TabOrder = 0
     end
-    object pTalon: TPanel
-      Left = 274
-      Top = 231
-      Width = 637
-      Height = 292
-      TabOrder = 1
-      Visible = False
-    end
     object pFirstplayerCards: TPanel
       Left = 1
       Top = 41
@@ -228,7 +219,7 @@ object frmTarock: TfrmTarock
       Height = 527
       Align = alLeft
       BevelOuter = bvNone
-      TabOrder = 2
+      TabOrder = 1
     end
     object pThirdPlayerCards: TPanel
       Left = 1150
@@ -237,7 +228,7 @@ object frmTarock: TfrmTarock
       Height = 527
       Align = alRight
       BevelOuter = bvNone
-      TabOrder = 3
+      TabOrder = 2
     end
     object pSecondPlayerCards: TPanel
       Left = 1
@@ -246,7 +237,7 @@ object frmTarock: TfrmTarock
       Height = 40
       Align = alTop
       BevelOuter = bvNone
-      TabOrder = 4
+      TabOrder = 3
     end
   end
   object mGameInfo: TcxMemo

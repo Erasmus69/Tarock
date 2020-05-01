@@ -30,6 +30,8 @@ type
     resGameSituation: TWiRLClientResourceJSON;
     resNewBet: TWiRLClientResourceJSON;
     resBets: TWiRLClientResourceJSON;
+    resSetKing: TWiRLClientResourceJSON;
+    resChangeCards: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -38,6 +40,7 @@ type
     FMyCards:TCards;
     FGameSituation: TGameSituation<Common.Entities.Player.TPlayer>;
     FBets: TBets;
+    FActGame: TGameType;
     procedure FillBody(AContent: TMemoryStream; APatchData: TObject);
     function GetIAmBeginner: Boolean;
     { Private declarations }
@@ -56,6 +59,9 @@ type
     procedure NewBet(const AGameTypeId:String);
     procedure GetBets;
 
+    procedure SelectKing(const ACard:TCardKey);
+    procedure LayDownCards(const ACards:TCards);
+
     function GetRound:TGameRound;
     procedure PutTurn(ACard:TCardKey);
     procedure NewRound;
@@ -66,6 +72,7 @@ type
     property IAmBeginner:Boolean read GetIAmBeginner;
     property MyCards:TCards read FMyCards;
     property GameSituation: TGameSituation<Common.Entities.Player.TPlayer> read FGameSituation;
+    property ActGame:TGameType read FActGame;
   end;
 
 var
@@ -163,6 +170,22 @@ begin
   end;
 end;
 
+procedure TdmTarock.LayDownCards(const ACards: TCards);
+begin
+  try
+    resChangeCards.PUT(procedure (AContent: TMemoryStream)
+          begin
+            FillBody(AContent, ACards);
+          end
+        );
+
+    if resNewBet.Response.GetValue<String>('status')<>'success' then
+      Showmessage(resNewBet.Response.GetValue<String>('message'));
+  except
+    Raise;
+  end;
+end;
+
 procedure TdmTarock.NewBet(const AGameTypeId: String);
 var b:TBet;
 begin
@@ -239,17 +262,17 @@ end;
 
 procedure TdmTarock.RefreshGameSituation;
 begin
-  try
-    resGameSituation.GET;
+  resGameSituation.GET;
 
-    if resGameSituation.ResponseAsString>'' then begin
-      FreeAndNil(FGameSituation);
-      FGameSituation:=TGameSituation<Common.Entities.Player.TPlayer>.Create;
+  if resGameSituation.ResponseAsString>'' then begin
+    FreeAndNil(FGameSituation);
+    FGameSituation:=TGameSituation<Common.Entities.Player.TPlayer>.Create;
 
-      RESTClient.DeserializeObject(resGameSituation.Response, FGameSituation);
-    end;
-  except
-    Raise;
+    RESTClient.DeserializeObject(resGameSituation.Response, FGameSituation);
+    if FGameSituation.GameType>'' then
+      FActGame:=ALLGAMES.Find(FGameSituation.GameType)
+    else
+      FActGame:=Nil;
   end;
 end;
 
@@ -264,41 +287,46 @@ begin
     p.Name:=AName;
     pl.Add(p);
 
-    try
-      resPlayers.POST(procedure (AContent: TMemoryStream)
-          begin
-            FillBody(AContent, pl);
-          end
-        );
+    resPlayers.POST(procedure (AContent: TMemoryStream)
+        begin
+          FillBody(AContent, pl);
+        end
+      );
 
-      if resPlayers.Response.GetValue<String>('status')<>'success' then
-        Showmessage(resPlayers.Response.GetValue<String>('message'));
+    if resPlayers.Response.GetValue<String>('status')<>'success' then
+      Showmessage(resPlayers.Response.GetValue<String>('message'));
 
-    except
-      on E: Exception do begin
-        Showmessage(E.Message);
-      end;
-    end;
   finally
     FreeAndNil(pl);
   end;
 end;
 
-procedure TdmTarock.StartNewGame;
+procedure TdmTarock.SelectKing(const ACard: TCardKey);
 begin
   try
-    resGames.POST(procedure (AContent: TMemoryStream)
-      begin
-      end
-     );
+    resSetKing.PathParamsValues.Clear;
+    resSetKing.Resource:=Format('v1/king/%d',[Ord(ACard)]);
+    resSetKing.PUT();
 
-   if resGames.Response.GetValue<String>('status')<>'success' then
-     Showmessage(resGames.Response.GetValue<String>('message'));
+    if resSetKing.Response.GetValue<String>('status')<>'success' then
+       Showmessage(resSetKing.Response.GetValue<String>('message'));
   except
     on E: Exception do begin
       Showmessage(E.Message);
     end;
   end;
+end;
+
+procedure TdmTarock.StartNewGame;
+begin
+  FActGame:=Nil;
+  resGames.POST(procedure (AContent: TMemoryStream)
+    begin
+    end
+   );
+
+ if resGames.Response.GetValue<String>('status')<>'success' then
+   Showmessage(resGames.Response.GetValue<String>('message'));
 end;
 
 procedure TdmTarock.GetBets;

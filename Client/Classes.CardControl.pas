@@ -12,12 +12,17 @@ type
   TCardControl=class(TImage)
   private
     FCard: TCard;
+    FRemainUp: Boolean;
+    FUp:Boolean;
+    procedure SetUp(const Value: Boolean);
   protected
     procedure MouseDown(Button:TMouseButton;ShiftState:TShiftState;X,Y:Integer);override;
     procedure MouseUp(Button:TMouseButton;ShiftState:TShiftState;X,Y:Integer);override;
   public
     constructor Create(AOwner:TComponent; const ACard:TCard);
     property Card:TCard read FCard;
+    property RemainUp:Boolean read FRemainUp write FRemainUp;
+    property Up:Boolean read FUp write SetUp;
   end;
 
   TBackCardKind=(bckDown,bckLeft,bckRight);
@@ -43,13 +48,30 @@ end;
 procedure TCardControl.MouseDown(Button: TMouseButton; ShiftState: TShiftState; X, Y: Integer);
 begin
   inherited;
-  Top:=Top-CARDUPLIFT;
+  if FRemainUp then
+    Up:=not FUp
+  else
+    Top:=Top-CARDUPLIFT;
 end;
 
 procedure TCardControl.MouseUp(Button: TMouseButton; ShiftState: TShiftState; X, Y: Integer);
 begin
   inherited;
-  Top:=Top+CARDUPLIFT;
+  if not RemainUp then
+    Top:=Top+CARDUPLIFT;
+end;
+
+procedure TCardControl.SetUp(const Value: Boolean);
+begin
+  if not FRemainUp then Exit;
+  
+  if FUp<>Value then begin
+    if FUp then
+      Top:=Top+CARDUPLIFT
+    else
+      Top:=Top-CARDUPLIFT;
+    FUp := Value;
+  end;
 end;
 
 { TBackCardControl }

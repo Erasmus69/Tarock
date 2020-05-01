@@ -30,6 +30,7 @@ type
     property Fold:Boolean read FFold write FFold;
 
     procedure Assign(const ASource:TCard);
+    function Clone:TCard;
   end;
 
   TCardsComparer=class(TComparer<TCard>)
@@ -40,7 +41,8 @@ type
     function AddItem(AID:TCardKey;ACType:TCardType;AValue:Byte;AImageIdx:Integer=-1):TCard;
     function Clone:TCards;
     procedure Assign(const ASource:TCards);
-    function Find(AID:TCardKey):TCard;
+    function Find(const AID:TCardKey):TCard;
+    function Exists(const AID:TCardKey):Boolean;
   end;
 
   TCardKeySerializer=class(TCustomSerializer)
@@ -144,7 +146,12 @@ begin
   Result.Assign(Self);
 end;
 
-function TCards.Find(AID: TCardKey): TCard;
+function TCards.Exists(const AID: TCardKey): Boolean;
+begin
+  Result:=Assigned(Find(AID));
+end;
+
+function TCards.Find(const AID:TCardKey): TCard;
 var itm:TCard;
 begin
   Result:=nil;
@@ -185,6 +192,12 @@ begin
   FFold:=ASource.FFold;
 end;
 
+
+function TCard.Clone: TCard;
+begin
+  Result:=TCard.Create;
+  Result.Assign(Self);
+end;
 
 { TCardKeySerializer }
 

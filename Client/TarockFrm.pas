@@ -7,12 +7,12 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
   cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round,
-  cxMemo,GamesSelectFra;
+  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra;
 
 const
     CSM_REFRESHCARDS=WM_USER+1;
 type
-  TCardPosition=(cpMyCards,cpTalon,cpFirstPlayer,cpSecondPlayer,cpThirdPlayer);
+  TCardPosition=(cpMyCards,cpFirstPlayer,cpSecondPlayer,cpThirdPlayer);
 
   TfrmTarock = class(TForm)
     Button2: TButton;
@@ -29,7 +29,6 @@ type
     CSEdit1: TCSEdit;
     Button1: TButton;
     bStartGame: TButton;
-    pTalon: TPanel;
     Button4: TButton;
     pFirstplayerCards: TPanel;
     pThirdPlayerCards: TPanel;
@@ -45,12 +44,13 @@ type
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
     procedure tRefreshTimer(Sender: TObject);
     procedure bNewRoundClick(Sender: TObject);
   private
     { Private declarations }
     FGameSelect:TfraGameSelect;
+    FKingSelect:TfraKingSelect;
+    FTalonSelect:TfraTalonSelect;
     FBetsShownIdx:Integer;
 
     procedure GetPlayers;
@@ -59,9 +59,10 @@ type
     procedure ShowThrow(const ARound:TGameRound);
     procedure ShowTurn;
     procedure DoThrowCard(Sender:TObject);
-    procedure GameInfo(const AInfo:String);
+    procedure GameInfo;
     procedure ShowGameSelect;
-    procedure ShowBiddingState;
+    procedure ShowKingSelect;
+    procedure ShowTalon;
     procedure ReactiveServerConnection;
   protected
     procedure WndProc(var Message:TMessage);override;
@@ -73,7 +74,7 @@ var
   frmTarock: TfrmTarock;
 
 implementation
-uses System.JSON,TarockDM,Classes.Entities,Classes.CardControl,
+uses System.JSON,TarockDM,Common.Entities.Player,Classes.Entities,Classes.CardControl,
   Common.Entities.GameSituation, Common.Entities.GameType, ConnectionErrorFrm,
   WiRL.http.Client.Interfaces;
 
@@ -94,23 +95,13 @@ begin
     try
     //  dm.RegisterPlayer(CSEdit1.Text);
       dm.MyName:=CSEdit1.Text;
+      if Assigned(dm.MyCards) then begin
+        dm.GetMyCards;
+        ShowCards;
+      end;
+
     finally
       GetPlayers;
-    end;
-  end;
-end;
-
-procedure TfrmTarock.Button4Click(Sender: TObject);
-var c:TCards;
-begin
-  if pTalon.Visible then
-    pTalon.Visible:=False
-  else begin
-    c:=dm.GetCards('TALON');
-    try
-      ShowCards(c,cpTalon);
-    finally
-      FreeAndNil(c);
     end;
   end;
 end;
@@ -141,9 +132,9 @@ begin
   tRefresh.Enabled:=True;
 end;
 
-procedure TfrmTarock.GameInfo(const AInfo: String);
+procedure TfrmTarock.GameInfo;
 begin
-  mGameInfo.Lines.Add(AInfo);
+  mGameInfo.Lines.Assign(dm.GameSituation.GameInfo);
 end;
 
 procedure TfrmTarock.GetPlayers;
@@ -170,12 +161,7 @@ begin
                 imgLeft:=(Width-((ACards.Count-1)*CARDXOFFSET)-CARDWIDTH) div 2;
                 cardParent:=pMyCards
               end;
-    cpTalon:  begin
-                cardParent:=pTalon;
-                imgLeft:=0;
-                pTalon.Visible:=True;
-              end;
-    cpFirstPlayer:begin
+     cpFirstPlayer:begin
                     cardParent:=pFirstPlayerCards;
                     backCardKind:=bckLeft;
                   end;
@@ -194,7 +180,7 @@ begin
       cardParent.Controls[i].Free
   end;
 
-  if APosition in [cpMyCards,cpTalon] then begin
+  if APosition in [cpMyCards] then begin
     for card in ACards do begin
       if not card.Fold then begin
         img:=TCardControl.Create(Self,card);
@@ -246,9 +232,39 @@ begin
   FGameSelect.Show;
 end;
 
+procedure TfrmTarock.ShowKingSelect;
+begin
+  FreeAndNil(FKingSelect);
+
+  FKingSelect:=TfraKingSelect.Create(Self);
+  FKingSelect.Top:=(pBoard.Height-FKingSelect.Height) div 2;
+  FKingSelect.Left:=(pBoard.Width-FKingSelect.Width) div 2;
+  FKingSelect.Parent:=pBoard;
+  FKingSelect.Show;
+end;
+
 procedure TfrmTarock.ShowCards;
 begin
   ShowCards(dm.MyCards,cpMyCards);
+end;
+
+procedure TfrmTarock.ShowTalon;
+var i: Integer;
+begin
+  FreeAndNil(FTalonSelect);
+
+  FTalonSelect:=TfraTalonSelect.Create(Self);
+  FTalonSelect.Top:=(pBoard.Height-FTalonSelect.Height) div 2;
+  FTalonSelect.Left:=(pBoard.Width-FTalonSelect.Width) div 2;
+  FTalonSelect.Parent:=pBoard;
+  FTalonSelect.Show;
+
+  for i:=0 to pMyCards.ControlCount-1 do begin
+    if pMyCards.Controls[i] is TCardControl then begin
+      TCardControl(pMyCards.Controls[i]).RemainUp:=True;
+      TCardControl(pMyCards.Controls[i]).Up:=False;
+    end;
+  end;
 end;
 
 procedure TfrmTarock.ShowThrow(const ARound:TGameRound);
@@ -271,20 +287,6 @@ begin
   end;
 end;
 
-procedure TfrmTarock.ShowBiddingState;
-var i: Integer;
-begin
-  for i := FBetsShownIdx+1 to dm.Bets.Count-1 do begin
-    if dm.Bets[i].GameTypeID='PASS' then
-      GameInfo(Format('%s hat gepasst',[dm.Bets[i].Player]))
-    else if dm.Bets[i].GameTypeID='HOLD' then
-      GameInfo(Format('%s hat das Spiel aufgenommen',[dm.Bets[i].Player]))
-    else
-      GameInfo(Format('%s lizitiert %s',[dm.Bets[i].Player,ALLGAMES.Find(dm.Bets[i].GameTypeID).Name]))
-  end;
-  FBetsShownIdx:=dm.Bets.Count-1;
-end;
-
 procedure TfrmTarock.ShowTurn;
 var player:TPlayer;
 begin
@@ -302,22 +304,22 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     if not Assigned(dm.Players) or (dm.Players.Count<dm.GameSituation.Players.Count) then
       GetPlayers;
 
-    mGameInfo.Lines.Clear;
-    if dm.GameSituation.Players.Count<4 then begin
-      GameInfo('Wir warten auf weitere Spieler');
-
-    end
-    else
-      GameInfo('Starte das Spiel');
+    if dm.GameSituation.State<>gsNone then begin
+      if not Assigned(dm.MyCards) then
+         dm.GetMyCards;
+      ShowCards;
+    end;
   end;
 
   procedure Bidding;
   begin
     if not Assigned(FGameSelect) then begin
       bStartGame.Enabled:=False;
-      mGameInfo.Lines.Clear;
-      GameInfo('Neues Spiel gestartet');
-      GameInfo(dm.GameSituation.Beginner+' hat die Vorhand');
+
+      if not Assigned(dm.MyCards) then begin
+        dm.GetMyCards;
+      end;
+      ShowCards;
       ShowGameSelect;
       FBetsShownIdx:=-1;
     end;
@@ -326,22 +328,65 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     if FBetsShownIdx<dm.Bets.Count-1 then
       FGameSelect.RefreshGames;
     FGameSelect.CheckMyTurn;
-    ShowBiddingState;
-    ShowTurn;
+  end;
+
+  (*
+     alle positiv: Sack, Königult,vogel , trull, valat , contra
+     alle negativ:  contra
+     player:  ich liege
+  *)
+  procedure ShowActGame;
+  begin
+    if Assigned(FGameSelect) and Assigned(dm.ActGame) then begin
+  //   GameInfo(dm.GameSituation.Gamer+' spielt '+dm.ActGame.Name);
+      FreeAndNil(FGameSelect);
+//      FViewSelectedKing:=False;
+    end;
+  end;
+
+  procedure CallingKing;
+  begin
+    ShowActGame;
+    if (dm.MyName=dm.GameSituation.Gamer) and not Assigned(FKingSelect) then
+      ShowKingSelect;
+  end;
+
+  procedure GettingTalon;
+  begin
+    ShowActGame;
+    FreeAndNil(FKingSelect);
+
+    if (dm.MyName=dm.GameSituation.Gamer) and not Assigned(FTalonSelect) then
+      ShowTalon;
+
+//    if not FViewSelectedKing then begin
+ //     GameInfo(dm.GameSituation.Gamer+' hat '+dm.GameSituation.KingSelected+' gerufen');
+//      FViewSelectedKing:=True;
+
+  end;
+
+  procedure FinalBidding;
+  begin
+    if (dm.MyName=dm.GameSituation.Gamer) then begin
+      if Assigned(FTalonSelect) then begin
+        FTalonSelect.Free;
+        ShowCards;
+      end;
+    end
+    else begin
+
+    end;
   end;
 
   procedure Playing;
   var r:TGameRound;
   begin
     try
+      Exit;
       r:=dm.GetRound;
       if Assigned(r) then begin  // game is started
-        if not Assigned(dm.MyCards) then begin
-          dm.GetMyCards;
-          ShowCards;
-        end;
+
         ShowThrow(r);
-        ShowTurn;
       end;
     finally
       r.Free;
@@ -354,19 +399,31 @@ begin
   try
     try
       dm.RefreshGameSituation;
-      if (dm.GameSituation.State<>gsNone) and not Assigned(dm.Players) then
+      GameInfo;
+      if not Assigned(dm.Players) then
         Setup;
+
+      ShowTurn;
 
       case  dm.GameSituation.State  of
         gsNone:   Setup;
         gsBidding:Bidding;
+        gsCallKing:CallingKing;
+        gsGetTalon:GettingTalon;
+        gsFinalBet:FinalBidding;
+        gsReadyToPlay:;
         gsPlaying:Playing;
       end;
     except
       on E:EWiRLSocketException do
         ReactiveServerConnection;
-      else
-        Raise;
+      on E:EInvalidCast do begin
+        if E.Message='SS' then Beep;
+
+      end;
+      on E:Exception do
+        Showmessage(E.ClassName+' '+E.Message);
+
     end;
   finally
     tRefresh.Enabled:=True;

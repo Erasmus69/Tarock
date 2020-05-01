@@ -23,6 +23,7 @@ type
     function DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
 
     function GetGameSituation: TGameSituation<TPlayer>;
+    procedure NewGameInfo(const AMessage: String);
 
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
@@ -30,6 +31,9 @@ type
 
     function GetBets:TBets;
     function NewBet(const AParam: TBet): TBaseRESTResponse;
+
+    function SetKing(ACard: TCardKey): TBaseRESTResponse;
+    function ChangeCards(ACards: TCards): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -46,11 +50,15 @@ type
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
     function GetGameSituation: TGameSituation<TPlayer>;
+    procedure NewGameInfo(const AMessage: String);
 
     function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
 
     function GetBets:TBets;
     function NewBet(const AParam: TBet): TBaseRESTResponse;
+
+    function SetKing(ACard: TCardKey): TBaseRESTResponse;
+    function ChangeCards(ACards: TCards): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -112,6 +120,11 @@ begin
   Result:=GetContainer.Resolve<IRepository>.NewGame;
 end;
 
+procedure TApiV1Controller.NewGameInfo(const AMessage: String);
+begin
+  GetContainer.Resolve<IRepository>.NewGameInfo(AMessage);
+end;
+
 function TApiV1Controller.NewRound: TBaseRESTResponse;
 begin
   Result:=GetContainer.Resolve<IRepository>.NewRound;
@@ -133,9 +146,19 @@ begin
 end;
 
 
+function TApiV1Controller.SetKing(ACard: TCardKey): TBaseRESTResponse;
+begin
+  Result:=GetContainer.Resolve<IRepository>.SetKing(ACard);
+end;
+
 function TApiV1Controller.Turn(AName: String; ACard: TCardKey): TBaseRESTResponse;
 begin
   Result:=GetContainer.Resolve<IRepository>.Turn(AName, ACard);
+end;
+
+function TApiV1Controller.ChangeCards(ACards: TCards): TBaseRESTResponse;
+begin
+  Result := GetContainer.Resolve<IRepository>.ChangeCards(ACards);
 end;
 
 function TApiV1Controller.DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;

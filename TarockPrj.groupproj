@@ -21,13 +21,7 @@
         <Projects Include="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Program\MainProgram\ErgoApp.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\MasterWiRL\ErgoLicenseServerMasterWDBG.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Program\ErgoSystem\ErgoSystem.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj">
@@ -101,15 +95,6 @@
     <Target Name="TCErgo:Make">
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj" Targets="Make"/>
     </Target>
-    <Target Name="ErgoApp">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\MainProgram\ErgoApp.dproj"/>
-    </Target>
-    <Target Name="ErgoApp:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\MainProgram\ErgoApp.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ErgoApp:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\MainProgram\ErgoApp.dproj" Targets="Make"/>
-    </Target>
     <Target Name="ErgoLicenseServerMasterWDBG">
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\MasterWiRL\ErgoLicenseServerMasterWDBG.dproj"/>
     </Target>
@@ -118,15 +103,6 @@
     </Target>
     <Target Name="ErgoLicenseServerMasterWDBG:Make">
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\MasterWiRL\ErgoLicenseServerMasterWDBG.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="ErgoSystem">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\ErgoSystem\ErgoSystem.dproj"/>
-    </Target>
-    <Target Name="ErgoSystem:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\ErgoSystem\ErgoSystem.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ErgoSystem:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\ErgoSystem\ErgoSystem.dproj" Targets="Make"/>
     </Target>
     <Target Name="DemoSerialization">
         <MSBuild Projects="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj"/>
@@ -156,13 +132,13 @@
         <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\Client\ErgoLicenseServerDBG32.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="Tarock;TarockServiceDBG;WiRLServerTemplateDBG;AppTemplate;RegistrationTest;TCErgo;ErgoApp;ErgoLicenseServerMasterWDBG;ErgoSystem;DemoSerialization;DemoParameters;ErgoLicenseServerDBG32"/>
+        <CallTarget Targets="Tarock;TarockServiceDBG;WiRLServerTemplateDBG;AppTemplate;RegistrationTest;TCErgo;ErgoLicenseServerMasterWDBG;DemoSerialization;DemoParameters;ErgoLicenseServerDBG32"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;WiRLServerTemplateDBG:Clean;AppTemplate:Clean;RegistrationTest:Clean;TCErgo:Clean;ErgoApp:Clean;ErgoLicenseServerMasterWDBG:Clean;ErgoSystem:Clean;DemoSerialization:Clean;DemoParameters:Clean;ErgoLicenseServerDBG32:Clean"/>
+        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;WiRLServerTemplateDBG:Clean;AppTemplate:Clean;RegistrationTest:Clean;TCErgo:Clean;ErgoLicenseServerMasterWDBG:Clean;DemoSerialization:Clean;DemoParameters:Clean;ErgoLicenseServerDBG32:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;WiRLServerTemplateDBG:Make;AppTemplate:Make;RegistrationTest:Make;TCErgo:Make;ErgoApp:Make;ErgoLicenseServerMasterWDBG:Make;ErgoSystem:Make;DemoSerialization:Make;DemoParameters:Make;ErgoLicenseServerDBG32:Make"/>
+        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;WiRLServerTemplateDBG:Make;AppTemplate:Make;RegistrationTest:Make;TCErgo:Make;ErgoLicenseServerMasterWDBG:Make;DemoSerialization:Make;DemoParameters:Make;ErgoLicenseServerDBG32:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

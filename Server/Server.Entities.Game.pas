@@ -9,6 +9,7 @@ uses
   Common.Entities.Round,
   Common.Entities.Bet,
   Common.Entities.GameSituation,
+  Common.Entities.GameType,
   Spring.Collections.Stacks;
 
 type
@@ -44,6 +45,7 @@ type
     FPositiveGame: Boolean;
     FBets: TBets;
     FSituation: TGameSituation<TPlayerCards>;
+    FActGame: TGameType;
     function GetActRound: TGameRound;
     function GetPlayers: TPlayers<TPlayerCards>;
 
@@ -61,6 +63,7 @@ type
     property ActRound:TGameRound read GetActRound;
     property PositiveGame:Boolean read FPositiveGame write FPositiveGame;
     property Situation:TGameSituation<TPlayerCards> read FSituation write FSituation;
+    property ActGame:TGameType read FActGame write FActGame;
 
     constructor Create(const APlayers:TPlayers<TPlayer>=nil);
     destructor Destroy;override;

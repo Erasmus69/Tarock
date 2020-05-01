@@ -57,8 +57,8 @@ begin
       .SetFilters('*')
       .ConfigureSerializer
         .SetUseUTCDate(True)
-        .SetMemberCase(TNeonCase.SnakeCase)
-      .GetSerializers.RegisterSerializer(TCardKeySerializer);
+        .SetMemberCase(TNeonCase.SnakeCase);
+  //    .GetSerializers.RegisterSerializer(TCardKeySerializer);
 
   Logger.Leave('TServerREST.Create');
 end;

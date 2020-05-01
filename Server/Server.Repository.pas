@@ -28,9 +28,13 @@ type
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
     function GetGameSituation: TGameSituation<TPlayer>;
+    procedure NewGameInfo(const AMessage: String);
 
     function GetBets:TBets;
     function NewBet(const AParam: TBet): TBaseRESTResponse;
+
+    function SetKing(ACard: TCardKey): TBaseRESTResponse;
+    function ChangeCards(ACards: TCards): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -59,9 +63,13 @@ type
     function NewGame:TExtendedRESTResponse;
     function GetGame:TGame;
     function GetGameSituation: TGameSituation<TPlayer>;
+    procedure NewGameInfo(const AMessage: String);
 
     function GetBets:TBets;
     function NewBet(const ABet: TBet): TBaseRESTResponse;
+
+    function SetKing(ACard: TCardKey): TBaseRESTResponse;
+    function ChangeCards(ACards: TCards): TBaseRESTResponse;
 
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
@@ -83,6 +91,22 @@ uses
 { TRepository }
 
 {======================================================================================================================}
+function TRepository.ChangeCards(ACards: TCards): TBaseRESTResponse;
+begin
+  try
+    if not Assigned(FGameController) then
+      raise Exception.Create('No active Game');
+    FGameController.ChangeCards(ACards);
+    Result:=TBaseRESTResponse.BuildResponse(True);
+
+  except
+    on E:Exception do begin
+      Result:=TBaseRESTResponse.BuildResponse(False,E.Message);
+      Result.Message:=E.Message;
+    end;
+  end;
+end;
+
 constructor TRepository.Create;
 {======================================================================================================================}
 var
@@ -155,6 +179,10 @@ begin
     Result:=TGameSituation<TPlayer>.Create;
     Result.State:=gsNone;
     Result.Players:=FPlayers.Clone<TPlayer>;
+    if Result.Players.Count<4 then
+      Result.GameInfo.Add('Wir warten noch auf Spieler')
+    else
+      Result.GameInfo.Add('Starte das Spiel')
   end;
 end;
 
@@ -212,10 +240,6 @@ begin
       g:=TGame.Create(FPlayers);
 
       { TODO -oAP : rauszuwerfen }
-      g.Players[0].Team:=ttTEam1;
-      g.Players[2].Team:=ttTEam1;
-      g.Players[1].Team:=ttTEam2;
-      g.Players[3].Team:=ttTEam2;
       g.Situation.Beginner:='ANDI';
       FGames.Push(g);
 
@@ -228,11 +252,19 @@ begin
       FGameController.Shuffle;
       g.Situation.State:=gsBidding;
       g.Situation.BestBet:=0;
+      g.Situation.GameType:='';
+      g.Situation.Gamer:='';
       g.Situation.TurnOn:=g.Situation.Beginner;
     end;
   end
   else
     Result:=TExtendedRESTResponse.BuildResponse(False,'Needs 4 registered players to create a game');
+end;
+
+procedure TRepository.NewGameInfo(const AMessage: String);
+begin
+  if Assigned(ActGame) then
+    ActGame.Situation.GameInfo.Add(AMessage);
 end;
 
 function TRepository.NewRound: TBaseRESTResponse;
@@ -278,6 +310,22 @@ begin
     Result:=TBaseRESTResponse.BuildResponse(True);
 
   Logger.Leave('TRepository.RegisterPlayer');
+end;
+
+function TRepository.SetKing(ACard: TCardKey): TBaseRESTResponse;
+begin
+  try
+    if not Assigned(FGameController) then
+      raise Exception.Create('No active Game');
+    FGameController.SetKing(ACard);
+    Result:=TBaseRESTResponse.BuildResponse(True);
+
+  except
+    on E:Exception do begin
+      Result:=TBaseRESTResponse.BuildResponse(False,E.Message);
+      Result.Message:=E.Message;
+    end;
+  end;
 end;
 
 function TRepository.Turn(AName: String; ACard: TCardKey): TBaseRESTResponse;
