@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
   cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round,
-  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra;
+  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra;
 
 const
     CSM_REFRESHCARDS=WM_USER+1;
@@ -29,7 +29,6 @@ type
     CSEdit1: TCSEdit;
     Button1: TButton;
     bStartGame: TButton;
-    Button4: TButton;
     pFirstplayerCards: TPanel;
     pThirdPlayerCards: TPanel;
     pSecondPlayerCards: TPanel;
@@ -51,6 +50,7 @@ type
     FGameSelect:TfraGameSelect;
     FKingSelect:TfraKingSelect;
     FTalonSelect:TfraTalonSelect;
+    FBiddingSelect:TfraBidding;
     FBetsShownIdx:Integer;
 
     procedure GetPlayers;
@@ -63,6 +63,7 @@ type
     procedure ShowGameSelect;
     procedure ShowKingSelect;
     procedure ShowTalon;
+    procedure ShowBiddingSelect;
     procedure ReactiveServerConnection;
   protected
     procedure WndProc(var Message:TMessage);override;
@@ -99,6 +100,7 @@ begin
         dm.GetMyCards;
         ShowCards;
       end;
+      FreeAndNil(FTalonSelect);
 
     finally
       GetPlayers;
@@ -123,6 +125,7 @@ end;
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
 begin
   dm.StartNewGame;
+  bStartGame.Enabled:=False;
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
@@ -130,11 +133,14 @@ begin
   dm.MyName:=CSEdit1.Text;
   mGameInfo.Lines.Clear;
   tRefresh.Enabled:=True;
+  bNewRound.Enabled:=False;
+  bStartGame.Enabled:=False;
 end;
 
 procedure TfrmTarock.GameInfo;
 begin
   mGameInfo.Lines.Assign(dm.GameSituation.GameInfo);
+  SendMessage(mGameInfo.InnerControl.Handle,EM_LINESCROLL,0,mGameInfo.Lines.Count-1);
 end;
 
 procedure TfrmTarock.GetPlayers;
@@ -145,6 +151,17 @@ begin
   for itm in dm.Players do begin
     itm.PlayerLabel.Caption:=itm.Name;
   end;
+end;
+
+procedure TfrmTarock.ShowBiddingSelect;
+begin
+  FreeAndNil(FBiddingSelect);
+
+  FBiddingSelect:=TfraBidding.Create(Self);
+  FBiddingSelect.Top:=(pBoard.Height-FBiddingSelect.Height) div 2;
+  FBiddingSelect.Left:=(pBoard.Width-FBiddingSelect.Width) div 2;
+  FBiddingSelect.Parent:=pBoard;
+  FBiddingSelect.Show;
 end;
 
 procedure TfrmTarock.ShowCards(ACards: TCards; APosition: TCardPosition);
@@ -159,6 +176,7 @@ begin
   case APosition of
     cpMyCards:begin
                 imgLeft:=(Width-((ACards.Count-1)*CARDXOFFSET)-CARDWIDTH) div 2;
+                imgLeft:=imgLeft-(CARDXOFFSET div 2);
                 cardParent:=pMyCards
               end;
      cpFirstPlayer:begin
@@ -308,7 +326,9 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
       if not Assigned(dm.MyCards) then
          dm.GetMyCards;
       ShowCards;
-    end;
+    end
+    else if dm.Players.Count=4 then
+      bStartGame.Enabled:=True;
   end;
 
   procedure Bidding;
@@ -325,8 +345,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     end;
 
     dm.GetBets;
-    if FBetsShownIdx<dm.Bets.Count-1 then
-      FGameSelect.RefreshGames;
+    FGameSelect.RefreshGames;
     FGameSelect.CheckMyTurn;
   end;
 
@@ -356,26 +375,23 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     ShowActGame;
     FreeAndNil(FKingSelect);
 
-    if (dm.MyName=dm.GameSituation.Gamer) and not Assigned(FTalonSelect) then
+    if not Assigned(FTalonSelect) then
       ShowTalon;
-
-//    if not FViewSelectedKing then begin
- //     GameInfo(dm.GameSituation.Gamer+' hat '+dm.GameSituation.KingSelected+' gerufen');
-//      FViewSelectedKing:=True;
-
   end;
 
   procedure FinalBidding;
   begin
-    if (dm.MyName=dm.GameSituation.Gamer) then begin
-      if Assigned(FTalonSelect) then begin
-        FTalonSelect.Free;
+    ShowActGame;
+    if Assigned(FTalonSelect) then begin
+      FreeAndNil(FTalonSelect);
+      if (dm.MyName=dm.GameSituation.Gamer) then begin
+        dm.GetMyCards;
         ShowCards;
       end;
-    end
-    else begin
-
     end;
+    if not Assigned(FBiddingSelect) then
+      ShowBiddingSelect;
+    FBiddingSelect.CheckMyTurn;
   end;
 
   procedure Playing;

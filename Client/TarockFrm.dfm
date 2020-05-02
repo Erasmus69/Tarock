@@ -65,29 +65,21 @@ object frmTarock: TfrmTarock
       OnClick = Button1Click
     end
     object bStartGame: TButton
-      Left = 896
-      Top = 6
-      Width = 75
-      Height = 25
-      Caption = 'StartGame'
-      TabOrder = 3
-      OnClick = BStartGameClick
-    end
-    object Button4: TButton
-      Left = 1081
+      Left = 1190
       Top = 5
       Width = 75
       Height = 25
-      Caption = 'ShowTalon'
-      TabOrder = 4
+      Caption = 'Starte Spiel'
+      TabOrder = 3
+      OnClick = BStartGameClick
     end
     object bNewRound: TButton
-      Left = 815
-      Top = 6
+      Left = 1109
+      Top = 5
       Width = 75
       Height = 25
-      Caption = 'New Round'
-      TabOrder = 5
+      Caption = 'Starte Runde'
+      TabOrder = 4
       OnClick = bNewRoundClick
     end
   end
@@ -245,6 +237,7 @@ object frmTarock: TfrmTarock
     Top = 45
     Lines.Strings = (
       'mGameInfo')
+    Properties.ScrollBars = ssVertical
     TabOrder = 6
     Height = 173
     Width = 233

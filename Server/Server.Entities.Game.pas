@@ -13,18 +13,14 @@ uses
   Spring.Collections.Stacks;
 
 type
-  TTeam=(ttTeam1,ttTeam2);
-
   TPlayerCards=class(TPlayer)
   private
     FIndex: Integer;
-    FTeam: TTeam;
-
     FCards: TCards;
 
   public
     property Index:Integer read FIndex;
-    property Team:TTeam read FTeam write FTeam;
+
 
     property Cards:TCards read FCards write FCards;
 
@@ -46,6 +42,7 @@ type
     FBets: TBets;
     FSituation: TGameSituation<TPlayerCards>;
     FActGame: TGameType;
+    FLastFinalBidder: String;
     function GetActRound: TGameRound;
     function GetPlayers: TPlayers<TPlayerCards>;
 
@@ -58,6 +55,7 @@ type
     property Players: TPlayers<TPlayerCards> read GetPlayers;
     property Talon:TPlayerCards read FTalon write FTalon;
     property Bets:TBets read FBets write FBets;
+    property LastFinalBidder:String read FLastFinalBidder write FLastFinalBidder;
 
     property Rounds:TGameRounds read FRounds write FRounds;
     property ActRound:TGameRound read GetActRound;
@@ -157,7 +155,6 @@ begin
   inherited Assign(ASource);
   if ASource is TPlayerCards then begin
     FIndex:=TPlayerCards(ASource).Index;
-    FTeam:=TPlayerCards(ASource).Team;
     FCards.Assign(TPlayerCards(ASource).Cards);
   end;
 end;

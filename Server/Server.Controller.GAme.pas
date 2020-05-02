@@ -15,23 +15,27 @@ type
     function CheckBetTerminated:Boolean;
     procedure CheckGameTerminated;
     function NextPlayer(const APlayerName: String): String;
-
+    function PreviousPlayer(const APlayerName: String): String;
   public
     constructor Create(AGame:TGame);
     procedure Shuffle;
+    procedure SetKing(const ACard:TCardKey);
+    procedure ChangeCards(const ACards:TCards);
+
     function NewBet(ABet:TBet):String;
+    function FinalBet(const ABet: TBet): String;
+
     function NewRound:String;
     function Turn(APlayer:String; ACard:TCardKey):String;
     function NextTurn(const ARound:TGameRound):String;
 
-    procedure SetKing(const ACard:TCardKey);
-    procedure ChangeCards(const ACards:TCards);
     procedure CloseRound;
   end;
 
 implementation
 uses System.SysUtils, System.Generics.Collections,Common.Entities.GameType,
-     Common.Entities.Player,Common.Entities.GameSituation, dialogs;
+     Common.Entities.Player,Common.Entities.GameSituation, dialogs,
+     System.Classes;
 
 constructor TGameController.Create(AGame: TGame);
 begin
@@ -128,6 +132,108 @@ begin
   Result:=FGame.Situation.TurnOn;
 end;
 
+function TGameController.FinalBet(const ABet:TBet):String;
+
+  function Match(ADest,ASource:TAddBets):TAddBets;
+  begin
+    if ASource.Minus10>ADest.Minus10 then
+      ADest.Minus10:=ASource.Minus10;
+    if ASource.Game>ADest.Game then
+      ADest.Game:=ASource.Game;
+    if ASource.AllKings>ADest.AllKings then
+      ADest.AllKings:=ASource.AllKings;
+    if ASource.KingUlt>ADest.KingUlt then
+      ADest.KingUlt:=ASource.KingUlt;
+    if ASource.PagatUlt>ADest.PagatUlt then
+      ADest.PagatUlt:=ASource.PagatUlt;
+    if ASource.VogelII>ADest.VogelII then
+      ADest.VogelII:=ASource.VogelII;
+    if ASource.VogelIII>ADest.VogelIII then
+      ADest.VogelIII:=ASource.VogelIII;
+    if ASource.VogelIV>ADest.VogelIV then
+      ADest.VogelIV:=ASource.VogelIV;
+    if ASource.Valat>ADest.Valat then
+      ADest.Valat:=ASource.Valat;
+    if ASource.Trull>ADest.Trull then
+      ADest.Trull:=ASource.Trull;
+    if ASource.CatchXXI>ADest.CatchXXI then
+      ADest.CatchXXI:=ASource.CatchXXI;
+    Result:=ADest;
+  end;
+
+  function AddInfo(const ASL:TStringList;const AMessage:String;const APlayer:String; const ABet:TAddBetType):String;
+  var s:String;
+  begin
+    if ABet=abtBet then
+      s:=APlayer+' sagt '+AMessage+' an'
+    else if ABet=abtContra then
+      s:=APlayer+' sagt contra '+AMessage
+    else if ABet=abtRe then
+      s:=APlayer+' sagt re '+AMessage
+    else
+      Exit;
+    ASL.Add(s);
+  end;
+
+var player:TPlayerCards;
+    addBets:TAddBets;
+    sl:TStringList;
+begin
+  if FGame.LastFinalBidder='' then
+    FGame.LastFinalBidder:=PreviousPlayer(FGame.Situation.Gamer);
+
+  player:=FGame.FindPlayer(ABet.Player);
+  if not assigned(player) then
+     raise Exception.Create('Unknown Player '+ABet.Player);
+
+  if FGame.Situation.TurnOn<>ABet.Player then
+    raise Exception.Create('Is not your turn');
+
+  if player.Team=ttTeam1 then
+    FGame.Situation.Team1AddBets:=Match(FGame.Situation.Team1AddBets,ABet.AddBets)
+  else
+    FGame.Situation.Team2AddBets:=Match(FGame.Situation.Team2AddBets,ABet.AddBets);
+
+  sl:=TStringList.Create;
+  try
+    AddInfo(sl,'Sack',ABet.Player,ABet.AddBets.Minus10);
+    AddInfo(sl,'König ult',ABet.Player,ABet.AddBets.KingUlt);
+    AddInfo(sl,'Pagat ult',ABet.Player,ABet.AddBets.PagatUlt);
+    AddInfo(sl,'Vogel II',ABet.Player,ABet.AddBets.VogelII);
+    AddInfo(sl,'Vogel III',ABet.Player,ABet.AddBets.VogelIII);
+    AddInfo(sl,'Vogel IV',ABet.Player,ABet.AddBets.VogelIV);
+    AddInfo(sl,'alle 4 Könige',ABet.Player,ABet.AddBets.AllKings);
+    AddInfo(sl,'Trull',ABet.Player,ABet.AddBets.Trull);
+    AddInfo(sl,'XXI Fang',ABet.Player,ABet.AddBets.CatchXXI);
+    AddInfo(sl,'Valat',ABet.Player,ABet.AddBets.Valat);
+    AddInfo(sl,'Spiel',ABet.Player,ABet.AddBets.Game);
+    if sl.Count>0 then begin
+      FGame.LastFinalBidder:=PreviousPlayer(ABet.Player);
+      FGame.Situation.GameInfo.AddStrings(sl);
+    end
+    else
+      FGame.Situation.GameInfo.Add(ABet.Player+' sagt weiter');
+
+  finally
+    sl.Free;
+  end;
+
+  if ABet.Player=FGame.LastFinalBidder then begin
+    FGame.Situation.State:=gsPlaying;
+    if not FGame.ActGame.Positive then
+      FGame.Situation.TurnOn:=FGame.Situation.Gamer
+    else
+      FGame.Situation.TurnOn:=FGame.Situation.Beginner;
+    FGame.Situation.GameInfo.Add(' ');
+    FGame.Situation.GameInfo.Add(FGame.Situation.TurnOn+' kommt raus');
+    NewRound;
+  end
+  else
+    FGame.Situation.TurnOn:=NextPlayer(ABet.Player);
+
+  Result:=FGame.Situation.TurnOn;
+end;
+
 function TGameController.NewRound:String;
 var r:TGameRound;
   i: Integer;
@@ -168,6 +274,16 @@ function TGameController.NextTurn(const ARound: TGameRound): String;
 begin
   ARound.TurnOn:=NextPlayer(ARound.TurnOn);
   Result:=ARound.TurnOn;
+end;
+
+function TGameController.PreviousPlayer(const APlayerName: String): String;
+var player:TPlayerCards;
+begin
+  player:=FGame.FindPlayer(APlayerName);
+  if Assigned(player) then
+    Result:=FGame.Players[(player.Index+3) mod 4].Name
+  else
+    raise Exception.Create('Unknown Player '+APlayerName);
 end;
 
 procedure TGameController.SetKing(const ACard: TCardKey);
@@ -215,7 +331,6 @@ procedure TGameController.Shuffle;
   procedure IntShuffle(var ACards: TCards; const APlayerCards:TPlayerCards; const ACount: Integer);
   var i,r:Integer;
       itm:TCard;
-      comp:TCardsComparer;
   begin
     APlayerCards.Cards.Clear;
 
@@ -224,12 +339,7 @@ procedure TGameController.Shuffle;
       itm:=ACards.Extract(ACards.Items[r]);
       APlayerCards.Cards.Add(itm);
     end;
-    comp:=TCardsComparer.Create;
-    try
-      APlayerCards.Cards.Sort(comp)
-    finally
-      comp.Free;
-    end;
+    APlayerCards.Cards.Sort;
   end;
 
 var cards:TCards;
@@ -331,51 +441,61 @@ begin
         raise Exception.Create('Actual gamer '+FGame.Situation.Gamer+' not found');
 
       for card in ACards do begin
-        if card.ID in [HK,CK,DK,SK] then
-          raise Exception.Create('Kings cannot be layed away');
+        if not Card.Fold then begin
+          if card.ID in [HK,CK,DK,SK] then
+            raise Exception.Create('Kings cannot be layed away')
+          else if card.ID in [T1,T21,T22] then
+            raise Exception.Create('Trull cannot be layed away');
+        end;
       end;
 
       for card in FGame.Talon.Cards do
         player.Cards.AddItem(card.ID,card.CType,card.Value,card.ImageIndex);
 
       forMyTeam:=TGameRound.Create;
-      FGame.Rounds.Push(forMyTeam);
-      if FGame.ActGame.Talon=tk3Talon then begin
-        forOtherTeam:=TGameRound.Create;
-        FGame.Rounds.Push(forOtherTeam);
-      end
+      if FGame.ActGame.Talon=tk3Talon then
+        forOtherTeam:=TGameRound.Create
       else
         forOtherTeam:=Nil;
 
       for card in ACards do begin
         laydown:=player.Cards.Find(card.ID);
-        layDown:=player.Cards.Extract(layDown);
 
-        cthrown:= TCardThrown.Create('');
-        cthrown.Card:=laydown.ID;
-        if card.Fold and (FGame.ActGame.Talon=tk3Talon)then begin  // cards belongs to other team
-          cthrown.PlayerName:=otherplayer;
-          forOtherTeam.CardsThrown.Add(cthrown);
-          FGame.Talon.Cards.Find(card.ID).Fold:=True;  // sign that belongs to other team
-        end
-        else begin                                     // cards belongs to my team
-          cthrown.PlayerName:=FGame.Situation.Gamer;
-          forMyTeam.CardsThrown.Add(cthrown);
-          if laydown.CType=ctTarock then begin
-            if not Assigned(FGame.Situation.CardsLayedDown) then
-              FGame.Situation.CardsLayedDown:=TCards.Create(True);
-            FGame.Situation.CardsLayedDown.AddItem(laydown.ID,laydown.CType,laydown.Value,laydown.ImageIndex);
+        if Assigned(layDown) then begin
+          layDown:=player.Cards.Extract(layDown);
+
+          cthrown:= TCardThrown.Create('');
+          cthrown.Card:=laydown.ID;
+          if card.Fold and (FGame.ActGame.Talon=tk3Talon)then begin  // cards belongs to other team
+            cthrown.PlayerName:=otherplayer;
+            forOtherTeam.CardsThrown.Add(cthrown);
+            FGame.Talon.Cards.Find(card.ID).Fold:=True;  // sign that belongs to other team
+          end
+          else begin                                     // cards belongs to my team
+            cthrown.PlayerName:=FGame.Situation.Gamer;
+            forMyTeam.CardsThrown.Add(cthrown);
+            if laydown.CType=ctTarock then begin
+              if not Assigned(FGame.Situation.CardsLayedDown) then
+                FGame.Situation.CardsLayedDown:=TCards.Create(True);
+              FGame.Situation.CardsLayedDown.AddItem(laydown.ID,laydown.CType,laydown.Value,laydown.ImageIndex);
+            end;
           end;
+          laydown.Free;
         end;
-        laydown.Free;
       end;
+      player.Cards.Sort;
 
+      FGame.Rounds.Push(forMyTeam);
+      if Assigned(forOtherTeam) then
+        FGame.Rounds.Push(forOtherTeam);
+
+      FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' liegt');
       FGame.Situation.State:=gsFinalBet;
     end
     else
       raise Exception.Create('you cannot can cards with talon now');
   finally
-    ACards.Free;
+  //  ACards.Free;
   end;
 end;
 

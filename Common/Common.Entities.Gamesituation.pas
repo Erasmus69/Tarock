@@ -2,7 +2,7 @@ unit Common.Entities.Gamesituation;
 
 interface
 uses System.Classes,System.Generics.Collections,Neon.Core.Attributes,Common.Entities.Player,
-     Common.Entities.GameType,Common.Entities.Card;
+     Common.Entities.GameType,Common.Entities.Card,Common.Entities.Bet;
 
 type
   TGameState=(gsNone,gsBidding,gsCallKing,gsGetTalon,gsFinalBet,gsReadyToPlay,gsPlaying,gsTerminated);
@@ -19,6 +19,8 @@ type
     FKingSelected: TCardKey;
     FCardsLayedDown: TCards;
     FGameInfo: TStringList;
+    FTeam1AddBets: TAddBets;
+    FTeam2AddBets: TAddBets;
   public
     property Players: TPlayers<T> read FPlayers write FPlayers;
     property State: TGameState read FState write FState;
@@ -26,6 +28,8 @@ type
 
     property Beginner: String read FBeginner write FBeginner;
     property GameType:String read FGameType write FGameType;
+    property Team1AddBets:TAddBets read FTeam1AddBets write FTeam1AddBets;
+    property Team2AddBets:TAddBets read FTeam2AddBets write FTeam2AddBets;
     property Gamer:String read FGamer write FGamer;
     property BestBet:Smallint read FBestBet write FBestBet;
     property KingSelected:TCardKey read FKingSelected write FKingSelected;

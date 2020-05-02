@@ -218,7 +218,12 @@ begin
     if not Assigned(FGameController) then
       Result:=TBaseRESTResponse.BuildResponse(False,'No active Game')
     else begin
-      s:=FGameController.NewBet(ABet);
+      if ActGame.Situation.State=gsBidding then
+        s:=FGameController.NewBet(ABet)
+      else if ActGame.Situation.State=gsFinalBet then
+        s:=FGameController.FinalBet(ABet)
+      else
+        raise Exception.Create('It is not time to bid');
       Result:=TBaseRESTResponse.BuildResponse(True);
       Result.Message:='Turn is on '+s;
     end;

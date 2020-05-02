@@ -75,6 +75,7 @@ object fraTalonSelect: TfraTalonSelect
         Height = 33
         Anchors = [akLeft, akBottom]
         Caption = 'Links'
+        SpeedButtonOptions.GroupIndex = 1
         TabOrder = 1
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -91,6 +92,7 @@ object fraTalonSelect: TfraTalonSelect
         Height = 33
         Anchors = [akLeft, akBottom]
         Caption = 'Rechts'
+        SpeedButtonOptions.GroupIndex = 1
         TabOrder = 2
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText

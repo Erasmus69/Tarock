@@ -4,11 +4,19 @@ interface
 uses Neon.Core.Attributes,Generics.Collections;
 
 type
+  TAddBetType=(abtFalse,abtBet,abtContra,abtRe);
   TAddBets=record
-    Contra:Boolean;
-    Minus10:Boolean;
-    Trull:Boolean;
-    PagatUlt:Boolean;
+    Minus10:TAddBetType;
+    Game:TAddBetType;
+    AllKings:TAddBetType;
+    KingUlt:TAddBetType;
+    PagatUlt:TAddBetType;
+    VogelII:TAddBetType;
+    VogelIII:TAddBetType;
+    VogelIV:TAddBetType;
+    Valat:TAddBetType;
+    Trull:TAddBetType;
+    CatchXXI:TAddBetType;
   end;
 
   TBet=class(TObject)
@@ -69,7 +77,7 @@ procedure TBet.Assign(const ASource: TBet);
 begin
   Player:=ASource.Player;
   GameTypeID:=ASource.GameTypeID;
-  AddBets:=ASource.AddBets;
+  FAddBets:=ASource.AddBets;
 end;
 
 end.

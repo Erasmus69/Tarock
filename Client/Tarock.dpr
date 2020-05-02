@@ -16,7 +16,8 @@ uses
   Common.Entities.Bet in '..\Common\Common.Entities.Bet.pas',
   ConnectionErrorFrm in 'ConnectionErrorFrm.pas' {frmConnectionError},
   KingSelectFra in 'KingSelectFra.pas' {fraKingSelect: TFrame},
-  TalonSelectFra in 'TalonSelectFra.pas' {fraTalonSelect: TFrame};
+  TalonSelectFra in 'TalonSelectFra.pas' {fraTalonSelect: TFrame},
+  BiddingFra in 'BiddingFra.pas' {fraBidding: TFrame};
 
 {$R *.res}
 

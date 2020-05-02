@@ -37,16 +37,21 @@ type
   end;
 
 implementation
-uses Generics.Collections,Common.Entities.GameType,TarockDM;
+uses Generics.Collections,Common.Entities.GameType,TarockDM,Common.Entities.Bet;
 
 {$R *.dfm}
 
 { TfraGameSelect }
 
 procedure TfraGameSelect.bBetClick(Sender: TObject);
+var b:TBet;
 begin
   if gvGames.DataController.FocusedRecordIndex>=0 then begin
-    dm.NewBet(gvGames.DataController.Values[gvGames.DataController.FocusedRecordIndex,gcId.Index]);
+    b:=TBet.Create;
+    b.Player:=dm.MyName;
+    b.GameTypeID:=gvGames.DataController.Values[gvGames.DataController.FocusedRecordIndex,gcId.Index];
+
+    dm.NewBet(b);
   end;
 end;
 
@@ -69,7 +74,8 @@ begin
   gvGames.BeginUpdate;
   try
     ALLGAMES.ForEach(procedure (const AGame:TPair<String,TGameType>) begin
-                       if (not  AGame.Value.ByFirstPlayer or showFirstPlays or ((AGame.Key='63') and show63)) and
+                       if (not  AGame.Value.ByFirstPlayer or (showFirstPlays and (AGame.Key<>'63')) or
+                          ((AGame.Key='63') and show63)) and
                           ((AGame.Value.Value>dm.GameSituation.BestBet) or ((AGame.Value.Value=dm.GameSituation.BestBet) and dm.IAmBeginner)) then begin
                           inc(r);
                           gvGames.DataController.RecordCount:=r;
@@ -84,13 +90,21 @@ begin
 end;
 
 procedure TfraGameSelect.bHoldClick(Sender: TObject);
+var b:TBet;
 begin
-  dm.NewBet('HOLD');
+  b:=TBet.Create;
+  b.Player:=dm.MyName;
+  b.GameTypeid:='HOLD';
+  dm.NewBet(b);
 end;
 
 procedure TfraGameSelect.bPassClick(Sender: TObject);
+var b:TBet;
 begin
-  dm.NewBet('PASS');
+  b:=TBet.Create;
+  b.Player:=dm.MyName;
+  b.GameTypeid:='PASS';
+  dm.NewBet(b);
 end;
 
 procedure TfraGameSelect.CheckMyTurn;

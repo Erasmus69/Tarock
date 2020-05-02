@@ -32,6 +32,7 @@ type
     resBets: TWiRLClientResourceJSON;
     resSetKing: TWiRLClientResourceJSON;
     resChangeCards: TWiRLClientResourceJSON;
+    resNewGameInfo: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -55,8 +56,9 @@ type
     procedure GetMyCards;
     function GetCards(AName:String):TCards;
     procedure RefreshGameSituation;
+    procedure NewGameInfo(const AMessage:String);
 
-    procedure NewBet(const AGameTypeId:String);
+    procedure NewBet(const ABet:TBet);
     procedure GetBets;
 
     procedure SelectKing(const ACard:TCardKey);
@@ -178,25 +180,17 @@ begin
             FillBody(AContent, ACards);
           end
         );
-
-    if resNewBet.Response.GetValue<String>('status')<>'success' then
-      Showmessage(resNewBet.Response.GetValue<String>('message'));
   except
     Raise;
   end;
 end;
 
-procedure TdmTarock.NewBet(const AGameTypeId: String);
-var b:TBet;
+procedure TdmTarock.NewBet(const ABet:TBet);
 begin
   try
-    b:=TBet.Create;
-    b.Player:=MyName;
-    b.GameTypeID:=AGameTypeid;
-
     resNewBet.POST(procedure (AContent: TMemoryStream)
           begin
-            FillBody(AContent, b);
+            FillBody(AContent, ABet);
           end
         );
 
@@ -205,8 +199,14 @@ begin
  // except
  // end;
   finally
-    FreeAndNil(b);
+    ABet.Free;
   end;
+end;
+
+procedure TdmTarock.NewGameInfo(const AMessage: String);
+begin
+  resNewGameInfo.Resource:=Format('v1/gameinfo/%s',[AMessage]);
+  resNewGameInfo.POST;
 end;
 
 procedure TdmTarock.NewRound;
@@ -307,9 +307,6 @@ begin
     resSetKing.PathParamsValues.Clear;
     resSetKing.Resource:=Format('v1/king/%d',[Ord(ACard)]);
     resSetKing.PUT();
-
-    if resSetKing.Response.GetValue<String>('status')<>'success' then
-       Showmessage(resSetKing.Response.GetValue<String>('message'));
   except
     on E: Exception do begin
       Showmessage(E.Message);

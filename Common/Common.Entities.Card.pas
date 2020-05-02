@@ -43,6 +43,7 @@ type
     procedure Assign(const ASource:TCards);
     function Find(const AID:TCardKey):TCard;
     function Exists(const AID:TCardKey):Boolean;
+    procedure Sort;
   end;
 
   TCardKeySerializer=class(TCustomSerializer)
@@ -160,6 +161,17 @@ begin
       Result:=itm;
       Break;
     end;
+  end;
+end;
+
+procedure TCards.Sort;
+var comp:TCardsComparer;
+begin
+  comp:=TCardsComparer.Create;
+  try
+    inherited Sort(comp)
+  finally
+    comp.Free;
   end;
 end;
 

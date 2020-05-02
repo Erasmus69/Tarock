@@ -48,10 +48,10 @@ begin
     FCards[i].Enabled:=False;
     FCards[i].Up:=False;
   end;
-  bLeft.Colors.Default:=clSkyBlue;
-  bRight.Colors.Default:=clDefault;
+
   lCaption.Caption:='Wähle die 3 Karten, die du weglegen willst';
   bOK.Enabled:=True;
+  dm.NewGameInfo(dm.MyName+' hat den linken Talon gewaehlt');
 end;
 
 procedure TfraTalonSelect.bOKClick(Sender: TObject);
@@ -60,6 +60,8 @@ var
   upCards: Integer;
   selectedCards:TCards;
   c:TCard;
+  normalCards: Integer;
+  selectedTarock: Integer;
 begin
   selectedCards:=TCards.Create(true);
   try
@@ -82,6 +84,39 @@ begin
       ShowMessage('Du musst genau 6 Karten aus Talon oder Hand zur Ablage auswählen')
     end
     else begin
+      for c in selectedcards do begin
+        if c.ID in [HK,CK,DK,SK] then begin
+          Beep;
+          ShowMessage('Du darfst keine Könige ablegen');
+          Exit;
+        end
+        else if c.ID in [T1,T21,T22] then begin
+          Beep;
+          ShowMessage('Du darfst kein Trullstück ablegen');
+          Exit;
+        end;
+      end;
+
+      selectedTarock:=0;
+      for c in selectedCards do begin
+        if c.CType=ctTarock then begin
+          Inc(selectedTarock);
+          Break;
+        end;
+      end;
+      if selectedTarock>0 then begin
+        normalCards:=0;
+        for c in dm.MyCards do begin
+          if (c.CType<>ctTarock) and not (c.Id in [HK,CK,DK,SK]) then
+            Inc(normalCards);
+        end;
+        if normalcards>selectedCards.Count-selectedTarock then begin
+          Beep;
+          ShowMessage('Du darfst Tarock erst ablegen, wenn du nicht genügend normale Karten hast');
+          Exit;
+        end;
+      end;
+
       for I:=0 to 5 do begin   // add talon cards for other team
         if not FCards[i].Enabled then begin
           c:=FCards[i].Card.Clone;
@@ -105,9 +140,8 @@ begin
   end;
   for i:=3 to 5 do
     FCards[i].Enabled:=True;
-  bLeft.Colors.Default:=clDefault;
-  bRight.Colors.Default:=clSkyBlue;
   bOK.Enabled:=True;
+  dm.NewGameInfo(dm.MyName+' hat den rechten Talon gewaehlt');
 end;
 
 constructor TfraTalonSelect.Create(AOwner: TComponent);
@@ -130,19 +164,28 @@ begin
     FCards[i].Top:=CARDUPLIFT+5;
     FCards[i].Left:=imgLeft;
     FCards[i].Remainup:=True;
-    FCards[i].Enabled:=(dm.ActGame.Talon=tk6Talon);
+    FCards[i].Enabled:=(dm.ActGame.Talon=tk6Talon) and (dm.MyName=dm.GameSituation.Gamer);
+    FCards[i].Up:=False;
     imgLeft:=imgLeft+CARDXOFFSET;
   end;
 
-  if dm.ActGame.Talon=tk3Talon then begin
-    lCaption.Caption:='Wähle den Talon aus, den du willst';
-    bOK.Enabled:=False;
+  if dm.MyName=dm.GameSituation.Gamer then begin
+    if dm.ActGame.Talon=tk3Talon then begin
+      lCaption.Caption:='Wähle den Talon aus, den du willst';
+      bOK.Enabled:=False;
+    end
+    else begin
+      lCaption.Caption:='Der ganze Talon gehört dir. Wähle die 6 Karten, die du weglegen willst';
+      bOK.Enabled:=True;
+      bLeft.Visible:=False;
+      bRight.Visible:=False;
+    end;
   end
   else begin
-    lCaption.Caption:='Der ganze Talon gehört dir. Wähle die 6 Karten, die du weglegen willst';
-    bOK.Enabled:=True;
     bLeft.Visible:=False;
     bRight.Visible:=False;
+    bOK.Visible:=False;
+    lCaption.Caption:='Der Talon';
   end;
 end;
 

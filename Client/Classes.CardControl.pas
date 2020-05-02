@@ -48,6 +48,8 @@ end;
 procedure TCardControl.MouseDown(Button: TMouseButton; ShiftState: TShiftState; X, Y: Integer);
 begin
   inherited;
+  if not Enabled then Exit;
+
   if FRemainUp then
     Up:=not FUp
   else
@@ -57,7 +59,7 @@ end;
 procedure TCardControl.MouseUp(Button: TMouseButton; ShiftState: TShiftState; X, Y: Integer);
 begin
   inherited;
-  if not RemainUp then
+  if not RemainUp and Enabled then
     Top:=Top+CARDUPLIFT;
 end;
 

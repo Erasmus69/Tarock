@@ -8,12 +8,14 @@ uses
 
 type
   TBetState=(btNone,btBet,btPass,btHold);
+  TTeam=(ttTeam1,ttTeam2);
 
   TPlayer=class
   private
     FName:String;
     FScore: Integer;
     FBetState: TBetState;
+    FTeam: TTeam;
   public
     constructor Create(const AName:String);overload;
    // constructor Create;
@@ -24,6 +26,7 @@ type
     property Name:String read FName write FName;
     property BetState:TBetState read FBetState write FBetState;
     property Score: Integer read FScore write FScore;
+    property Team:TTeam read FTeam write FTeam;
 
     procedure Assign(const ASource:TPlayer);virtual;
   end;
@@ -49,6 +52,7 @@ begin
   FName:=ASource.Name;
   FScore:=ASource.Score;
   FBetState:=ASource.BetState;
+  FTeam:=ASource.FTeam;
 end;
 
 constructor TPlayer.Create(const AName: String);
