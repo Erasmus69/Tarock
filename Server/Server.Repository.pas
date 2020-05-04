@@ -244,8 +244,10 @@ begin
     else begin
       g:=TGame.Create(FPlayers);
 
-      { TODO -oAP : rauszuwerfen }
-      g.Situation.Beginner:='ANDI';
+      if Assigned(ActGame) then
+        g.Situation.Beginner:=ActGame.Situation.TurnOn
+      else
+        g.Situation.Beginner:=FPlayers[0].Name;
       FGames.Push(g);
 
       Result:=TExtendedRESTResponse.BuildResponse(True);

@@ -44,6 +44,7 @@ type
     FActGame: TGameType;
     procedure FillBody(AContent: TMemoryStream; APatchData: TObject);
     function GetIAmBeginner: Boolean;
+    function GetIsMyTurn: Boolean;
     { Private declarations }
 
   public
@@ -72,6 +73,7 @@ type
     property Bets:TBets read FBets;
     property MyName:String read FMyName write FMyName;
     property IAmBeginner:Boolean read GetIAmBeginner;
+    property IsMyTurn:Boolean read GetIsMyTurn;
     property MyCards:TCards read FMyCards;
     property GameSituation: TGameSituation<Common.Entities.Player.TPlayer> read FGameSituation;
     property ActGame:TGameType read FActGame;
@@ -223,15 +225,12 @@ end;
 
 procedure TdmTarock.PutTurn(ACard: TCardKey);
 begin
-  try
-    resRoundPut.PathParamsValues.Clear;
-    resRoundPut.Resource:=Format('v1/round/%s/%d',[FMyName,Ord(ACard)]);
-    resRoundPut.PUT;
+  resRoundPut.PathParamsValues.Clear;
+  resRoundPut.Resource:=Format('v1/round/%s/%d',[FMyName,Ord(ACard)]);
+  resRoundPut.PUT;
 
    (* if resRound.Response.GetValue<String>('status')<>'success' then
       Showmessage(resRound.Response.GetValue<String>('message'));     *)
-  except
-  end;
 end;
 
 procedure TdmTarock.DataModuleDestroy(Sender: TObject);
@@ -359,6 +358,11 @@ end;
 function TdmTarock.GetIAmBeginner: Boolean;
 begin
   Result:=GameSituation.Beginner=MyName;
+end;
+
+function TdmTarock.GetIsMyTurn: Boolean;
+begin
+  Result:=FGameSituation.TurnOn=MyName
 end;
 
 procedure TdmTarock.GetMyCards;

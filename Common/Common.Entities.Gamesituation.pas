@@ -5,7 +5,7 @@ uses System.Classes,System.Generics.Collections,Neon.Core.Attributes,Common.Enti
      Common.Entities.GameType,Common.Entities.Card,Common.Entities.Bet;
 
 type
-  TGameState=(gsNone,gsBidding,gsCallKing,gsGetTalon,gsFinalBet,gsReadyToPlay,gsPlaying,gsTerminated);
+  TGameState=(gsNone,gsBidding,gsCallKing,gsGetTalon,gsFinalBet,gsPlaying,gsTerminated);
 
   TGameSituation<T:TPlayer>=class(TObject)
   private

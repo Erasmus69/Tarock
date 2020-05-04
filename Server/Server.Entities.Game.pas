@@ -43,6 +43,7 @@ type
     FSituation: TGameSituation<TPlayerCards>;
     FActGame: TGameType;
     FLastFinalBidder: String;
+    FTalonRounds: Integer;
     function GetActRound: TGameRound;
     function GetPlayers: TPlayers<TPlayerCards>;
 
@@ -59,6 +60,7 @@ type
 
     property Rounds:TGameRounds read FRounds write FRounds;
     property ActRound:TGameRound read GetActRound;
+    property TalonRounds:Integer read FTalonRounds write FTalonRounds;
     property PositiveGame:Boolean read FPositiveGame write FPositiveGame;
     property Situation:TGameSituation<TPlayerCards> read FSituation write FSituation;
     property ActGame:TGameType read FActGame write FActGame;

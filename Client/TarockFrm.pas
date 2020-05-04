@@ -37,14 +37,12 @@ type
     imgMyCard: TImage;
     imgFirstCard: TImage;
     tRefresh: TTimer;
-    bNewRound: TButton;
     mGameInfo: TcxMemo;
 
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
     procedure tRefreshTimer(Sender: TObject);
-    procedure bNewRoundClick(Sender: TObject);
   private
     { Private declarations }
     FGameSelect:TfraGameSelect;
@@ -110,20 +108,20 @@ end;
 
 procedure TfrmTarock.DoThrowCard(Sender: TObject);
 begin
-  if dm.GameSituation.TurnOn=dm.MyName then begin
+  if (dm.GameSituation.State=gsPlaying) and dm.IsMyTurn then begin
     dm.PutTurn(TCardControl(Sender).Card.ID);
     dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
     PostMessage(Handle,CSM_REFRESHCARDS,0,0);
   end;
 end;
 
-procedure TfrmTarock.bNewRoundClick(Sender: TObject);
-begin
-  dm.NewRound
-end;
 
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
+var player:TPlayer;
 begin
+ for player in dm.Players do  // clear last thrown of game before
+   player.CardImage.Picture.Assign(nil);
+
   dm.StartNewGame;
   bStartGame.Enabled:=False;
 end;
@@ -133,7 +131,6 @@ begin
   dm.MyName:=CSEdit1.Text;
   mGameInfo.Lines.Clear;
   tRefresh.Enabled:=True;
-  bNewRound.Enabled:=False;
   bStartGame.Enabled:=False;
 end;
 
@@ -144,8 +141,7 @@ begin
 end;
 
 procedure TfrmTarock.GetPlayers;
-var p:TPlayers;
-    itm:TPlayer;
+var itm:TPlayer;
 begin
   dm.GetPlayers;
   for itm in dm.Players do begin
@@ -297,12 +293,7 @@ begin
         player.CardImage.Picture.Assign(nil)
      else
        dm.imCards.GetBitmap(ALLCARDS.Find(itm.Card).ImageIndex,player.CardImage.Picture.Bitmap);
-
-     if player.Name=ARound.TurnOn then
-       player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style+[fsBold]
-     else
-       player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style-[fsBold]
-  end;
+    end;
 end;
 
 procedure TfrmTarock.ShowTurn;
@@ -397,16 +388,37 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   procedure Playing;
   var r:TGameRound;
   begin
-    try
-      Exit;
-      r:=dm.GetRound;
-      if Assigned(r) then begin  // game is started
+    if Assigned(FBiddingSelect) then
+      FreeAndnil(FBiddingSelect);
 
+    r:=dm.GetRound;
+    try
+      if Assigned(r) then begin  // game is started
         ShowThrow(r);
+
+        if r.Done and dm.IsMyTurn then begin
+          Application.ProcessMessages;
+          Sleep(3000);
+          dm.NewRound;
+        end;
       end;
+
     finally
       r.Free;
     end;
+  end;
+
+  procedure GameTerminated;
+  var r:TGameRound;
+  begin
+    r:=dm.GetRound;
+    try
+      if Assigned(r) then  //show last cards thrown
+        ShowThrow(r);
+    finally
+      r.Free;
+    end;
+    bStartGame.Enabled:=True;
   end;
 
 
@@ -427,8 +439,8 @@ begin
         gsCallKing:CallingKing;
         gsGetTalon:GettingTalon;
         gsFinalBet:FinalBidding;
-        gsReadyToPlay:;
         gsPlaying:Playing;
+        gsTerminated:GameTerminated;
       end;
     except
       on E:EWiRLSocketException do

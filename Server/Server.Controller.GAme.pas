@@ -25,7 +25,7 @@ type
     function NewBet(ABet:TBet):String;
     function FinalBet(const ABet: TBet): String;
 
-    function NewRound:String;
+    function NewRound(const AIsFirst:Boolean=False): String;
     function Turn(APlayer:String; ACard:TCardKey):String;
     function NextTurn(const ARound:TGameRound):String;
 
@@ -211,6 +211,8 @@ begin
       FGame.LastFinalBidder:=PreviousPlayer(ABet.Player);
       FGame.Situation.GameInfo.AddStrings(sl);
     end
+    else if ABet.Player=FGame.Situation.Gamer then
+      FGame.Situation.GameInfo.Add(ABet.Player+' liegt')
     else
       FGame.Situation.GameInfo.Add(ABet.Player+' sagt weiter');
 
@@ -226,7 +228,7 @@ begin
       FGame.Situation.TurnOn:=FGame.Situation.Beginner;
     FGame.Situation.GameInfo.Add(' ');
     FGame.Situation.GameInfo.Add(FGame.Situation.TurnOn+' kommt raus');
-    NewRound;
+    NewRound(True);
   end
   else
     FGame.Situation.TurnOn:=NextPlayer(ABet.Player);
@@ -234,7 +236,7 @@ begin
   Result:=FGame.Situation.TurnOn;
 end;
 
-function TGameController.NewRound:String;
+function TGameController.NewRound(const AIsFirst:Boolean):String;
 var r:TGameRound;
   i: Integer;
 begin
@@ -242,11 +244,13 @@ begin
   if Assigned(r) and not r.Done then
     raise Exception.Create('Prior Round not closed yet')
   else begin
+    FGame.TalonRounds:=FGame.Rounds.Count;  // rounds used by save cards of talon layeddown
+
     r:=TGameRound.Create;
-    if Assigned(FGame.ActRound) then
-      r.TurnOn:=FGame.ActRound.Winner
+    if AIsFirst or not Assigned(FGame.ActRound) then
+      r.TurnOn:=FGame.Situation.TurnOn
     else
-      r.TurnOn:=FGame.Situation.TurnOn;
+      r.TurnOn:=FGame.ActRound.Winner;
     FGame.Situation.TurnOn:=r.TurnOn;
 
     // reihenfolge der Spieler definieren
@@ -273,6 +277,7 @@ end;
 function TGameController.NextTurn(const ARound: TGameRound): String;
 begin
   ARound.TurnOn:=NextPlayer(ARound.TurnOn);
+  FGame.Situation.TurnOn:=ARound.TurnOn;
   Result:=ARound.TurnOn;
 end;
 
@@ -379,9 +384,9 @@ end;
 
 procedure TGameController.CloseRound;
 begin
-  if FGame.ActRound.Done then
-    FGame.ActRound.Winner:=DetermineWinner(FGame.ActRound.CardsThrown);
-
+  FGame.ActRound.Winner:=DetermineWinner(FGame.ActRound.CardsThrown);
+  FGame.Situation.GameInfo.Add(FGame.ActRound.Winner+' sticht');
+  FGame.Situation.TurnOn:=FGame.ActRound.Winner;
   CheckGameTerminated;
 end;
 
@@ -489,7 +494,6 @@ begin
       if Assigned(forOtherTeam) then
         FGame.Rounds.Push(forOtherTeam);
 
-      FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' liegt');
       FGame.Situation.State:=gsFinalBet;
     end
     else
@@ -552,8 +556,10 @@ begin
           player.Team:=ttTeam2;
       end;
 
-      if not FGame.ActGame.Positive then
-        FGame.Situation.State:=gsFinalBet
+      if not FGame.ActGame.Positive then begin
+        FGame.Situation.State:=gsFinalBet;
+        FGame.Situation.TurnOn:=NextPlayer(FGame.Situation.Gamer);
+      end
 
       else if FGame.ActGame.Talon<>tkNoTalon then
         FGame.Situation.State:=gsGetTalon
@@ -567,14 +573,18 @@ procedure TGameController.CheckGameTerminated;
 begin
   if not FGame.Active then Exit;
 
-  if FGame.PositiveGame and (FGame.Rounds.Count>=12) then
+  if (FGame.PositiveGame or (FGame.Situation.GameType='TRISCH')) and
+     ((FGame.Rounds.Count-FGame.TalonRounds)>=12) then
     FGame.Active:=False
   else if not FGame.PositiveGame then begin
-//    if FGame.ActRound.Winner then
-
+    if FGame.ActRound.Winner=FGame.Situation.Gamer then
+//...
   end;
-  if not FGame.Active then
-    FGame.Situation.State:=gsNone;
+  if not FGame.Active then begin
+    FGame.Situation.State:=gsTerminated;
+    FGame.Situation.TurnOn:=NextPlayer(FGame.Situation.Beginner);
+    FGame.Situation.GameInfo.Add('Spiel ist beendet')
+  end;
 end;
 
 

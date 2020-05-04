@@ -14,6 +14,8 @@ type
     FCard: TCard;
     FRemainUp: Boolean;
     FUp:Boolean;
+    FLifted:Boolean;
+
     procedure SetUp(const Value: Boolean);
   protected
     procedure MouseDown(Button:TMouseButton;ShiftState:TShiftState;X,Y:Integer);override;
@@ -52,14 +54,16 @@ begin
 
   if FRemainUp then
     Up:=not FUp
-  else
+  else begin
     Top:=Top-CARDUPLIFT;
+    FLifted:=True;
+  end;
 end;
 
 procedure TCardControl.MouseUp(Button: TMouseButton; ShiftState: TShiftState; X, Y: Integer);
 begin
   inherited;
-  if not RemainUp and Enabled then
+  if not RemainUp and Enabled and FLifted then
     Top:=Top+CARDUPLIFT;
 end;
 

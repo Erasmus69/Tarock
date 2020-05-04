@@ -73,15 +73,6 @@ object frmTarock: TfrmTarock
       TabOrder = 3
       OnClick = BStartGameClick
     end
-    object bNewRound: TButton
-      Left = 1109
-      Top = 5
-      Width = 75
-      Height = 25
-      Caption = 'Starte Runde'
-      TabOrder = 4
-      OnClick = bNewRoundClick
-    end
   end
   object pLeft: TPanel
     Left = 0

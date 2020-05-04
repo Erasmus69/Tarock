@@ -98,7 +98,7 @@ begin
   ALLGames.AddItem('BETT_POU','Bettel Plauderer',9,False,tkOuvert);
 
   AllGames.AddItem('SVOGEL4','Solo Vogel IV (Besser Dreier)',10,True,tkSolo);
-  ALLGames.AddItem('FARBSOLO','Farben-Solo',10,True,tkSolo,False,tkNoTalon);
+  ALLGames.AddItem('FARBSOLO','Farben-Solo',10,True,tkSolo,False,tkNoTalon,True);
 
   ALLGames.AddItem('SOLLIS','Solissimo (Solo Dreier)',12,True,tkSolo,False,tkNoTalon);
   (* Wiener VAriante

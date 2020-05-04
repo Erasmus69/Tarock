@@ -31,12 +31,13 @@ type
   public
     { Public declarations }
     procedure CheckMyTurn;
+    constructor Create(AOwner:TComponent);override;
   end;
 
 implementation
 
 uses
-  Common.Entities.Bet, TarockDM;
+  Common.Entities.Bet, TarockDM, Common.Entities.GameType;
 
 {$R *.dfm}
 
@@ -63,9 +64,9 @@ begin
 
   dm.NewBet(b);
 
-  for i := 0 to ControlCount-1 do begin
-    if Controls[i] is TcxButton then
-      TcxButton(Controls[i]).Down:=False;
+  for i := 0 to pBackGround.ControlCount-1 do begin
+    if pBackGround.Controls[i] is TcxButton then
+      TcxButton(pBackGround.Controls[i]).Down:=False;
   end;
 end;
 
@@ -76,6 +77,36 @@ begin
     lCaption.Caption:='Möchtest du bieten ?'
   else
     lCaption.Caption:=dm.GameSituation.TurnOn+' ist an der Reihe';
+end;
+
+constructor TfraBidding.Create(AOwner: TComponent);
+begin
+  inherited;
+  if not dm.ActGame.Positive then begin
+    bSack.Enabled:=False;
+    bAllKings.Enabled:=False;
+    bKingUlt.Enabled:=False;
+    bTrull.Enabled:=False;
+    bPagatUlt.Enabled:=False;
+    bVogel2.Enabled:=False;
+    bVogel3.Enabled:=False;
+    bVogel4.Enabled:=False;
+    bXXIFang.Enabled:=False;
+    bValat.Enabled:=False;
+  end
+  else if dm.ActGame.JustColors then begin
+    bSack.Enabled:=False;
+    bAllKings.Enabled:=False;
+    bKingUlt.Enabled:=False;
+    bTrull.Enabled:=False;
+    bPagatUlt.Enabled:=False;
+    bVogel2.Enabled:=False;
+    bVogel3.Enabled:=False;
+    bVogel4.Enabled:=False;
+    bXXIFang.Enabled:=False;
+  end
+  else if dm.ActGame.TeamKind=tkSolo then
+    bKingUlt.Enabled:=False;
 end;
 
 end.
