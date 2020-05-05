@@ -8,20 +8,23 @@ uses
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, Vcl.Menus,
   cxStyles, cxCustomData, cxFilter, cxData, cxDataStorage, cxNavigator,
   cxTextEdit, cxGridCustomTableView, cxGridTableView, cxGridCustomView,
-  cxClasses, cxGridLevel, cxGrid, Vcl.StdCtrls, cxButtons, cxLabel;
+  cxClasses, cxGridLevel, cxGrid, Vcl.StdCtrls, cxButtons, cxLabel, Vcl.ExtCtrls;
 
 type
   TfraGameSelect = class(TFrame)
-    cxLabel1: TcxLabel;
-    bBet: TcxButton;
-    rdGamesLevel1: TcxGridLevel;
+    cxStyleRepository1: TcxStyleRepository;
+    cxStyle1: TcxStyle;
+    pBackground: TPanel;
     rdGames: TcxGrid;
     gvGames: TcxGridTableView;
     gcID: TcxGridColumn;
     gcName: TcxGridColumn;
     gcValue: TcxGridColumn;
-    bHold: TcxButton;
+    rdGamesLevel1: TcxGridLevel;
+    cxLabel1: TcxLabel;
     bPass: TcxButton;
+    bBet: TcxButton;
+    bHold: TcxButton;
     procedure bBetClick(Sender: TObject);
     procedure bHoldClick(Sender: TObject);
     procedure bPassClick(Sender: TObject);

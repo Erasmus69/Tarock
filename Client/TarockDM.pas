@@ -315,7 +315,9 @@ end;
 
 procedure TdmTarock.StartNewGame;
 begin
+  FreeAndnil(FMyCards);
   FActGame:=Nil;
+
   resGames.POST(procedure (AContent: TMemoryStream)
     begin
     end

@@ -7,6 +7,21 @@ uses System.Classes,System.Generics.Collections,Neon.Core.Attributes,Common.Enti
 type
   TGameState=(gsNone,gsBidding,gsCallKing,gsGetTalon,gsFinalBet,gsPlaying,gsTerminated);
 
+  TGameResults=record
+    Game:Smallint;
+    Minus10Count:Smallint;
+    Minus110:Smallint;
+    ContraGame:Smallint;
+    KingUlt:Smallint;
+    PagatUlt:Smallint;
+    VogelII:Smallint;
+    VogelIII:Smallint;
+    VogelIV:Smallint;
+    Trull:Smallint;
+    CatchXXI:Smallint;
+    Valat:Smallint;
+  end;
+
   TGameSituation<T:TPlayer>=class(TObject)
   private
     FBeginner: String;
@@ -21,6 +36,9 @@ type
     FGameInfo: TStringList;
     FTeam1AddBets: TAddBets;
     FTeam2AddBets: TAddBets;
+    FWinner: TTeam;
+    FTeam2Results: TGameResults;
+    FTeam1Results: TGameResults;
   public
     property Players: TPlayers<T> read FPlayers write FPlayers;
     property State: TGameState read FState write FState;
@@ -35,6 +53,9 @@ type
     property KingSelected:TCardKey read FKingSelected write FKingSelected;
     property CardsLayedDown:TCards read FCardsLayedDown write FCardsLayedDown;
     property GameInfo:TStringList read FGameInfo write FGameInfo;
+    property Team1Results:TGameResults read FTeam1Results write FTeam1Results;
+    property Team2Results:TGameResults read FTeam2Results write FTeam2Results;
+
 
     constructor Create;
     destructor Destroy;override;
@@ -69,6 +90,10 @@ begin
   Result.State:=FState;
   Result.GameInfo:=TStringList.Create;
   Result.GameInfo.Assign(FGameInfo);
+  Result.Team1AddBets:=FTeam1AddBets;
+  Result.Team2AddBets:=FTeam2AddBets;
+  Result.Team1Results:=FTeam1Results;
+  Result.Team2Results:=FTeam2Results;
 
   if Assigned(FCardsLayedDown) then
   //  Result.CardsLayedDown:=FCardsLayedDown.Clone

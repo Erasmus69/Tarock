@@ -16,6 +16,7 @@ type
     procedure CheckGameTerminated;
     function NextPlayer(const APlayerName: String): String;
     function PreviousPlayer(const APlayerName: String): String;
+    function CountTricks(const ARounds:TGameRounds; const AGamer:String): Integer;
   public
     constructor Create(AGame:TGame);
     procedure Shuffle;
@@ -176,7 +177,6 @@ function TGameController.FinalBet(const ABet:TBet):String;
   end;
 
 var player:TPlayerCards;
-    addBets:TAddBets;
     sl:TStringList;
 begin
   if FGame.LastFinalBidder='' then
@@ -570,23 +570,86 @@ begin
 end;
 
 procedure TGameController.CheckGameTerminated;
+var winner:TTeam;
+    allRoundsPlayed:Boolean;
 begin
   if not FGame.Active then Exit;
 
-  if (FGame.PositiveGame or (FGame.Situation.GameType='TRISCH')) and
-     ((FGame.Rounds.Count-FGame.TalonRounds)>=12) then
-    FGame.Active:=False
-  else if not FGame.PositiveGame then begin
-    if FGame.ActRound.Winner=FGame.Situation.Gamer then
-//...
+  allRoundsPlayed:=((FGame.Rounds.Count-FGame.TalonRounds)>=12);
+  winner:=ttTeam1;
+
+  case FGame.ActGame.WinCondition of
+    wc12Rounds:begin
+                 FGame.Active:=allRoundsPlayed;
+               end;
+    wc0Trick:  begin
+                 if FGame.ActRound.Winner=FGame.Situation.Gamer then begin
+                   FGame.Active:=False;
+                   winner:=ttTeam2;
+                 end
+                 else if allRoundsPlayed then begin
+                   FGame.Active:=False;
+                   winner:=ttTeam1;
+                 end;
+               end;
+    wc1Trick:  begin
+                 if (FGame.ActRound.Winner=FGame.Situation.Gamer) and
+                    (CountTricks(FGame.Rounds,FGame.Situation.Gamer)>1) then begin
+                   FGame.Active:=False;
+                   winner:=ttTeam2;
+                 end
+                 else if allRoundsPlayed then begin
+                   FGame.Active:=False;
+                   if CountTricks(FGame.Rounds,FGame.Situation.Gamer)=1 then
+                     winner:=ttTeam1
+                   else
+                     winner:=ttTeam2;
+                 end;
+               end;
+    wc2Trick:  begin
+                 if (FGame.ActRound.Winner=FGame.Situation.Gamer) and
+                    (CountTricks(FGame.Rounds,FGame.Situation.Gamer)>2) then begin
+                   FGame.Active:=False;
+                   winner:=ttTeam2;
+                 end
+                 else if allRoundsPlayed then begin
+                   FGame.Active:=False;
+                   if CountTricks(FGame.Rounds,FGame.Situation.Gamer)=2 then
+                     winner:=ttTeam1
+                   else
+                     winner:=ttTeam2;
+                 end;
+               end;
   end;
+
   if not FGame.Active then begin
     FGame.Situation.State:=gsTerminated;
     FGame.Situation.TurnOn:=NextPlayer(FGame.Situation.Beginner);
-    FGame.Situation.GameInfo.Add('Spiel ist beendet')
+    FGame.Situation.GameInfo.Clear;
+    FGame.Situation.GameInfo.Add('Spiel ist beendet');
+
+    FGame.Situation.GameInfo.Add('======================');
+    if winner=ttTeam1 then begin
+      if FGame.ActGame.TeamKind in [tkSolo,tkOuvert] then
+        FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' gewinnt')
+      else
+        FGame.Situation.GameInfo.Add('Das Team1 gewinnt')
+    end
+    else
+      FGame.Situation.GameInfo.Add('Das Team2 gewinnt')
   end;
 end;
 
+function TGameController.CountTricks(const ARounds:TGameRounds; const AGamer:String):Integer;
+var
+  round: TGameRound;
+begin
+  Result:=0;
+  for round in ARounds do begin
+    if round.Winner=AGamer then
+      Inc(result);
+  end;
+end;
 
 end.
 

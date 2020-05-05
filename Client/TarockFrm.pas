@@ -121,7 +121,7 @@ var player:TPlayer;
 begin
  for player in dm.Players do  // clear last thrown of game before
    player.CardImage.Picture.Assign(nil);
-
+ showmessage('');
   dm.StartNewGame;
   bStartGame.Enabled:=False;
 end;

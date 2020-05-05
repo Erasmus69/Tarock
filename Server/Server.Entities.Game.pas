@@ -94,6 +94,7 @@ end;
          *)
 constructor TGame.Create(const APlayers:TPlayers<TPlayer>=nil);
 var i:Integer;
+    player:TPlayer;
 begin
   inherited Create;
   SysUtils.CreateGUID(FID);
@@ -106,6 +107,8 @@ begin
       Players.Add(TPlayerCards.Create('',i))
   end;
   FTalon:=TPlayerCards.Create('TALON',-1);
+  for player in APlayers do
+    player.BetState:=btNone;
 
   FBets:=TBets.Create(True);
   FRounds:=TGameRounds.Create;
