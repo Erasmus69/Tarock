@@ -33,7 +33,7 @@ end;
 procedure RegisterWithContainer(AContainer: TContainer);
 {======================================================================================================================}
 begin
-  AContainer.RegisterType<TRepository>.AsPooled(1, 2);
+  AContainer.RegisterType<TRepository>.AsPooled(1, 1);
   AContainer.RegisterType<TApiV1Controller>;
   AContainer.RegisterType<TConfiguration>.AsSingleton(TRefCounting.False);
   AContainer.RegisterType<TServerREST>.AsSingleton(TRefCounting.False);

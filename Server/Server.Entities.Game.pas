@@ -30,7 +30,7 @@ type
   end;
 
 
-  TGameRounds=Spring.Collections.Stacks.TObjectStack<TGameRound>;
+  TGameRounds=Spring.Collections.TList<TGameRound>;
 
   TGame=class
   private
@@ -145,7 +145,10 @@ end;
 
 function TGame.GetActRound: TGameRound;
 begin
-  Result:=FRounds.PeekOrDefault
+  if FRounds.Count=0 then
+    Result:=Nil
+  else
+    Result:=FRounds.Last
 end;
 
 function TGame.GetPlayers: TPlayers<TPlayerCards>;

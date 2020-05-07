@@ -26,7 +26,6 @@ type
     pMyCards: TPanel;
     clThirdPlayer: TcxLabel;
     clSecondPlayer: TcxLabel;
-    CSEdit1: TCSEdit;
     Button1: TButton;
     bStartGame: TButton;
     pFirstplayerCards: TPanel;
@@ -38,6 +37,7 @@ type
     imgFirstCard: TImage;
     tRefresh: TTimer;
     mGameInfo: TcxMemo;
+    cbPlayers: TComboBox;
 
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -49,7 +49,7 @@ type
     FKingSelect:TfraKingSelect;
     FTalonSelect:TfraTalonSelect;
     FBiddingSelect:TfraBidding;
-    FBetsShownIdx:Integer;
+    FLastThrowShown:Boolean;
 
     procedure GetPlayers;
     procedure ShowCards;overload;
@@ -63,6 +63,7 @@ type
     procedure ShowTalon;
     procedure ShowBiddingSelect;
     procedure ReactiveServerConnection;
+    procedure ClearThrownCards;
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -90,14 +91,10 @@ const
 
 procedure TfrmTarock.Button1Click(Sender: TObject);
 begin
-  if csEdit1.Text>'' then begin
+  if cbPlayers.ItemIndex>=0 then begin
     try
-    //  dm.RegisterPlayer(CSEdit1.Text);
-      dm.MyName:=CSEdit1.Text;
-      if Assigned(dm.MyCards) then begin
-        dm.GetMyCards;
-        ShowCards;
-      end;
+      dm.MyName:=cbPlayers.Items[cbPlayers.ItemIndex];
+      dm.RegisterPlayer(dm.MyName);
       FreeAndNil(FTalonSelect);
 
     finally
@@ -115,23 +112,49 @@ begin
   end;
 end;
 
-
-procedure TfrmTarock.bStartGameClick(Sender: TObject);
+procedure TfrmTarock.ClearThrownCards;
 var player:TPlayer;
 begin
- for player in dm.Players do  // clear last thrown of game before
-   player.CardImage.Picture.Assign(nil);
- showmessage('');
+   for player in dm.Players do  // clear last thrown of game before
+     player.CardImage.Picture.Assign(nil);
+end;
+
+procedure TfrmTarock.bStartGameClick(Sender: TObject);
+begin
   dm.StartNewGame;
   bStartGame.Enabled:=False;
 end;
 
+var TaskCount:Integer;
+function EnumWindowsProc(hWnd: HWND; lParam: LPARAM): Bool;stdCall;
+var
+  Capt: PWideChar;
+begin
+  GetMem(Capt,255);
+  GetWindowText(hWnd, Capt,Sizeof(capt)-1);
+  if Capt='Tarock' then
+    Inc(TaskCount);
+end;
+
 procedure TfrmTarock.FormCreate(Sender: TObject);
 begin
-  dm.MyName:=CSEdit1.Text;
   mGameInfo.Lines.Clear;
   tRefresh.Enabled:=True;
   bStartGame.Enabled:=False;
+  TaskCount:=0;
+//  EnumWindows(@EnumWindowsProc, 0);
+(*
+  case TaskCount of
+    0:   dm.MyName:='ANDI';
+    1:   dm.MyName:='HANNES';
+    2:   dm.MyName:='WOLFGANG';
+    3:   dm.MyName:='LUKI';
+    else Halt;
+  end;
+showmessage(dm.MyName);
+  dm.RegisterPlayer(dm.MyName);  *)
+  dm.GetPlayers;
+
 end;
 
 procedure TfrmTarock.GameInfo;
@@ -326,13 +349,12 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   begin
     if not Assigned(FGameSelect) then begin
       bStartGame.Enabled:=False;
+      FLastThrowShown:=False;
+      ClearThrownCards;
 
-      if not Assigned(dm.MyCards) then begin
-        dm.GetMyCards;
-      end;
+      dm.GetMyCards;
       ShowCards;
       ShowGameSelect;
-      FBetsShownIdx:=-1;
     end;
 
     dm.GetBets;
@@ -340,11 +362,6 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     FGameSelect.CheckMyTurn;
   end;
 
-  (*
-     alle positiv: Sack, Königult,vogel , trull, valat , contra
-     alle negativ:  contra
-     player:  ich liege
-  *)
   procedure ShowActGame;
   begin
     if Assigned(FGameSelect) and Assigned(dm.ActGame) then begin
@@ -411,12 +428,16 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   procedure GameTerminated;
   var r:TGameRound;
   begin
-    r:=dm.GetRound;
-    try
-      if Assigned(r) then  //show last cards thrown
-        ShowThrow(r);
-    finally
-      r.Free;
+    if not FLastThrowShown then begin
+      r:=dm.GetRound;
+      try
+        if Assigned(r) then begin //show last cards thrown
+          ShowThrow(r);
+          FLastThrowShown:=True;
+        end;
+      finally
+        r.Free;
+      end;
     end;
     bStartGame.Enabled:=True;
   end;
@@ -424,7 +445,9 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
 
 begin
   tRefresh.Enabled:=False;
+
   try
+    if dm.MyName='' then exit;
     try
       dm.RefreshGameSituation;
       GameInfo;

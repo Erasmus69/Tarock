@@ -220,7 +220,7 @@ begin
     sl.Free;
   end;
 
-  if ABet.Player=FGame.LastFinalBidder then begin
+  if True (*ABet.Player=FGame.LastFinalBidder *)then begin
     FGame.Situation.State:=gsPlaying;
     if not FGame.ActGame.Positive then
       FGame.Situation.TurnOn:=FGame.Situation.Gamer
@@ -244,7 +244,8 @@ begin
   if Assigned(r) and not r.Done then
     raise Exception.Create('Prior Round not closed yet')
   else begin
-    FGame.TalonRounds:=FGame.Rounds.Count;  // rounds used by save cards of talon layeddown
+    if AIsFirst then
+      FGame.TalonRounds:=FGame.Rounds.Count;  // rounds used by save cards of talon layeddown
 
     r:=TGameRound.Create;
     if AIsFirst or not Assigned(FGame.ActRound) then
@@ -258,7 +259,7 @@ begin
       r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].Name));
     for i := 0 to FGame.FindPlayer(r.TurnOn).Index-1 do
       r.CardsThrown.Add(TCardThrown.Create(FGame.Players[i].Name));
-    FGame.Rounds.Push(r);
+    FGame.Rounds.Add(r);
   end;
 
   Result:=r.TurnOn;
@@ -376,7 +377,8 @@ begin
 
   if FGame.ActRound.Done then begin
     CloseRound;
-    Result:='The Winner is '+FGame.ActRound.Winner
+    if Assigned(FGame.ActRound) then
+      Result:='The Winner is '+FGame.ActRound.Winner
   end
   else
     Result:='Next Player is '+NextTurn(FGame.ActRound);
@@ -490,9 +492,9 @@ begin
       end;
       player.Cards.Sort;
 
-      FGame.Rounds.Push(forMyTeam);
+      FGame.Rounds.Add(forMyTeam);
       if Assigned(forOtherTeam) then
-        FGame.Rounds.Push(forOtherTeam);
+        FGame.Rounds.Add(forOtherTeam);
 
       FGame.Situation.State:=gsFinalBet;
     end
@@ -580,7 +582,10 @@ begin
 
   case FGame.ActGame.WinCondition of
     wc12Rounds:begin
-                 FGame.Active:=allRoundsPlayed;
+                 FGame.Active:=not allRoundsPlayed;
+                 if FGame.ActRound.CardsThrown.Exists(HK)then
+                   FGame.Active:=False;
+
                end;
     wc0Trick:  begin
                  if FGame.ActRound.Winner=FGame.Situation.Gamer then begin
@@ -641,13 +646,12 @@ begin
 end;
 
 function TGameController.CountTricks(const ARounds:TGameRounds; const AGamer:String):Integer;
-var
-  round: TGameRound;
+var i:Integer;
 begin
   Result:=0;
-  for round in ARounds do begin
-    if round.Winner=AGamer then
-      Inc(result);
+  for i:=0 to ARounds.Count-1 do begin
+    if ARounds.Items[i].Winner=AGamer then
+      Inc(Result);
   end;
 end;
 

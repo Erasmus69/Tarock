@@ -120,10 +120,10 @@ begin
   compNameSuffix := IntToStr(Integer(Pointer(TThread.Current))) + '_' + IntToStr(TThread.GetTickCount);
 
   FPlayers:=TPlayers<TPlayer>.Create(True);
-  FPlayers.Add(TPlayer.Create('HANNES'));
+(*  FPlayers.Add(TPlayer.Create('HANNES'));
   FPlayers.Add(TPlayer.Create('WOLFGANG'));
   FPlayers.Add(TPlayer.Create('LUKI'));
-  FPlayers.Add(TPlayer.Create('ANDI'));
+  FPlayers.Add(TPlayer.Create('ANDI'));  *)
   FGames:=TGames.Create(True);
   Logger.Leave('TRepository.Create');
 end;

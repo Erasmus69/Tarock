@@ -1,7 +1,7 @@
 object frmTarock: TfrmTarock
   Left = 0
   Top = 0
-  Caption = 'frmTarock'
+  Caption = 'Tarock'
   ClientHeight = 833
   ClientWidth = 1271
   Color = clBtnFace
@@ -47,21 +47,13 @@ object frmTarock: TfrmTarock
       AnchorX = 636
       AnchorY = 20
     end
-    object CSEdit1: TCSEdit
-      Left = 16
-      Top = 4
-      TabOrder = 1
-      Text = 'ANDI'
-      Height = 25
-      Width = 121
-    end
     object Button1: TButton
       Left = 142
       Top = 5
       Width = 75
       Height = 25
       Caption = 'Register'
-      TabOrder = 2
+      TabOrder = 1
       OnClick = Button1Click
     end
     object bStartGame: TButton
@@ -70,8 +62,21 @@ object frmTarock: TfrmTarock
       Width = 75
       Height = 25
       Caption = 'Starte Spiel'
-      TabOrder = 3
+      TabOrder = 2
       OnClick = BStartGameClick
+    end
+    object cbPlayers: TComboBox
+      Left = 8
+      Top = 5
+      Width = 128
+      Height = 21
+      TabOrder = 3
+      Text = 'cbPlayers'
+      Items.Strings = (
+        'ANDI'
+        'HANNES'
+        'WOLFGANG'
+        'LUKI')
     end
   end
   object pLeft: TPanel

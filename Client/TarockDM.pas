@@ -292,8 +292,8 @@ begin
         end
       );
 
-    if resPlayers.Response.GetValue<String>('status')<>'success' then
-      Showmessage(resPlayers.Response.GetValue<String>('message'));
+ (*   if resPlayers.Response.GetValue<String>('status')<>'success' then
+      Showmessage(resPlayers.Response.GetValue<String>('message'));*)
 
   finally
     FreeAndNil(pl);
