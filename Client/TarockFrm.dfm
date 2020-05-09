@@ -229,13 +229,13 @@ object frmTarock: TfrmTarock
     end
   end
   object mGameInfo: TcxMemo
-    Left = 992
-    Top = 45
+    Left = 998
+    Top = 39
     Lines.Strings = (
       'mGameInfo')
     Properties.ScrollBars = ssVertical
     TabOrder = 6
-    Height = 173
+    Height = 210
     Width = 233
   end
   object tRefresh: TTimer

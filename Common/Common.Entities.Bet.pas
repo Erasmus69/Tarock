@@ -1,22 +1,26 @@
 unit Common.Entities.Bet;
 
 interface
-uses Neon.Core.Attributes,Generics.Collections;
+uses Neon.Core.Attributes,Generics.Collections,Common.Entities.Player;
 
 type
-  TAddBetType=(abtFalse,abtBet,abtContra,abtRe);
+  TAddBetType=(abtNone,abtBet,abtContra);
+  TAddBet=record
+    BetType:TAddBetType;
+    Team:TTeam;
+  end;
   TAddBets=record
-    Minus10:TAddBetType;
-    Game:TAddBetType;
-    AllKings:TAddBetType;
-    KingUlt:TAddBetType;
-    PagatUlt:TAddBetType;
-    VogelII:TAddBetType;
-    VogelIII:TAddBetType;
-    VogelIV:TAddBetType;
-    Valat:TAddBetType;
-    Trull:TAddBetType;
-    CatchXXI:TAddBetType;
+    Minus10:TAddBet;
+    ContraGame:TAddBet;
+    AllKings:TAddBet;
+    KingUlt:TAddBet;
+    PagatUlt:TAddBet;
+    VogelII:TAddBet;
+    VogelIII:TAddBet;
+    VogelIV:TAddBet;
+    Valat:TAddBet;
+    Trull:TAddBet;
+    CatchXXI:TAddBet;
   end;
 
   TBet=class(TObject)

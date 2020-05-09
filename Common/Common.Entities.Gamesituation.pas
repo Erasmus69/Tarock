@@ -8,9 +8,12 @@ type
   TGameState=(gsNone,gsBidding,gsCallKing,gsGetTalon,gsFinalBet,gsPlaying,gsTerminated);
 
   TGameResults=record
+  private
+    function GetTotal: Smallint;
+  public
     Game:Smallint;
     Minus10Count:Smallint;
-    Minus110:Smallint;
+    Minus10:Smallint;
     ContraGame:Smallint;
     KingUlt:Smallint;
     PagatUlt:Smallint;
@@ -18,8 +21,11 @@ type
     VogelIII:Smallint;
     VogelIV:Smallint;
     Trull:Smallint;
+    AllKings:Smallint;
     CatchXXI:Smallint;
     Valat:Smallint;
+
+    property Total:Smallint read GetTotal;
   end;
 
   TGameSituation<T:TPlayer>=class(TObject)
@@ -34,8 +40,7 @@ type
     FKingSelected: TCardKey;
     FCardsLayedDown: TCards;
     FGameInfo: TStringList;
-    FTeam1AddBets: TAddBets;
-    FTeam2AddBets: TAddBets;
+    FAddBets: TAddBets;
     FWinner: TTeam;
     FTeam2Results: TGameResults;
     FTeam1Results: TGameResults;
@@ -46,8 +51,7 @@ type
 
     property Beginner: String read FBeginner write FBeginner;
     property GameType:String read FGameType write FGameType;
-    property Team1AddBets:TAddBets read FTeam1AddBets write FTeam1AddBets;
-    property Team2AddBets:TAddBets read FTeam2AddBets write FTeam2AddBets;
+    property AddBets:TAddBets read FAddBets write FAddBets;
     property Gamer:String read FGamer write FGamer;
     property BestBet:Smallint read FBestBet write FBestBet;
     property KingSelected:TCardKey read FKingSelected write FKingSelected;
@@ -90,8 +94,7 @@ begin
   Result.State:=FState;
   Result.GameInfo:=TStringList.Create;
   Result.GameInfo.Assign(FGameInfo);
-  Result.Team1AddBets:=FTeam1AddBets;
-  Result.Team2AddBets:=FTeam2AddBets;
+  Result.AddBets:=FAddBets;
   Result.Team1Results:=FTeam1Results;
   Result.Team2Results:=FTeam2Results;
 
@@ -133,6 +136,13 @@ begin
   end
   else
     result:=False;
+end;
+
+{ TGameResults }
+
+function TGameResults.GetTotal: Smallint;
+begin
+  Result:=Game+Minus10+ContraGame+KingUlt+PagatUlt+VogelII+VogelIII+VogelIV+Trull+AllKings+CatchXXI+Valat;
 end;
 
 end.

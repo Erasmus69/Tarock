@@ -49,17 +49,17 @@ begin
   b:=TBet.Create;
   b.Player:=dm.MyName;
   b.GameTypeid:='';
-  addBets.Minus10:=TAddBetType(bSack.Down);
-  addBets.AllKings:=TAddBetType(bAllKings.Down);
-  addBets.KingUlt:=TAddBetType(bKingUlt.Down);
-  addBets.Trull:=TAddBetType(bTrull.Down);
-  addBets.PagatUlt:=TAddBetType(bPagatUlt.Down);
-  addBets.VogelII:=TAddBetType(bVogel2.Down);
-  addBets.VogelIII:=TAddBetType(bVogel3.Down);
-  addBets.VogelIV:=TAddBetType(bVogel4.Down);
-  addBets.Game:=TAddBetType(bGame.Down);
-  addBets.CatchXXI:=TAddBetType(bXXIFang.Down);
-  addBets.Valat:=TAddBetType(bValat.Down);
+  addBets.Minus10.BetType:=TAddBetType(bSack.Down);
+  addBets.AllKings.BetType:=TAddBetType(bAllKings.Down);
+  addBets.KingUlt.BetType:=TAddBetType(bKingUlt.Down);
+  addBets.Trull.BetType:=TAddBetType(bTrull.Down);
+  addBets.PagatUlt.BetType:=TAddBetType(bPagatUlt.Down);
+  addBets.VogelII.BetType:=TAddBetType(bVogel2.Down);
+  addBets.VogelIII.BetType:=TAddBetType(bVogel3.Down);
+  addBets.VogelIV.BetType:=TAddBetType(bVogel4.Down);
+  addBets.ContraGame.BetType:=TAddBetType(bGame.Down);
+  addBets.CatchXXI.BetType:=TAddBetType(bXXIFang.Down);
+  addBets.Valat.BetType:=TAddBetType(bValat.Down);
   b.AddBets:=addBets;
 
   dm.NewBet(b);

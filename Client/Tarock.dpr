@@ -17,7 +17,8 @@ uses
   ConnectionErrorFrm in 'ConnectionErrorFrm.pas' {frmConnectionError},
   KingSelectFra in 'KingSelectFra.pas' {fraKingSelect: TFrame},
   TalonSelectFra in 'TalonSelectFra.pas' {fraTalonSelect: TFrame},
-  BiddingFra in 'BiddingFra.pas' {fraBidding: TFrame};
+  BiddingFra in 'BiddingFra.pas' {fraBidding: TFrame},
+  ScoreFra in 'ScoreFra.pas' {fraScore: TFrame};
 
 {$R *.res}
 

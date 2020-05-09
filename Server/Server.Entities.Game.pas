@@ -24,7 +24,7 @@ type
 
     property Cards:TCards read FCards write FCards;
 
-    constructor Create(const AName:String; const AIndex:Integer);
+    constructor Create(const AName:String; const AIndex:Integer; const AScore:Integer);
     destructor Destroy;override;
     procedure Assign(const ASource:TPlayer);override;
   end;
@@ -38,7 +38,6 @@ type
     FTalon:TPlayerCards;
     FActive: Boolean;
     FRounds: TGameRounds;
-    FPositiveGame: Boolean;
     FBets: TBets;
     FSituation: TGameSituation<TPlayerCards>;
     FActGame: TGameType;
@@ -46,6 +45,8 @@ type
     FTalonRounds: Integer;
     function GetActRound: TGameRound;
     function GetPlayers: TPlayers<TPlayerCards>;
+    function GetPlayersTeam1: String;
+    function GetPlayersTeam2: String;
 
     //function Clone:TGame;
   public
@@ -61,14 +62,16 @@ type
     property Rounds:TGameRounds read FRounds write FRounds;
     property ActRound:TGameRound read GetActRound;
     property TalonRounds:Integer read FTalonRounds write FTalonRounds;
-    property PositiveGame:Boolean read FPositiveGame write FPositiveGame;
     property Situation:TGameSituation<TPlayerCards> read FSituation write FSituation;
     property ActGame:TGameType read FActGame write FActGame;
+    property PlayersTeam1:String read GetPlayersTeam1;
+    property PlayersTeam2:String read GetPlayersTeam2;
 
     constructor Create(const APlayers:TPlayers<TPlayer>=nil);
     destructor Destroy;override;
 
     function FindPlayer(const APlayerName:String):TPlayerCards;
+    function TeamOf(const APlayerName:String):TTeam;
   end;
   TGames=Spring.Collections.Stacks.TObjectStack<TGame>;
 
@@ -102,17 +105,16 @@ begin
 
   for i:=0 to 3 do begin
     if Assigned(APlayers) then
-      Players.Add(TPlayerCards.Create(APlayers[i].Name,i))
+      Players.Add(TPlayerCards.Create(APlayers[i].Name,i,APlayers[i].Score))
     else
-      Players.Add(TPlayerCards.Create('',i))
+      Players.Add(TPlayerCards.Create('',i,0))
   end;
-  FTalon:=TPlayerCards.Create('TALON',-1);
+  FTalon:=TPlayerCards.Create('TALON',-1,0);
   for player in APlayers do
     player.BetState:=btNone;
 
   FBets:=TBets.Create(True);
   FRounds:=TGameRounds.Create;
-  FPositiveGame:=True;
   FActive:=True;
 end;
 
@@ -156,6 +158,35 @@ begin
   Result:=FSituation.Players;
 end;
 
+function TGame.GetPlayersTeam1: String;
+var player:TPlayer;
+begin
+  Result:='';
+  for player in FSituation.Players do begin
+    if player.Team=ttTeam1 then
+      Result:=','+player.Name
+  end;
+  if Length(Result)>0 then
+    Result:=Copy(Result,2,Length(Result));
+end;
+
+function TGame.GetPlayersTeam2: String;
+var player:TPlayer;
+begin
+  Result:='';
+  for player in FSituation.Players do begin
+    if player.Team=ttTeam2 then
+      Result:=Result+','+player.Name
+  end;
+  if Length(Result)>0 then
+    Result:=Copy(Result,2,Length(Result));
+end;
+
+function TGame.TeamOf(const APlayerName: String): TTeam;
+begin
+   Result:=Players.Find(APlayerName).Team
+end;
+
 { TPlayerCards }
 
 procedure TPlayerCards.Assign(const ASource:TPlayer);
@@ -167,10 +198,11 @@ begin
   end;
 end;
 
-constructor TPlayerCards.Create(const AName:String; const AIndex:Integer);
+constructor TPlayerCards.Create(const AName:String; const AIndex:Integer; const AScore:Integer);
 begin
   inherited Create(AName);
   FIndex:=AIndex;
+  Score:=AScore;
 
   FCards:=TCards.Create;
 end;

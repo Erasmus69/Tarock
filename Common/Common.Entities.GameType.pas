@@ -85,7 +85,7 @@ begin
 
   AllGames.AddItem('VOGEL2','Vogel II (Besser Rufer)',4);
   ALLGames.AddItem('BETTL','Bettel',4,False,tkSolo,False,tkNoTalon,wc0Trick);
-  ALLGames.AddItem('FARB3','Farben-Dreier',4,True,tkSolo,False,tkNoTalon,wc12Rounds,True);
+  ALLGames.AddItem('FARB3','Farben-Dreier',4,True,tkSolo,False,tk3Talon,wc12Rounds,True);
 
   AllGames.AddItem('VOGEL3','Vogel III (Besser Rufer)',5);
   AllGames.AddItem('PICC_POU','Piccolo Plauderer',5,False,tkOuvert,False,tkNoTalon,wc1Trick);

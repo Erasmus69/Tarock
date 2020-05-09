@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
   cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round,
-  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra;
+  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra, ScoreFra;
 
 const
     CSM_REFRESHCARDS=WM_USER+1;
@@ -45,6 +45,7 @@ type
     procedure tRefreshTimer(Sender: TObject);
   private
     { Private declarations }
+    FScore:TfraScore;
     FGameSelect:TfraGameSelect;
     FKingSelect:TfraKingSelect;
     FTalonSelect:TfraTalonSelect;
@@ -142,6 +143,16 @@ begin
   tRefresh.Enabled:=True;
   bStartGame.Enabled:=False;
   TaskCount:=0;
+  clFirstPlayer.Caption:='';
+  clSecondPlayer.Caption:='';
+  clThirdPlayer.Caption:='';
+  clME.Caption:='';
+  FScore:=TfraScore.Create(Self);
+  FScore.Parent:=pBoard;
+  FScore.Top:=0;
+  FScore.Left:=0;
+  FScore.Hide;
+
 //  EnumWindows(@EnumWindowsProc, 0);
 (*
   case TaskCount of
@@ -159,8 +170,10 @@ end;
 
 procedure TfrmTarock.GameInfo;
 begin
-  mGameInfo.Lines.Assign(dm.GameSituation.GameInfo);
-  SendMessage(mGameInfo.InnerControl.Handle,EM_LINESCROLL,0,mGameInfo.Lines.Count-1);
+  if mGameInfo.Lines.Text<>dm.GameSituation.GameInfo.Text then begin
+    mGameInfo.Lines.Assign(dm.GameSituation.GameInfo);
+    SendMessage(mGameInfo.InnerControl.Handle,EM_LINESCROLL,0,mGameInfo.Lines.Count-1);
+  end;
 end;
 
 procedure TfrmTarock.GetPlayers;
@@ -347,6 +360,14 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
 
   procedure Bidding;
   begin
+    if not FScore.Visible then begin
+      FScore.clPlayer1.Caption:=dm.GameSituation.Players[0].Name;
+      FScore.clPlayer2.Caption:=dm.GameSituation.Players[1].Name;
+      FScore.clPlayer3.Caption:=dm.GameSituation.Players[2].Name;
+      FScore.clPlayer4.Caption:=dm.GameSituation.Players[3].Name;
+      FScore.Show;
+    end;
+
     if not Assigned(FGameSelect) then begin
       bStartGame.Enabled:=False;
       FLastThrowShown:=False;
@@ -426,6 +447,15 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   end;
 
   procedure GameTerminated;
+    procedure SetScore(const ALabel:TcxLabel; const AScore:Smallint);
+    begin
+      ALabel.Caption:=IntToStr(AScore);
+      if AScore<0 then
+        ALabel.Style.Font.Color:=clRed
+      else
+        ALabel.Style.Font.Color:=clBlack;
+    end;
+
   var r:TGameRound;
   begin
     if not FLastThrowShown then begin
@@ -439,6 +469,11 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
         r.Free;
       end;
     end;
+
+    SetScore(FScore.clScore1,dm.GameSituation.Players[0].Score);
+    SetScore(FScore.clScore2,dm.GameSituation.Players[1].Score);
+    SetScore(FScore.clScore3,dm.GameSituation.Players[2].Score);
+    SetScore(FScore.clScore4,dm.GameSituation.Players[3].Score);
     bStartGame.Enabled:=True;
   end;
 

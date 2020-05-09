@@ -337,11 +337,17 @@ end;
 
 function TRepository.Turn(AName: String; ACard: TCardKey): TBaseRESTResponse;
 var nextTurnOn:String;
+  i: Integer;
 begin
   if not Assigned(FGameController) then
     Result:=TBaseRESTResponse.BuildResponse(False,'No active Game')
   else begin
     nextTurnOn:=FGameController.Turn(AName,ACard);
+    if not ActGame.Active then begin
+      for i:=0 to FPlayers.Count-1 do
+        FPlayers[i].Score:=ActGame.Players[i].Score;
+    end;
+
     Result:=TBaseRESTResponse.BuildResponse(True);
     Result.Message:=nextTurnOn
   end;
