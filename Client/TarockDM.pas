@@ -45,6 +45,7 @@ type
     procedure FillBody(AContent: TMemoryStream; APatchData: TObject);
     function GetIAmBeginner: Boolean;
     function GetIsMyTurn: Boolean;
+    function GetIAmGamer: Boolean;
     { Private declarations }
 
   public
@@ -74,6 +75,7 @@ type
     property MyName:String read FMyName write FMyName;
     property IAmBeginner:Boolean read GetIAmBeginner;
     property IsMyTurn:Boolean read GetIsMyTurn;
+    property IAmGamer:Boolean read GetIAmGamer;
     property MyCards:TCards read FMyCards;
     property GameSituation: TGameSituation<Common.Entities.Player.TPlayer> read FGameSituation;
     property ActGame:TGameType read FActGame;
@@ -360,6 +362,11 @@ end;
 function TdmTarock.GetIAmBeginner: Boolean;
 begin
   Result:=GameSituation.Beginner=MyName;
+end;
+
+function TdmTarock.GetIAmGamer: Boolean;
+begin
+  Result:=FGameSituation.Gamer=MyName;
 end;
 
 function TdmTarock.GetIsMyTurn: Boolean;

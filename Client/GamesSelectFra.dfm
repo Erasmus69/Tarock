@@ -106,7 +106,7 @@ object fraGameSelect: TfraGameSelect
       Width = 90
       Height = 33
       Anchors = [akLeft, akBottom]
-      Caption = 'Lizitieren'
+      Caption = 'Lizitiere'
       TabOrder = 3
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText

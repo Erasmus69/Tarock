@@ -19,6 +19,8 @@ type
     procedure CalcResults(AWinner: TTeam);
     procedure ShowResults;
     procedure UpdateScore;
+    procedure CalcPoints(AGame: TGame);
+    procedure DistributeTalon(AGame: TGame);
 
   public
     constructor Create(AGame:TGame);
@@ -40,6 +42,9 @@ implementation
 uses System.SysUtils, System.Generics.Collections,Common.Entities.GameType,
      Common.Entities.GameSituation, dialogs,
      System.Classes;
+
+const EPS=1E-04;
+      POINTSTOWIN=35.666-EPS;
 
 constructor TGameController.Create(AGame: TGame);
 begin
@@ -158,6 +163,8 @@ function TGameController.FinalBet(const ABet:TBet):String;
     Merge(ASource.VogelIV,ADest.VogelIV);
     Merge(ASource.Valat,ADest.Valat);
     Merge(ASource.Trull,ADest.Trull);
+    Merge(ASource.CatchKing,ADest.CatchKing);
+    Merge(ASource.CatchPagat,ADest.CatchPagat);
     Merge(ASource.CatchXXI,ADest.CatchXXI);
     Result:=ADest;
   end;
@@ -199,6 +206,8 @@ begin
     AddInfo(sl,'Vogel IV',ABet.Player,ABet.AddBets.VogelIV);
     AddInfo(sl,'alle 4 Könige',ABet.Player,ABet.AddBets.AllKings);
     AddInfo(sl,'Trull',ABet.Player,ABet.AddBets.Trull);
+    AddInfo(sl,'König Fang',ABet.Player,ABet.AddBets.CatchKing);
+    AddInfo(sl,'Pagat Fang',ABet.Player,ABet.AddBets.CatchPagat);
     AddInfo(sl,'XXI Fang',ABet.Player,ABet.AddBets.CatchXXI);
     AddInfo(sl,'Valat',ABet.Player,ABet.AddBets.Valat);
     case ABet.AddBets.ContraGame.BetType of
@@ -321,8 +330,10 @@ begin
 
       if FGame.ActGame.Talon<>tkNoTalon then
         FGame.Situation.State:=gsGetTalon
-      else
+      else begin
+        DistributeTalon(FGame);
         FGame.Situation.State:=gsFinalBet;
+      end
     end
     else
       raise Exception.Create('It is not a king-card');
@@ -453,7 +464,7 @@ begin
       end;
 
       for card in FGame.Talon.Cards do
-        player.Cards.AddItem(card.ID,card.CType,card.Value,card.ImageIndex);
+        player.Cards.AddItem(card.ID,card.CType,card.Value,card.Points,card.ImageIndex);
 
       forMyTeam:=TGameRound.Create;
       forMyTeam.Winner:=FGame.Situation.Gamer;
@@ -483,7 +494,7 @@ begin
             if laydown.CType=ctTarock then begin
               if not Assigned(FGame.Situation.CardsLayedDown) then
                 FGame.Situation.CardsLayedDown:=TCards.Create(True);
-              FGame.Situation.CardsLayedDown.AddItem(laydown.ID,laydown.CType,laydown.Value,laydown.ImageIndex);
+              FGame.Situation.CardsLayedDown.AddItem(laydown.ID,laydown.CType,laydown.Value,laydown.Points,laydown.ImageIndex);
             end;
           end;
           laydown.Free;
@@ -564,9 +575,75 @@ begin
 
       else if FGame.ActGame.Talon<>tkNoTalon then
         FGame.Situation.State:=gsGetTalon
-      else
+      else begin
+        DistributeTalon(FGame);
         FGame.Situation.State:=gsFinalBet
+      end;
     end;
+  end;
+end;
+
+procedure TGameController.DistributeTalon(AGame:TGame);
+type TKingFound=(kfNone,kfFirst,kfSecond);
+
+  procedure AssignCards(const APlayerName:String;const AFrom, ATo:Integer);
+  var
+    cthrown: TCardThrown;
+    i: Integer;
+    round: TGameRound;
+  begin
+    round:=TGameRound.Create;
+    round.Winner:=APlayerName;
+
+    for i:=AFrom to ATo do begin
+      cthrown:= TCardThrown.Create('');
+      cthrown.Card:=FGame.Talon.Cards[i].ID;
+      cthrown.PlayerName:=APlayerName;
+      round.CardsThrown.Add(cthrown);
+    end;
+    FGame.Rounds.Add(round);
+  end;
+
+var otherplayer:String;
+    i: Integer;
+    player:TPlayerCards;
+    kingFound:TKingFound;
+
+begin
+  if not AGame.ActGame.Positive or  (AGame.ActGame.Talon<>tkNoTalon) then Exit;
+
+  otherPlayer:='';
+  for player in FGame.Players do begin
+    if player.Team=ttTeam2 then begin
+      otherPlayer:=player.Name;
+      Break;
+    end;
+  end;
+
+  kingfound:=kfNone;
+  if (AGame.ActGame.TeamKind=tkPair) then begin
+    for i:=0 to FGAme.Talon.Cards.Count-1 do begin
+      if FGame.Talon.Cards[i].ID=AGame.Situation.KingSelected then begin
+        if i<3 then
+          kingFound:=kfFirst
+        else
+          kingFound:=kfSecond;
+        Break;
+      end;
+    end;
+  end;
+
+  if kingFound=kfNone then    //whole talon belongs to enemy
+    AssignCards(otherplayer,0,FGame.Talon.Cards.Count-1)
+
+  // if called king stays in Talon half of them belongs to gamer
+  else if kingFound=kfFirst then begin
+    AssignCards(FGame.Situation.Gamer,0,2);
+    AssignCards(otherplayer,3,5);
+  end
+  else begin
+    AssignCards(otherplayer,0,2);
+    AssignCards(FGame.Situation.Gamer,3,5);
   end;
 end;
 
@@ -582,8 +659,22 @@ begin
   case FGame.ActGame.WinCondition of
     wc12Rounds:begin
                  FGame.Active:=not allRoundsPlayed;
-                 if FGame.ActRound.CardsThrown.Exists(HK) then
-                   FGAme.Active:=False;
+(*                 if FGame.ActRound.CardsThrown.Exists(HK) then
+                   FGame.Active:=False;*)
+                 CalcPoints(FGame);
+                 if not FGame.Active then begin
+                   // player whos says contra must get at least 35 + 2 cards to win even is not the gamer itself
+                   if (FGame.Situation.AddBets.ContraGame.BetType>abtNone) and (FGame.Situation.AddBets.ContraGame.Team=ttTeam2) then begin
+                     if FGame.Situation.Team2Results.Points>=POINTSTOWIN then
+                       winner:=ttTeam2
+                     else
+                       winner:=ttTeam1;
+                   end
+                   else if FGame.Situation.Team1Results.Points>=POINTSTOWIN then
+                     winner:=ttTeam1
+                   else
+                     winner:=ttTeam2;
+                 end;
                end;
     wc0Trick:  begin
                  if FGame.ActRound.Winner=FGame.Situation.Gamer then begin
@@ -632,6 +723,10 @@ begin
     FGame.Situation.GameInfo.Add('Spiel ist beendet');
 
     FGame.Situation.GameInfo.Add('======================');
+    if FGame.ActGame.WinCondition=wc12Rounds then begin
+      FGame.Situation.GameInfo.Add('Das Team1 macht '+FGame.Situation.Team1Results.PointsAsString)
+    end;
+
     if winner=ttTeam1 then begin
       if FGame.ActGame.TeamKind in [tkSolo,tkOuvert] then
         FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' gewinnt')
@@ -645,6 +740,24 @@ begin
     ShowResults;
     UpdateScore;
   end;
+end;
+
+procedure TGameController.CalcPoints(AGame:TGame);
+var
+  round: TGameRound;
+  team1Points,team2Points:Double;
+begin
+  team1Points:=0;
+  team2Points:=0;
+
+  for round in AGame.Rounds do begin
+    if AGame.TeamOf(round.Winner)=ttTeam1 then
+      team1Points:=team1Points+round.CardsThrown.TotalValue
+    else
+      team2Points:=team2Points+round.CardsThrown.TotalValue
+  end;
+  AGame.Situation.Team1Results.SetPoints(team1Points);
+  AGame.Situation.Team2Results.SetPoints(team2Points);
 end;
 
 procedure TGameController.UpdateScore;
@@ -700,6 +813,8 @@ begin
   ShowResult('Vogel IV',FGame.Situation.Team1Results.VogelIV,FGame.Situation.Team2Results.VogelIV,FGame.Situation.AddBets.VogelIV);
   ShowResult('Alle Könige',FGame.Situation.Team1Results.AllKings,FGame.Situation.Team2Results.AllKings,FGame.Situation.AddBets.AllKings);
   ShowResult('Trull',FGame.Situation.Team1Results.Trull,FGame.Situation.Team2Results.Trull,FGame.Situation.AddBets.Trull);
+  ShowResult('König Fang',FGame.Situation.Team1Results.CatchKing,FGame.Situation.Team2Results.CatchKing,FGame.Situation.AddBets.CatchKing);
+  ShowResult('Pagat Fang',FGame.Situation.Team1Results.CatchPagat,FGame.Situation.Team2Results.CatchPagat,FGame.Situation.AddBets.CatchPagat);
   ShowResult('XXI Fang',FGame.Situation.Team1Results.CatchXXI,FGame.Situation.Team2Results.CatchXXI,FGame.Situation.AddBets.CatchXXI);
   FGame.Situation.GameInfo.Add(         '=========================');
   ShowResult('Summe',FGame.Situation.Team1Results.Total,FGame.Situation.Team2Results.Total);
@@ -801,24 +916,35 @@ var contraGame:Integer;
     team1,team2:TGameResults;
     winsByTeam:TTeam;
     valat:Boolean;
+    value: Smallint;
 begin
   team1:=Default(TGameResults);
   team2:=Default(TGameResults);
 
-  contraGame:=AddBet(FGame.ActGame.Value,FGame.Situation.AddBets.ContraGame,False)-FGame.ActGame.Value;
+  if FGame.ActGame.GameTypeid='63' then
+    value:=6
+  else
+    value:=FGame.ActGame.Value;
+
+  contraGame:=AddBet(value,FGame.Situation.AddBets.ContraGame,False)-value;
   case AWinner of
     ttTeam1: begin
-               team1.Game:=FGame.ActGame.Value;
+               team1.Game:=value;
                team1.ContraGame:=contraGame;
             end;
     else     begin
-               team1.Game:=-FGame.ActGame.Value;
-               team1.ContraGame:=-contraGame;
+               if FGame.ActGame.GameTypeid='63' then begin
+                 team1.Game:=-value*2;
+                 team1.ContraGame:=-contraGame*2;
+               end
+               else begin
+                 team1.Game:=-value;
+                 team1.ContraGame:=-contraGame;
+               end;
              end;
   end;
 
   if FGame.ActGame.Positive then begin
-     //Sack
      valat:=IsValat(winsByTeam);
      if valat then begin
        if winsByTeam=ttTeam1 then
@@ -833,89 +959,38 @@ begin
          team1.Valat:=(AddBet(4,FGame.Situation.AddBets.Valat,False)-1)*team1.Game;
      end;
 
-
      if not FGame.ActGame.JustColors then begin
+       if FGame.Situation.Team1Results.Points>=POINTSTOWIN+20 then
+         team1.Minus10Count:=2
+       else if FGame.Situation.Team1Results.Points>=POINTSTOWIN+10 then
+         team1.Minus10Count:=1
+       else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-20 then
+         team1.Minus10Count:=-2
+       else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-10 then
+         team1.Minus10Count:=-1;
+
+       CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,Abs(team1.Minus10Count),FGame.Situation.AddBets.Minus10,valat);
        CheckBet(team1.PagatUlt,TrickBy(T1,FGame.Rounds.Count-1,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.PagatUlt,valat);
-(*
-       if TrickBy(T1,FGame.Rounds.Count-1,winsByTeam) then begin
-         if winsByTeam=ttTeam1 then
-           team1.PagatUlt:=AddBet(1,FGame.Situation.AddBets.PagatUlt,valat)
-         else
-           team1.PagatUlt:=-AddBet(1,FGame.Situation.AddBets.PagatUlt,valat);
-       end
-       else if FGame.Situation.AddBets.PagatUlt.BetType>abtNone then begin
-         if FGame.Situation.AddBets.PagatUlt.Team=ttTeam1 then
-           team1.PagatUlt:=-(AddBet(1,FGame.Situation.AddBets.PagatUlt,valat))
-         else
-           team1.PagatUlt:=(AddBet(1,FGame.Situation.AddBets.PagatUlt,valat);
-       end;  *)
        CheckBet(team1.VogelII,TrickBy(T2, FGame.Rounds.Count-2,winsByTeam),winsByTeam,2,FGame.Situation.AddBets.VogelII,valat);
+       CheckBet(team1.VogelIII,TrickBy(T3, FGame.Rounds.Count-3,winsByTeam),winsByTeam,3,FGame.Situation.AddBets.VogelIII,valat);
+       CheckBet(team1.VogelIV,TrickBy(T4, FGame.Rounds.Count-4,winsByTeam),winsByTeam,4,FGame.Situation.AddBets.VogelIV,valat);
+       if (FGame.ActGame.TeamKind=tkPair) then
+         CheckBet(team1.KingUlt,FGame.Rounds.Last.CardsThrown.Exists(FGame.Situation.KingSelected),
+                  FGame.TeamOf(FGame.Rounds.Last.Winner),1,FGame.Situation.AddBets.KingUlt,valat);
 
-(*       if TrickBy(T2, FGame.Rounds.Count-2,winsByTeam) then begin
-         if winsByTeam=ttTeam1 then
-           team1.VogelII:=AddBet(2,FGame.Situation.AddBets.VogelII,valat)
-         else
-           team1.VogelII:=-AddBet(2,FGame.Situation.AddBets.VogelII,valat);
-       end;*)
+       if not valat then begin
+         if FGame.ActGame.TeamKind=tkPair then
+           CheckBet(team1.CatchKing,CatchBy(FGame.Situation.KingSelected,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.CatchKing,valat);
+         CheckBet(team1.CatchPagat,CatchBy(T1,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.CatchPagat,valat);
+         CheckBet(team1.CatchXXI,CatchBy(T21,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.CatchXXI,valat);
+         winsByTeam:=BelongsTo(T1);
+         CheckBet(team1.Trull,(BelongsTo(T21)=winsByTeam) and (BelongsTo(T22)=winsByTeam),winsByTeam,1,FGame.Situation.AddBets.Trull,valat);
 
-       if TrickBy(T3, FGame.Rounds.Count-3,winsByTeam) then begin
-         if winsByTeam=ttTeam1 then
-           team1.VogelIII:=AddBet(3,FGame.Situation.AddBets.VogelIII,valat)
-         else
-           team1.VogelIII:=-AddBet(3,FGame.Situation.AddBets.VogelIII,valat);
+         winsByTeam:=BelongsTo(HK);
+         CheckBet(team1.AllKings,(BelongsTo(SK)=winsByTeam) and (BelongsTo(CK)=winsByTeam) and (BelongsTo(DK)=winsByTeam),winsByTeam,1,FGame.Situation.AddBets.AllKings,valat);
        end;
-
-       if TrickBy(T4, FGame.Rounds.Count-4,winsByTeam) then begin
-         if winsByTeam=ttTeam1 then
-           team1.VogelIV:=AddBet(4,FGame.Situation.AddBets.VogelIV,valat)
-         else
-           team1.VogelIV:=-AddBet(4,FGame.Situation.AddBets.VogelIV,valat);
-       end;
-
-       if (FGame.ActGame.TeamKind=tkPair) and  FGame.Rounds.Last.CardsThrown.Exists(FGame.Situation.KingSelected) then begin
-         if FGame.TeamOf(FGame.Rounds.Last.Winner)=ttTeam1 then
-           team1.KingUlt:=AddBet(1,FGame.Situation.AddBets.KingUlt,valat)
-         else
-           team1.KingUlt:=-AddBet(1,FGame.Situation.AddBets.KingUlt,valat);
-       end;
-
-       if not valat and CatchBy(T21,winsByTeam) then begin
-         if winsByTeam=ttTeam1 then
-           team1.CatchXXI:=AddBet(1,FGame.Situation.AddBets.CatchXXI,valat)
-         else
-           team1.CatchXXI:=-AddBet(1,FGame.Situation.AddBets.CatchXXI,valat);
-       end;
-
-       winsByTeam:=BelongsTo(T1);
-       if  not valat and (BelongsTo(T21)=winsByTeam) and (BelongsTo(T22)=winsByTeam) then begin
-         if winsByTeam=ttTeam1 then
-           team1.Trull:=AddBet(1,FGame.Situation.AddBets.Trull,valat)
-         else
-           team1.Trull:=-AddBet(1,FGame.Situation.AddBets.Trull,valat);
-       end;
-
-       winsByTeam:=BelongsTo(HK);
-       if not valat and (BelongsTo(SK)=winsByTeam) and (BelongsTo(CK)=winsByTeam) and (BelongsTo(DK)=winsByTeam) then begin
-         if winsByTeam=ttTeam1 then
-           team1.AllKings:=AddBet(1,FGame.Situation.AddBets.AllKings,valat)
-         else
-           team1.AllKings:=-AddBet(1,FGame.Situation.AddBets.AllKings,valat);
-       end;
-       //pagatfang, sküsfang ?
      end;
   end;
-(*  team1.ContraGame:=8;
-  team1.VogelII:=12;
-  team1.VogelIII:=-2;
-  team1.VogelIV:=225;
-  team1.Minus10Count:=1;
-  team1.Minus10:=-1;
-  team1.Trull:=2;
-  team1.CatchXXI:=-1;
-  team1.KingUlt:=1;
-  team1.PagatUlt:=-1;
-  team1.AllKings:=-1;
-  team1.Valat:=122;*)
 
   team2.Game:=-team1.Game;
   team2.ContraGame:=-team1.ContraGame;
@@ -927,6 +1002,8 @@ begin
   team2.VogelIV:=-team1.VogelIV;
   team2.Trull:=-team1.Trull;
   team2.AllKings:=-team1.AllKings;
+  team2.CatchKing:=-team1.CatchKing;
+  team2.CatchPagat:=-team1.CatchPagat;
   team2.CatchXXI:=-team1.CatchXXI;
   team2.Valat:=-team1.Valat;
 
@@ -941,6 +1018,8 @@ begin
     team1.VogelIV:=team1.VogelIV*3;
     team1.Trull:=team1.Trull*3;
     team1.AllKings:=team1.AllKings*3;
+    team1.CatchKing:=team1.CatchKing*3;
+    team1.CatchPagat:=team1.CatchPagat*3;
     team1.CatchXXI:=team1.CatchXXI*3;
     team1.Valat:=team1.Valat*3;
   end;

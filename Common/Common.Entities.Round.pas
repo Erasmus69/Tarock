@@ -20,6 +20,7 @@ type
   TCardsThrown=class(TObjectList<TCardThrown>)
     function Exists(const ACard:TCardKey):Boolean;
     function Find(const ACard:TCardKey):TCardThrown;
+    function TotalValue:Double;
   end;
 
   TGameRound=class
@@ -126,6 +127,15 @@ begin
       Exit;
     end;
   end;
+end;
+
+function TCardsThrown.TotalValue: Double;
+var card: TCardThrown;
+begin
+  Result:=0;
+
+  for card in Self do
+    Result:=Result+ALLCARDS.Find(card.Card).Points-0.666;
 end;
 
 end.

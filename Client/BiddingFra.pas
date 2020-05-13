@@ -24,6 +24,8 @@ type
     bBet: TcxButton;
     bVogel3: TcxButton;
     bVogel2: TcxButton;
+    bPagatFang: TcxButton;
+    bKingFang: TcxButton;
     procedure bBetClick(Sender: TObject);
   private
 
@@ -58,6 +60,8 @@ begin
   addBets.VogelIII.BetType:=TAddBetType(bVogel3.Down);
   addBets.VogelIV.BetType:=TAddBetType(bVogel4.Down);
   addBets.ContraGame.BetType:=TAddBetType(bGame.Down);
+  addBets.CatchKing.BetType:=TAddBetType(bKingFang.Down);
+  addBets.CatchPagat.BetType:=TAddBetType(bPagatFang.Down);
   addBets.CatchXXI.BetType:=TAddBetType(bXXIFang.Down);
   addBets.Valat.BetType:=TAddBetType(bValat.Down);
   b.AddBets:=addBets;
@@ -91,6 +95,8 @@ begin
     bVogel2.Enabled:=False;
     bVogel3.Enabled:=False;
     bVogel4.Enabled:=False;
+    bKingFang.Enabled:=False;
+    bPagatFang.Enabled:=False;
     bXXIFang.Enabled:=False;
     bValat.Enabled:=False;
   end
@@ -103,10 +109,14 @@ begin
     bVogel2.Enabled:=False;
     bVogel3.Enabled:=False;
     bVogel4.Enabled:=False;
+    bKingFang.Enabled:=False;
+    bPagatFang.Enabled:=False;
     bXXIFang.Enabled:=False;
   end
-  else if dm.ActGame.TeamKind=tkSolo then
+  else if dm.ActGame.TeamKind=tkSolo then begin
     bKingUlt.Enabled:=False;
+    bKingFang.Enabled:=False;
+  end;
 end;
 
 end.

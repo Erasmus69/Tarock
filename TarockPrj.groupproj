@@ -9,30 +9,6 @@
         <Projects Include="Server\TarockServiceDBG.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Services\WiRLServerTemplate\WiRLServerTemplateDBG.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\PROJECTSME\app\appslibrary\App Template\App\AppTemplate.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\PROJECTSME\app\appslibrary\RegistrationForm\Test\RegistrationTest.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\MasterWiRL\ErgoLicenseServerMasterWDBG.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\Wirl\Demos\17.Parameters\DemoParameters.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\Client\ErgoLicenseServerDBG32.dproj">
-            <Dependencies/>
-        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,86 +35,14 @@
     <Target Name="TarockServiceDBG:Make">
         <MSBuild Projects="Server\TarockServiceDBG.dproj" Targets="Make"/>
     </Target>
-    <Target Name="WiRLServerTemplateDBG">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\WiRLServerTemplate\WiRLServerTemplateDBG.dproj"/>
-    </Target>
-    <Target Name="WiRLServerTemplateDBG:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\WiRLServerTemplate\WiRLServerTemplateDBG.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="WiRLServerTemplateDBG:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\WiRLServerTemplate\WiRLServerTemplateDBG.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="AppTemplate">
-        <MSBuild Projects="D:\PROJECTSME\app\appslibrary\App Template\App\AppTemplate.dproj"/>
-    </Target>
-    <Target Name="AppTemplate:Clean">
-        <MSBuild Projects="D:\PROJECTSME\app\appslibrary\App Template\App\AppTemplate.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="AppTemplate:Make">
-        <MSBuild Projects="D:\PROJECTSME\app\appslibrary\App Template\App\AppTemplate.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="RegistrationTest">
-        <MSBuild Projects="D:\PROJECTSME\app\appslibrary\RegistrationForm\Test\RegistrationTest.dproj"/>
-    </Target>
-    <Target Name="RegistrationTest:Clean">
-        <MSBuild Projects="D:\PROJECTSME\app\appslibrary\RegistrationForm\Test\RegistrationTest.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="RegistrationTest:Make">
-        <MSBuild Projects="D:\PROJECTSME\app\appslibrary\RegistrationForm\Test\RegistrationTest.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="TCErgo">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj"/>
-    </Target>
-    <Target Name="TCErgo:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="TCErgo:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Tools\TestComplete\TCErgo.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="ErgoLicenseServerMasterWDBG">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\MasterWiRL\ErgoLicenseServerMasterWDBG.dproj"/>
-    </Target>
-    <Target Name="ErgoLicenseServerMasterWDBG:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\MasterWiRL\ErgoLicenseServerMasterWDBG.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ErgoLicenseServerMasterWDBG:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\MasterWiRL\ErgoLicenseServerMasterWDBG.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="DemoSerialization">
-        <MSBuild Projects="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj"/>
-    </Target>
-    <Target Name="DemoSerialization:Clean">
-        <MSBuild Projects="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="DemoSerialization:Make">
-        <MSBuild Projects="D:\Wirl\Demos\13.Serialization\DemoSerialization.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="DemoParameters">
-        <MSBuild Projects="D:\Wirl\Demos\17.Parameters\DemoParameters.dproj"/>
-    </Target>
-    <Target Name="DemoParameters:Clean">
-        <MSBuild Projects="D:\Wirl\Demos\17.Parameters\DemoParameters.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="DemoParameters:Make">
-        <MSBuild Projects="D:\Wirl\Demos\17.Parameters\DemoParameters.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="ErgoLicenseServerDBG32">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\Client\ErgoLicenseServerDBG32.dproj"/>
-    </Target>
-    <Target Name="ErgoLicenseServerDBG32:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\Client\ErgoLicenseServerDBG32.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ErgoLicenseServerDBG32:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Services\ErgoLicenseServer\Client\ErgoLicenseServerDBG32.dproj" Targets="Make"/>
-    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Tarock;TarockServiceDBG;WiRLServerTemplateDBG;AppTemplate;RegistrationTest;TCErgo;ErgoLicenseServerMasterWDBG;DemoSerialization;DemoParameters;ErgoLicenseServerDBG32"/>
+        <CallTarget Targets="Tarock;TarockServiceDBG"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;WiRLServerTemplateDBG:Clean;AppTemplate:Clean;RegistrationTest:Clean;TCErgo:Clean;ErgoLicenseServerMasterWDBG:Clean;DemoSerialization:Clean;DemoParameters:Clean;ErgoLicenseServerDBG32:Clean"/>
+        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;WiRLServerTemplateDBG:Make;AppTemplate:Make;RegistrationTest:Make;TCErgo:Make;ErgoLicenseServerMasterWDBG:Make;DemoSerialization:Make;DemoParameters:Make;ErgoLicenseServerDBG32:Make"/>
+        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

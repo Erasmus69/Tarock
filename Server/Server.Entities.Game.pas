@@ -164,7 +164,7 @@ begin
   Result:='';
   for player in FSituation.Players do begin
     if player.Team=ttTeam1 then
-      Result:=','+player.Name
+      Result:=Result+','+player.Name
   end;
   if Length(Result)>0 then
     Result:=Copy(Result,2,Length(Result));

@@ -11,6 +11,7 @@ type
   private
     function GetTotal: Smallint;
   public
+    Points: Double;
     Game:Smallint;
     Minus10Count:Smallint;
     Minus10:Smallint;
@@ -22,10 +23,14 @@ type
     VogelIV:Smallint;
     Trull:Smallint;
     AllKings:Smallint;
+    CatchPagat:Smallint;
+    CatchKing:Smallint;
     CatchXXI:Smallint;
     Valat:Smallint;
 
     property Total:Smallint read GetTotal;
+    procedure SetPoints(const Value: Double);
+    function PointsAsString:String;
   end;
 
   TGameSituation<T:TPlayer>=class(TObject)
@@ -142,7 +147,24 @@ end;
 
 function TGameResults.GetTotal: Smallint;
 begin
-  Result:=Game+Minus10+ContraGame+KingUlt+PagatUlt+VogelII+VogelIII+VogelIV+Trull+AllKings+CatchXXI+Valat;
+  Result:=Game+Minus10+ContraGame+KingUlt+PagatUlt+VogelII+VogelIII+VogelIV+Trull+AllKings+CatchKing+CatchPagat+CatchXXI+Valat;
+end;
+
+function TGameResults.PointsAsString: String;
+var rest:Double;
+begin
+  Result:=IntToStr(Trunc(Points));
+  rest:=Frac(points);
+
+  if rest>0.4 then
+    Result:=result+' 2 Blatt'
+  else if (rest>0) then
+    Result:=result+' 1 Blatt'
+end;
+
+procedure TGameResults.SetPoints(const Value: Double);
+begin
+  Points := Value;
 end;
 
 end.

@@ -20,6 +20,8 @@ type
     VogelIV:TAddBet;
     Valat:TAddBet;
     Trull:TAddBet;
+    CatchKing:TAddBet;
+    CatchPagat:TAddBet;
     CatchXXI:TAddBet;
   end;
 

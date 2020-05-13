@@ -404,13 +404,14 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     ShowActGame;
     FreeAndNil(FKingSelect);
 
-    if not Assigned(FTalonSelect) then
+    if not Assigned(FTalonSelect) and ((dm.ActGame.GameTypeid<>'63') or dm.IAmGamer) then
       ShowTalon;
   end;
 
   procedure FinalBidding;
   begin
     ShowActGame;
+    FreeAndNil(FKingSelect);
     if Assigned(FTalonSelect) then begin
       FreeAndNil(FTalonSelect);
       if (dm.MyName=dm.GameSituation.Gamer) then begin

@@ -145,7 +145,7 @@ object fraBidding: TfraBidding
       ParentFont = False
     end
     object bXXIFang: TcxButton
-      Left = 152
+      Left = 344
       Top = 132
       Width = 90
       Height = 33
@@ -162,7 +162,7 @@ object fraBidding: TfraBidding
     end
     object bValat: TcxButton
       Left = 344
-      Top = 132
+      Top = 172
       Width = 90
       Height = 33
       Caption = 'Valat'
@@ -197,7 +197,7 @@ object fraBidding: TfraBidding
       Top = 93
       Width = 90
       Height = 33
-      Caption = 'Vogel IV'
+      Caption = 'Vogel III'
       SpeedButtonOptions.GroupIndex = 11
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 11
@@ -217,6 +217,38 @@ object fraBidding: TfraBidding
       SpeedButtonOptions.GroupIndex = 10
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 12
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object bPagatFang: TcxButton
+      Left = 248
+      Top = 132
+      Width = 90
+      Height = 33
+      Caption = 'Pagat Fang'
+      SpeedButtonOptions.GroupIndex = 8
+      SpeedButtonOptions.AllowAllUp = True
+      TabOrder = 13
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object bKingFang: TcxButton
+      Left = 152
+      Top = 132
+      Width = 90
+      Height = 33
+      Caption = 'K'#246'nig Fang'
+      SpeedButtonOptions.GroupIndex = 8
+      SpeedButtonOptions.AllowAllUp = True
+      TabOrder = 14
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
