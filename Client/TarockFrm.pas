@@ -38,6 +38,7 @@ type
     tRefresh: TTimer;
     mGameInfo: TcxMemo;
     cbPlayers: TComboBox;
+    imgTalon: TImage;
 
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -105,10 +106,21 @@ begin
 end;
 
 procedure TfrmTarock.DoThrowCard(Sender: TObject);
+var r:TGameRound;
 begin
   if (dm.GameSituation.State=gsPlaying) and dm.IsMyTurn then begin
-    dm.PutTurn(TCardControl(Sender).Card.ID);
+    r:=dm.GetRound;
+    if Assigned(r) and r.Done then begin
+      beep;
+      Exit;
+    end;
+    if dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold then begin
+      beep;
+      Exit;
+    end;
+
     dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
+    dm.PutTurn(TCardControl(Sender).Card.ID);
     PostMessage(Handle,CSM_REFRESHCARDS,0,0);
   end;
 end;
@@ -118,6 +130,7 @@ var player:TPlayer;
 begin
    for player in dm.Players do  // clear last thrown of game before
      player.CardImage.Picture.Assign(nil);
+   imgTalon.Picture.Assign(nil);
 end;
 
 procedure TfrmTarock.bStartGameClick(Sender: TObject);
@@ -322,14 +335,19 @@ var itm:TCardThrown;
     player:TPlayer;
 begin
   if ARound=nil then Exit;
-  
+  imgTalon.Picture.Assign(nil);
+
   for itm in ARound.CardsThrown do begin
-     player:=dm.Players.Find(itm.PlayerName);
-     if itm.Card=None then
-        player.CardImage.Picture.Assign(nil)
-     else
-       dm.imCards.GetBitmap(ALLCARDS.Find(itm.Card).ImageIndex,player.CardImage.Picture.Bitmap);
-    end;
+     if itm.PlayerName='TALON' then
+       dm.imCards.GetBitmap(ALLCARDS.Find(itm.Card).ImageIndex,imgTalon.Picture.Bitmap)
+     else begin
+       player:=dm.Players.Find(itm.PlayerName);
+       if itm.Card=None then
+          player.CardImage.Picture.Assign(nil)
+       else
+         dm.imCards.GetBitmap(ALLCARDS.Find(itm.Card).ImageIndex,player.CardImage.Picture.Bitmap);
+     end;
+  end;
 end;
 
 procedure TfrmTarock.ShowTurn;

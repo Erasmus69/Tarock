@@ -35,7 +35,7 @@ const
   CONNECTION_NAME_DEFAULT = 'ERGO';
   LOG_FILENAME = 'WiRLServerTemplate_%s.log';
   LOG_LEVEL = 'ERROR';
-  SERVER_PORT = 8080;
+  SERVER_PORT = 20010;
 
 { TConfiguration }
 

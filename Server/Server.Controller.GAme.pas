@@ -21,6 +21,8 @@ type
     procedure UpdateScore;
     procedure CalcPoints(AGame: TGame);
     procedure DistributeTalon(AGame: TGame);
+    function TrickBy(const ACard: TCardKey; const ALastRound: Integer;
+      var AWinsByTeam: TTeam): Boolean;
 
   public
     constructor Create(AGame:TGame);
@@ -395,10 +397,21 @@ begin
 end;
 
 procedure TGameController.CloseRound;
+var
+  c: TCardThrown;
 begin
   FGame.ActRound.Winner:=DetermineWinner(FGame.ActRound.CardsThrown);
   FGame.Situation.GameInfo.Add(FGame.ActRound.Winner+' sticht');
   FGame.Situation.TurnOn:=FGame.ActRound.Winner;
+
+  // on Trischaken distribute talon to first 6 tricks
+  if (FGame.ActGame.GameTypeid='TRISCH') and (FGame.Talon.Cards.Count>0) then begin
+    c:=TCardThrown.Create('TALON');
+    c.Card:=FGame.Talon.Cards.First.ID;
+    FGame.ActRound.CardsThrown.Add(c);
+    FGame.Talon.Cards.Delete(0);
+  end;
+
   CheckGameTerminated;
 end;
 
@@ -657,12 +670,16 @@ begin
   winner:=ttTeam1;
 
   case FGame.ActGame.WinCondition of
-    wc12Rounds:begin
+    wc12Rounds,
+    wcT1Trick,
+    wcT2Trick,
+    wcT3Trick,
+    wcT4Trick:begin
                  FGame.Active:=not allRoundsPlayed;
 (*                 if FGame.ActRound.CardsThrown.Exists(HK) then
                    FGame.Active:=False;*)
-                 CalcPoints(FGame);
                  if not FGame.Active then begin
+                   CalcPoints(FGame);
                    // player whos says contra must get at least 35 + 2 cards to win even is not the gamer itself
                    if (FGame.Situation.AddBets.ContraGame.BetType>abtNone) and (FGame.Situation.AddBets.ContraGame.Team=ttTeam2) then begin
                      if FGame.Situation.Team2Results.Points>=POINTSTOWIN then
@@ -674,6 +691,16 @@ begin
                      winner:=ttTeam1
                    else
                      winner:=ttTeam2;
+
+                   // vogel-game must also be tricked
+                   if (winner=ttTeam1) and ( FGame.ActGame.WinCondition<>wc12Rounds) then begin
+                     if (FGame.ActGame.WinCondition=wcT1Trick) and TrickBy(T1,FGame.Rounds.Count-1,winner)  then
+                     else if (FGame.ActGame.WinCondition=wcT2Trick) and TrickBy(T2,FGame.Rounds.Count-2,winner)then
+                     else if (FGame.ActGame.WinCondition=wcT3Trick) and TrickBy(T3,FGame.Rounds.Count-3,winner)then
+                     else if (FGame.ActGame.WinCondition=wcT4Trick) and TrickBy(T4,FGame.Rounds.Count-4,winner)then
+                     else
+                       winner:=ttTeam2;
+                   end;
                  end;
                end;
     wc0Trick:  begin
@@ -820,6 +847,27 @@ begin
   ShowResult('Summe',FGame.Situation.Team1Results.Total,FGame.Situation.Team2Results.Total);
 end;
 
+function TGameController.TrickBy(const ACard:TCardKey; const ALastRound:Integer; var AWinsByTeam:TTeam):Boolean;
+var
+  card: TCardThrown;
+  round:TGameRound;
+begin
+  round:=FGame.Rounds.Items[ALastRound];
+  AWinsByTeam:=FGame.TeamOf(round.Winner);
+
+  card:=round.CardsThrown.Find(ACard);
+  if Assigned(card) then begin
+    if (card.PlayerName=round.Winner) then    // card itself tricks
+      Result:=true
+    else if FGame.TeamOf(card.PlayerName)=AWinsByTeam then  // partner has destroyed the trick
+      result:=false
+    else           // cath by other team
+      Result:=True;
+  end
+  else
+    Result:=false;
+end;
+
 procedure TGameController.CalcResults(AWinner:TTeam);
 
   function AddBet(AValue:Integer; AAddBet:TAddBet;AIsValat:Boolean):Integer;
@@ -844,27 +892,6 @@ procedure TGameController.CalcResults(AWinner:TTeam);
         Exit;
     end;
     Result:=True;
-  end;
-
-  function TrickBy(const ACard:TCardKey; const ALastRound:Integer; var AWinsByTeam:TTeam):Boolean;
-  var
-    card: TCardThrown;
-    round:TGameRound;
-  begin
-    round:=FGame.Rounds.Items[ALastRound];
-    AWinsByTeam:=FGame.TeamOf(round.Winner);
-
-    card:=round.CardsThrown.Find(ACard);
-    if Assigned(card) then begin
-      if (card.PlayerName=round.Winner) then    // card itself tricks
-        Result:=true
-      else if FGame.TeamOf(card.PlayerName)=AWinsByTeam then  // partner has destroyed the trick
-        result:=false
-      else           // cath by other team
-        Result:=True;
-    end
-    else
-      Result:=false;
   end;
 
   function CatchBy(const ACard:TCardKey; var AWinsByTeam:TTeam):Boolean;
@@ -970,10 +997,15 @@ begin
          team1.Minus10Count:=-1;
 
        CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,Abs(team1.Minus10Count),FGame.Situation.AddBets.Minus10,valat);
-       CheckBet(team1.PagatUlt,TrickBy(T1,FGame.Rounds.Count-1,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.PagatUlt,valat);
-       CheckBet(team1.VogelII,TrickBy(T2, FGame.Rounds.Count-2,winsByTeam),winsByTeam,2,FGame.Situation.AddBets.VogelII,valat);
-       CheckBet(team1.VogelIII,TrickBy(T3, FGame.Rounds.Count-3,winsByTeam),winsByTeam,3,FGame.Situation.AddBets.VogelIII,valat);
-       CheckBet(team1.VogelIV,TrickBy(T4, FGame.Rounds.Count-4,winsByTeam),winsByTeam,4,FGame.Situation.AddBets.VogelIV,valat);
+       if FGame.ActGame.WinCondition<>wcT1Trick then
+         CheckBet(team1.PagatUlt,TrickBy(T1,FGame.Rounds.Count-1,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.PagatUlt,valat);
+       if FGame.ActGame.WinCondition<>wcT2Trick then
+         CheckBet(team1.VogelII,TrickBy(T2, FGame.Rounds.Count-2,winsByTeam),winsByTeam,2,FGame.Situation.AddBets.VogelII,valat);
+       if FGame.ActGame.WinCondition<>wcT3Trick then
+         CheckBet(team1.VogelIII,TrickBy(T3, FGame.Rounds.Count-3,winsByTeam),winsByTeam,3,FGame.Situation.AddBets.VogelIII,valat);
+       if FGame.ActGame.WinCondition<>wcT4Trick then
+         CheckBet(team1.VogelIV,TrickBy(T4, FGame.Rounds.Count-4,winsByTeam),winsByTeam,4,FGame.Situation.AddBets.VogelIV,valat);
+
        if (FGame.ActGame.TeamKind=tkPair) then
          CheckBet(team1.KingUlt,FGame.Rounds.Last.CardsThrown.Exists(FGame.Situation.KingSelected),
                   FGame.TeamOf(FGame.Rounds.Last.Winner),1,FGame.Situation.AddBets.KingUlt,valat);

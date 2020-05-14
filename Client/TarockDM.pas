@@ -102,9 +102,12 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
 
 { TdmTarock }
 
+const URL='localhost:8080';
+      //URL='185.154.66.221:20000';
 procedure TdmTarock.DataModuleCreate(Sender: TObject);
 begin
-  RESTClient:=TNeonRESTClient.Create('localhost:8080');
+  RESTClient:=TNeonRESTClient.Create(URL);
+  WirlClient1.WirlEngineURL:='http://'+URL+'/rest';
   Common.Entities.Card.Initialize;
   Common.Entities.GameType.Initialize;
 

@@ -40,7 +40,8 @@ type
   end;
 
 implementation
-uses Generics.Collections,Common.Entities.GameType,TarockDM,Common.Entities.Bet;
+uses Generics.Collections,Common.Entities.GameType,TarockDM,
+  Common.Entities.Bet, Common.Entities.Card;
 
 {$R *.dfm}
 
@@ -48,11 +49,38 @@ uses Generics.Collections,Common.Entities.GameType,TarockDM,Common.Entities.Bet;
 
 procedure TfraGameSelect.bBetClick(Sender: TObject);
 var b:TBet;
+    card: TCard;
+  colors: Integer;
+    game:TGameType;
 begin
   if gvGames.DataController.FocusedRecordIndex>=0 then begin
     b:=TBet.Create;
     b.Player:=dm.MyName;
     b.GameTypeID:=gvGames.DataController.Values[gvGames.DataController.FocusedRecordIndex,gcId.Index];
+
+    game:=ALLGAMES.Find(b.GameTypeID);
+    if game.JustColors then begin
+      colors:=0;
+      for card in dm.MyCards do begin
+        if card.CType<>ctTarock then
+          Inc(colors);
+      end;
+      if colors<7 then begin
+        Beep;
+        ShowMessage('Ein Farbenspiel kann nur gespielt werden, wenn du mindestens 7 Farbkarten auf der Hand hast');
+        FreeAndNil(b);
+        Exit;
+      end;
+    end
+    else if ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T1)) or
+            ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T2)) or
+            ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T3)) or
+            ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T4)) then begin
+      Beep;
+      ShowMessage('Ein Vogelspiel kann nur gespielt werden, wenn du den entsprechenden Vogel auf der Hand hast');
+      FreeAndNil(b);
+      Exit;
+    end;
 
     dm.NewBet(b);
   end;

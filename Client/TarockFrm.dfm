@@ -191,6 +191,13 @@ object frmTarock: TfrmTarock
       Height = 154
       Stretch = True
     end
+    object imgTalon: TImage
+      Left = 790
+      Top = 408
+      Width = 85
+      Height = 154
+      Stretch = True
+    end
     object pMyCards: TPanel
       Left = 1
       Top = 568
