@@ -47,14 +47,14 @@ object frmTarock: TfrmTarock
       AnchorX = 636
       AnchorY = 20
     end
-    object Button1: TButton
+    object bRegister: TButton
       Left = 142
       Top = 5
       Width = 75
       Height = 25
       Caption = 'Register'
       TabOrder = 1
-      OnClick = Button1Click
+      OnClick = bRegisterClick
     end
     object bStartGame: TButton
       Left = 1190
@@ -236,14 +236,21 @@ object frmTarock: TfrmTarock
     end
   end
   object mGameInfo: TcxMemo
-    Left = 998
+    Left = 968
     Top = 39
     Lines.Strings = (
       'mGameInfo')
+    ParentFont = False
     Properties.ScrollBars = ssVertical
+    Style.Font.Charset = DEFAULT_CHARSET
+    Style.Font.Color = clWindowText
+    Style.Font.Height = -13
+    Style.Font.Name = 'Courier New'
+    Style.Font.Style = []
+    Style.IsFontAssigned = True
     TabOrder = 6
     Height = 210
-    Width = 233
+    Width = 263
   end
   object tRefresh: TTimer
     Enabled = False

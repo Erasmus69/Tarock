@@ -36,6 +36,8 @@ type
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
+    FDebugMode:Boolean;
+    FUrl:String;
     FPlayers:TPlayers;
     FMyName: String;
     FMyCards:TCards;
@@ -79,6 +81,7 @@ type
     property MyCards:TCards read FMyCards;
     property GameSituation: TGameSituation<Common.Entities.Player.TPlayer> read FGameSituation;
     property ActGame:TGameType read FActGame;
+    property DebugMode:Boolean read FDebugMode;
   end;
 
 var
@@ -94,7 +97,7 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
   WiRL.Rtti.Utils,
   WiRL.Core.JSON,
   Math,
-  TarockFrm;
+  TarockFrm, System.IniFiles;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
@@ -102,12 +105,22 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
 
 { TdmTarock }
 
-const URL='localhost:8080';
-      //URL='185.154.66.221:20000';
+const URL='185.154.66.221:20000';
 procedure TdmTarock.DataModuleCreate(Sender: TObject);
+var
+  ini: TInifile;
 begin
-  RESTClient:=TNeonRESTClient.Create(URL);
-  WirlClient1.WirlEngineURL:='http://'+URL+'/rest';
+  ini:=TInifile.Create('.\Tarock.ini');
+  try
+    FDebugMode:=ini.ReadInteger('Debug','Debug',0)=1;
+    FUrl:=ini.ReadString('Debug','URL',URL);
+  finally
+    ini.Free;
+  end;
+
+  RESTClient:=TNeonRESTClient.Create(FURL);
+  WirlClient1.WirlEngineURL:='http://'+FURL+'/rest';
+
   Common.Entities.Card.Initialize;
   Common.Entities.GameType.Initialize;
 

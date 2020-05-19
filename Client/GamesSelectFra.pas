@@ -73,9 +73,9 @@ begin
       end;
     end
     else if ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T1)) or
-            ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T2)) or
-            ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T3)) or
-            ((game.WinCondition=wcT1Trick) and not dm.MyCards.Exists(T4)) then begin
+            ((game.WinCondition=wcT2Trick) and not dm.MyCards.Exists(T2)) or
+            ((game.WinCondition=wcT3Trick) and not dm.MyCards.Exists(T3)) or
+            ((game.WinCondition=wcT4Trick) and not dm.MyCards.Exists(T4)) then begin
       Beep;
       ShowMessage('Ein Vogelspiel kann nur gespielt werden, wenn du den entsprechenden Vogel auf der Hand hast');
       FreeAndNil(b);

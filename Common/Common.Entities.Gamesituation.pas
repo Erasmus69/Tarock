@@ -10,6 +10,7 @@ type
   TGameResults=record
   private
     function GetTotal: Smallint;
+    function GetGrandTotal: Smallint;
   public
     Points: Double;
     Game:Smallint;
@@ -27,8 +28,11 @@ type
     CatchKing:Smallint;
     CatchXXI:Smallint;
     Valat:Smallint;
+    Doubles:Smallint;
 
     property Total:Smallint read GetTotal;
+    property GrandTotal:Smallint read GetGrandTotal;
+
     procedure SetPoints(const Value: Double);
     function PointsAsString:String;
   end;
@@ -49,6 +53,7 @@ type
     FWinner: TTeam;
     FTeam2Results: TGameResults;
     FTeam1Results: TGameResults;
+    FDoubles: SmallInt;
   public
     property Players: TPlayers<T> read FPlayers write FPlayers;
     property State: TGameState read FState write FState;
@@ -57,6 +62,7 @@ type
     property Beginner: String read FBeginner write FBeginner;
     property GameType:String read FGameType write FGameType;
     property AddBets:TAddBets read FAddBets write FAddBets;
+    property Doubles:SmallInt read FDoubles write FDoubles;
     property Gamer:String read FGamer write FGamer;
     property BestBet:Smallint read FBestBet write FBestBet;
     property KingSelected:TCardKey read FKingSelected write FKingSelected;
@@ -89,6 +95,7 @@ begin
   Result.TurnOn:=FTurnOn;
   Result.Gamer:=FGamer;
   Result.BestBet:=FBestBet;
+  Result.Doubles:=FDoubles;
 
   for itm in FPlayers do begin
     itm2:=TPlayer.Create(itm.Name);
@@ -144,6 +151,13 @@ begin
 end;
 
 { TGameResults }
+
+function TGameResults.GetGrandTotal: Smallint;
+begin
+  Result:=Total;
+  if Doubles>0 then
+    Result:=Doubles*2*Result;
+end;
 
 function TGameResults.GetTotal: Smallint;
 begin

@@ -17,6 +17,7 @@ type
     function PreviousPlayer(const APlayerName: String): String;
     function CountTricks(const ARounds:TGameRounds; const AGamer:String): Integer;
     procedure CalcResults(AWinner: TTeam);
+    procedure CalcSingleResults;
     procedure ShowResults;
     procedure UpdateScore;
     procedure CalcPoints(AGame: TGame);
@@ -55,6 +56,17 @@ begin
   FGame.Situation.GameInfo.Clear;
   FGame.Situation.GameInfo.Add('Neues Spiel gestartet');
   FGame.Situation.GameInfo.Add(FGame.Situation.Beginner+' hat die Vorhand');
+  if FGame.Doubles.Count>0 then begin
+    FGame.Situation.Doubles:=FGame.Doubles[0];
+    FGame.Doubles.Delete(0);
+  end
+  else
+    FGame.Situation.Doubles:=0;
+
+  if FGame.Situation.Doubles>1 then
+    FGame.Situation.GameInfo.Add(Format('Es gelten %d Räder',[FGame.Situation.Doubles]))
+  else if FGame.Situation.Doubles=1 then
+    FGame.Situation.GameInfo.Add('Es gilt ein Rad');
 end;
 
 function TGameController.NewBet(ABet: TBet):String;
@@ -663,6 +675,7 @@ end;
 procedure TGameController.CheckGameTerminated;
 var winner:TTeam;
     allRoundsPlayed:Boolean;
+    i,k: Integer;
 begin
   if not FGame.Active then Exit;
 
@@ -680,8 +693,18 @@ begin
                    FGame.Active:=False;*)
                  if not FGame.Active then begin
                    CalcPoints(FGame);
+
+                   if FGame.ActGame.GameTypeid='TRISCH' then begin
+                     winner:=ttTeam2;
+
+                     k:= FGame.Doubles.Count;
+                     for i:=0 to k-1 do        // add 4 doubles to next games
+                       FGame.Doubles[i]:=FGame.Doubles[i]+1;
+                     for i:=1 to 4-k do
+                       FGame.Doubles.Add(1);
+                   end
                    // player whos says contra must get at least 35 + 2 cards to win even is not the gamer itself
-                   if (FGame.Situation.AddBets.ContraGame.BetType>abtNone) and (FGame.Situation.AddBets.ContraGame.Team=ttTeam2) then begin
+                   else if (FGame.Situation.AddBets.ContraGame.BetType>abtNone) and (FGame.Situation.AddBets.ContraGame.Team=ttTeam2) then begin
                      if FGame.Situation.Team2Results.Points>=POINTSTOWIN then
                        winner:=ttTeam2
                      else
@@ -758,12 +781,17 @@ begin
       if FGame.ActGame.TeamKind in [tkSolo,tkOuvert] then
         FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' gewinnt')
       else
-        FGame.Situation.GameInfo.Add('Das Team1 ('+FGame.PlayersTeam1+') gewinnt')
+        FGame.Situation.GameInfo.Add('Das Team1 ('+FGame.Team1Names+') gewinnt')
     end
+    else if FGame.ActGame.GameTypeid='TRISCH' then
+      FGame.Situation.GameInfo.Add(FGame.Team1Names+' zahlt an '+FGame.Team2Names)
     else
-      FGame.Situation.GameInfo.Add('Das Team2 ('+FGame.PlayersTeam2+') gewinnt');
+      FGame.Situation.GameInfo.Add('Das Team2 ('+FGame.Team2Names+') gewinnt');
 
-    CalcResults(winner);
+    if FGame.ActGame.TeamKind<>tkSinglePlayer then
+      CalcResults(winner)
+    else
+      CalcSingleResults;
     ShowResults;
     UpdateScore;
   end;
@@ -773,16 +801,52 @@ procedure TGameController.CalcPoints(AGame:TGame);
 var
   round: TGameRound;
   team1Points,team2Points:Double;
+  player:TPlayerCards;
+  existsVirgin:Boolean;
+
 begin
   team1Points:=0;
   team2Points:=0;
 
-  for round in AGame.Rounds do begin
-    if AGame.TeamOf(round.Winner)=ttTeam1 then
-      team1Points:=team1Points+round.CardsThrown.TotalValue
-    else
-      team2Points:=team2Points+round.CardsThrown.TotalValue
+  if AGame.ActGame.TeamKind=tkSinglePlayer then begin
+    for player in AGame.Situation.Players do begin
+      player.Team:=ttNone;
+      player.Points:=0;
+      player.Results:=0;
+    end;
+    for round in AGame.Rounds do
+      AGame.Situation.Players.Find(round.Winner).Points:=AGame.Situation.Players.Find(round.Winner).Points+round.CardsThrown.TotalValue;
+
+    if AGame.ActGame.GameTypeid='TRISCH' then begin
+      existsVirgin:=False;
+      for player in AGame.Situation.Players do begin
+        if player.Points>team1Points then
+          team1Points:=player.Points
+        else if player.Points=0 then
+          existsVirgin:=True;
+      end;
+
+      for player in AGame.Situation.Players do begin
+        if Abs(player.Points-team1Points)<EPS then
+          player.Team:=ttTeam1           // team1=looser
+        else if existsVirgin and (player.Points=0) then  // if exists virgin(s) they take it all
+          player.Team:=ttTeam2
+        else if not existsVirgin then
+          player.Team:=ttTeam2;
+      end;
+    end;
+  end
+  else begin
+    for round in AGame.Rounds do begin
+      AGame.Situation.Players.Find(round.Winner).Points:=AGame.Situation.Players.Find(round.Winner).Points+round.CardsThrown.TotalValue;
+
+      if AGame.TeamOf(round.Winner)=ttTeam1 then
+        team1Points:=team1Points+round.CardsThrown.TotalValue
+      else
+        team2Points:=team2Points+round.CardsThrown.TotalValue
+    end;
   end;
+
   AGame.Situation.Team1Results.SetPoints(team1Points);
   AGame.Situation.Team2Results.SetPoints(team2Points);
 end;
@@ -790,11 +854,22 @@ end;
 procedure TGameController.UpdateScore;
 var player:TPlayerCards;
 begin
-  for player in FGame.Situation.Players do begin
-    if FGame.TeamOf(player.Name)=ttTeam1 then
-      player.Score:=player.Score+FGame.Situation.Team1Results.Total
-    else
-      player.Score:=player.Score+FGame.Situation.Team2Results.Total
+  if FGame.ActGame.TeamKind=tkSinglePlayer then begin
+    for player in FGame.Situation.Players do begin
+      if FGame.Situation.Doubles>0 then
+        player.Score:=player.Score+(player.Results*2*FGame.Situation.Doubles)
+      else
+        player.Score:=player.Score+player.Results;
+      player.Results:=0;
+    end;
+  end
+  else begin
+    for player in FGame.Situation.Players do begin
+      if FGame.TeamOf(player.Name)=ttTeam1 then
+        player.Score:=player.Score+FGame.Situation.Team1Results.GrandTotal
+      else
+        player.Score:=player.Score+FGame.Situation.Team2Results.GrandTotal
+    end;
   end;
 end;
 
@@ -807,7 +882,7 @@ procedure TGameController.ShowResults;
     if Length(ABet)<12 then
       ABet:=ABet+StringOfChar(' ',12-Length(ABet));
 
-    FGame.Situation.GameInfo.Add(Format(ABet+' %4d    %4d',[ATeam1,ATeam2]));
+    FGame.Situation.GameInfo.Add(Format(ABet+' %4d   %4d',[ATeam1,ATeam2]));
   end;
 
   procedure ShowResult(ABet:String;const ATeam1,ATeam2:Integer;const AAddBet:TAddBet);overload;
@@ -821,30 +896,73 @@ procedure TGameController.ShowResults;
     ShowResult(ABet,ATeam1,ATeam2);
   end;
 
+var player:TPlayerCards;
+  addInfo: string;
 begin
   FGame.Situation.GameInfo.Add(         '=========================');
-  FGame.Situation.GameInfo.Add(         '             Team1 Team2');
-  ShowResult('Spiel',FGame.Situation.Team1Results.Game,FGame.Situation.Team2Results.Game);
-  ShowResult('Valat',FGame.Situation.Team1Results.Valat,FGame.Situation.Team2Results.Valat,FGame.Situation.AddBets.Valat);
-  if FGame.Situation.Team1Results.ContraGame<>0 then begin
-    if FGame.Situation.AddBets.ContraGame.BetType=abtContra then
-      ShowResult('Re Spiel',FGame.Situation.Team1Results.ContraGame,FGame.Situation.Team2Results.ContraGame)
-    else
-      ShowResult('Contra Spiel',FGame.Situation.Team1Results.ContraGame,FGame.Situation.Team2Results.ContraGame)
+
+  if FGame.ActGame.TeamKind<>tkSinglePlayer then begin
+    FGame.Situation.GameInfo.Add(         '            Team1  Team2');
+    ShowResult('Spiel',FGame.Situation.Team1Results.Game,FGame.Situation.Team2Results.Game);
+    ShowResult('Valat',FGame.Situation.Team1Results.Valat,FGame.Situation.Team2Results.Valat,FGame.Situation.AddBets.Valat);
+    if FGame.Situation.Team1Results.ContraGame<>0 then begin
+      if FGame.Situation.AddBets.ContraGame.BetType=abtContra then
+        ShowResult('Re Spiel',FGame.Situation.Team1Results.ContraGame,FGame.Situation.Team2Results.ContraGame)
+      else
+        ShowResult('Contra Spiel',FGame.Situation.Team1Results.ContraGame,FGame.Situation.Team2Results.ContraGame)
+    end;
+    ShowResult(IntToStr(FGame.Situation.Team1Results.Minus10Count)+' Sack ',FGame.Situation.Team1Results.Minus10,FGame.Situation.Team2Results.Minus10,FGame.Situation.AddBets.Minus10);
+    ShowResult('König Ult',FGame.Situation.Team1Results.KingUlt,FGame.Situation.Team2Results.KingUlt,FGame.Situation.AddBets.KingUlt);
+    ShowResult('Pagat Ult',FGame.Situation.Team1Results.PagatUlt,FGame.Situation.Team2Results.PagatUlt,FGame.Situation.AddBets.PagatUlt);
+    ShowResult('Vogel II',FGame.Situation.Team1Results.VogelII,FGame.Situation.Team2Results.VogelII,FGame.Situation.AddBets.VogelII);
+    ShowResult('Vogel III',FGame.Situation.Team1Results.VogelIII,FGame.Situation.Team2Results.VogelIII,FGame.Situation.AddBets.VogelIII);
+    ShowResult('Vogel IV',FGame.Situation.Team1Results.VogelIV,FGame.Situation.Team2Results.VogelIV,FGame.Situation.AddBets.VogelIV);
+    ShowResult('Alle Könige',FGame.Situation.Team1Results.AllKings,FGame.Situation.Team2Results.AllKings,FGame.Situation.AddBets.AllKings);
+    ShowResult('Trull',FGame.Situation.Team1Results.Trull,FGame.Situation.Team2Results.Trull,FGame.Situation.AddBets.Trull);
+    ShowResult('König Fang',FGame.Situation.Team1Results.CatchKing,FGame.Situation.Team2Results.CatchKing,FGame.Situation.AddBets.CatchKing);
+    ShowResult('Pagat Fang',FGame.Situation.Team1Results.CatchPagat,FGame.Situation.Team2Results.CatchPagat,FGame.Situation.AddBets.CatchPagat);
+    ShowResult('XXI Fang',FGame.Situation.Team1Results.CatchXXI,FGame.Situation.Team2Results.CatchXXI,FGame.Situation.AddBets.CatchXXI);
+    FGame.Situation.GameInfo.Add(         '=========================');
+    ShowResult('Summe',FGame.Situation.Team1Results.Total,FGame.Situation.Team2Results.Total);
+
+    if FGame.Situation.Doubles>0 then begin
+      FGame.Situation.GameInfo.Add('');
+
+      if FGame.Situation.Doubles=1 then
+        FGame.Situation.GameInfo.Add(' Im Radl x 2')
+      else
+        FGame.Situation.GameInfo.Add(Format(' Im %d-fach Radl x %d',[FGame.Situation.Doubles,2*FGame.Situation.Doubles]));
+      ShowResult('Totale',FGame.Situation.Team1Results.GrandTotal,FGame.Situation.Team2Results.GrandTotal);
+    end;
+  end
+  else begin
+    for player in FGame.Players do begin
+      if player.Results<>0 then begin
+        addInfo:='';
+        if (FGame.ActGame.GameTypeid='TRISCH') then begin
+          if player.Points>=POINTSTOWIN then
+            addInfo:='(Bürgermeister)'
+          else if player.Points=0 then
+            addInfo:='(Jungfrau)'
+          else if (player.Name=FGame.Situation.Gamer) and (player.Results<0) then
+            addInfo:='(Vorhand)'
+        end;
+
+        FGame.Situation.GameInfo.Add(Format('%s       %4d  %s',
+                   [player.Name+StringOfChar(' ',12-Length(player.Name)),player.Results,addInfo]));
+
+      end;
+    end;
+    FGame.Situation.GameInfo.Add(         '=========================');
+    if FGame.Situation.Doubles>0 then begin
+      FGame.Situation.GameInfo.Add('');
+
+      if FGame.Situation.Doubles=1 then
+        FGame.Situation.GameInfo.Add(' Im Radl x 2')
+      else
+        FGame.Situation.GameInfo.Add(Format(' Im %d-fach Radl x %d',[FGame.Situation.Doubles,2*FGame.Situation.Doubles]));
+    end;
   end;
-  ShowResult(IntToStr(FGame.Situation.Team1Results.Minus10Count)+' Sack ',FGame.Situation.Team1Results.Minus10,FGame.Situation.Team2Results.Minus10,FGame.Situation.AddBets.Minus10);
-  ShowResult('König Ult',FGame.Situation.Team1Results.KingUlt,FGame.Situation.Team2Results.KingUlt,FGame.Situation.AddBets.KingUlt);
-  ShowResult('Pagat Ult',FGame.Situation.Team1Results.PagatUlt,FGame.Situation.Team2Results.PagatUlt,FGame.Situation.AddBets.PagatUlt);
-  ShowResult('Vogel II',FGame.Situation.Team1Results.VogelII,FGame.Situation.Team2Results.VogelII,FGame.Situation.AddBets.VogelII);
-  ShowResult('Vogel III',FGame.Situation.Team1Results.VogelIII,FGame.Situation.Team2Results.VogelIII,FGame.Situation.AddBets.VogelIII);
-  ShowResult('Vogel IV',FGame.Situation.Team1Results.VogelIV,FGame.Situation.Team2Results.VogelIV,FGame.Situation.AddBets.VogelIV);
-  ShowResult('Alle Könige',FGame.Situation.Team1Results.AllKings,FGame.Situation.Team2Results.AllKings,FGame.Situation.AddBets.AllKings);
-  ShowResult('Trull',FGame.Situation.Team1Results.Trull,FGame.Situation.Team2Results.Trull,FGame.Situation.AddBets.Trull);
-  ShowResult('König Fang',FGame.Situation.Team1Results.CatchKing,FGame.Situation.Team2Results.CatchKing,FGame.Situation.AddBets.CatchKing);
-  ShowResult('Pagat Fang',FGame.Situation.Team1Results.CatchPagat,FGame.Situation.Team2Results.CatchPagat,FGame.Situation.AddBets.CatchPagat);
-  ShowResult('XXI Fang',FGame.Situation.Team1Results.CatchXXI,FGame.Situation.Team2Results.CatchXXI,FGame.Situation.AddBets.CatchXXI);
-  FGame.Situation.GameInfo.Add(         '=========================');
-  ShowResult('Summe',FGame.Situation.Team1Results.Total,FGame.Situation.Team2Results.Total);
 end;
 
 function TGameController.TrickBy(const ACard:TCardKey; const ALastRound:Integer; var AWinsByTeam:TTeam):Boolean;
@@ -947,6 +1065,10 @@ var contraGame:Integer;
 begin
   team1:=Default(TGameResults);
   team2:=Default(TGameResults);
+  team1.Points:=FGame.Situation.Team1Results.Points;
+  team2.Points:=FGame.Situation.Team2Results.Points;
+  team1.Doubles:=FGame.Situation.Doubles;
+  team2.Doubles:=FGame.Situation.Doubles;
 
   if FGame.ActGame.GameTypeid='63' then
     value:=6
@@ -1058,9 +1180,45 @@ begin
 
   FGame.Situation.Team1Results:=team1;
   FGame.Situation.Team2Results:=team2;
-
-
 end;
+
+
+procedure TGameController.CalcSingleResults;
+var loosers:TPlayers<TPlayerCards>;
+    winners:TPlayers<TPlayerCards>;
+    player:TPlayerCards;
+    totalvalue:Integer;
+begin
+  if FGame.ActGame.GameTypeid='TRISCH' then begin    // single player count
+    loosers:=FGame.PlayersTeam1;  // team1=loosers
+    winners:=FGame.PlayersTeam2;  // team2=winners
+    try
+      totalvalue:=0;
+      for player in loosers do begin
+        if player.Points>=POINTSTOWIN then  // burgermaster pay twice
+          player.Results:=-2*(4-loosers.Count)
+        else
+          player.Results:=-1*(4-loosers.Count);
+
+        if FGame.Situation.Gamer=player.Name then  //gamer pay twice
+          player.Results:=player.Results*2;
+
+        { TODO : contra geht eig pro spieler }
+        if FGame.Situation.AddBets.ContraGame.BetType=abtBet then
+          player.Results:=player.Results*2;
+        totalvalue:=totalvalue+player.Results;
+      end;
+
+      for player in winners do
+        player.Results:=-Round(totalvalue/winners.Count);
+
+    finally
+      FreeAndNil(loosers);
+      FreeAndNil(winners);
+    end;
+  end;
+end;
+
 
 function TGameController.CountTricks(const ARounds:TGameRounds; const AGamer:String):Integer;
 var i:Integer;

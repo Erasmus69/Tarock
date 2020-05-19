@@ -26,7 +26,7 @@ type
     pMyCards: TPanel;
     clThirdPlayer: TcxLabel;
     clSecondPlayer: TcxLabel;
-    Button1: TButton;
+    bRegister: TButton;
     bStartGame: TButton;
     pFirstplayerCards: TPanel;
     pThirdPlayerCards: TPanel;
@@ -40,7 +40,7 @@ type
     cbPlayers: TComboBox;
     imgTalon: TImage;
 
-    procedure Button1Click(Sender: TObject);
+    procedure bRegisterClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
     procedure tRefreshTimer(Sender: TObject);
@@ -78,7 +78,7 @@ var
 implementation
 uses System.JSON,TarockDM,Common.Entities.Player,Classes.Entities,Classes.CardControl,
   Common.Entities.GameSituation, Common.Entities.GameType, ConnectionErrorFrm,
-  WiRL.http.Client.Interfaces;
+  WiRL.http.Client.Interfaces, RegistrationFrm;
 
 {$R *.dfm}
 
@@ -91,7 +91,7 @@ const
   BACKCARDXOFFSET=30;
   CARDYOFFSET=0;
 
-procedure TfrmTarock.Button1Click(Sender: TObject);
+procedure TfrmTarock.bRegisterClick(Sender: TObject);
 begin
   if cbPlayers.ItemIndex>=0 then begin
     try
@@ -151,9 +151,13 @@ begin
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
+var
+  frm: TfrmRegistration;
 begin
+  cbPlayers.Visible:=dm.DebugMode;
+  bRegister.Visible:=dm.DebugMode;
+
   mGameInfo.Lines.Clear;
-  tRefresh.Enabled:=True;
   bStartGame.Enabled:=False;
   TaskCount:=0;
   clFirstPlayer.Caption:='';
@@ -166,18 +170,19 @@ begin
   FScore.Left:=0;
   FScore.Hide;
 
-//  EnumWindows(@EnumWindowsProc, 0);
-(*
-  case TaskCount of
-    0:   dm.MyName:='ANDI';
-    1:   dm.MyName:='HANNES';
-    2:   dm.MyName:='WOLFGANG';
-    3:   dm.MyName:='LUKI';
-    else Halt;
+  if not dm.DebugMode then begin
+    frm:=TfrmRegistration.Create(self);
+    try
+      if frm.ShowModal<>mrOk then begin
+        Application.Terminate;
+        Exit;
+      end;
+    finally
+      frm.Free
+    end;
   end;
-showmessage(dm.MyName);
-  dm.RegisterPlayer(dm.MyName);  *)
-  dm.GetPlayers;
+  tRefresh.Enabled:=True;
+  GetPlayers;
 
 end;
 

@@ -237,6 +237,7 @@ end;
 
 function TRepository.NewGame: TExtendedRESTResponse;
 var g:TGame;
+  i: Integer;
 begin
   if FPlayers.Count=4 then begin
     if Assigned(ActGame) and ActGame.Active then
@@ -244,8 +245,11 @@ begin
     else begin
       g:=TGame.Create(FPlayers);
 
-      if Assigned(ActGame) then
-        g.Situation.Beginner:=ActGame.Situation.TurnOn
+      if Assigned(ActGame) then begin
+        g.Situation.Beginner:=ActGame.Situation.TurnOn;
+        for i:=0 to ActGame.Doubles.Count-1 do
+          g.Doubles.Add(ActGame.Doubles[i]);
+      end
       else
         g.Situation.Beginner:=FPlayers[0].Name;
       FGames.Push(g);

@@ -8,7 +8,7 @@ uses
 
 type
   TBetState=(btNone,btBet,btPass,btHold);
-  TTeam=(ttTeam1,ttTeam2);
+  TTeam=(ttTeam1,ttTeam2,ttNone);
 
   TPlayer=class
   private

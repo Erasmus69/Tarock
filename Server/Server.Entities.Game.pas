@@ -17,12 +17,14 @@ type
   private
     FIndex: Integer;
     FCards: TCards;
+    FPoints: Double;
+    FResults: Smallint;
 
   public
     property Index:Integer read FIndex;
-
-
     property Cards:TCards read FCards write FCards;
+    property Points:Double read FPoints write FPoints;
+    property Results:Smallint read FResults write FResults;
 
     constructor Create(const AName:String; const AIndex:Integer; const AScore:Integer);
     destructor Destroy;override;
@@ -43,10 +45,13 @@ type
     FActGame: TGameType;
     FLastFinalBidder: String;
     FTalonRounds: Integer;
+    FDoubles:TList<Smallint>;
     function GetActRound: TGameRound;
     function GetPlayers: TPlayers<TPlayerCards>;
-    function GetPlayersTeam1: String;
-    function GetPlayersTeam2: String;
+    function GetPlayersTeam1: TPlayers<TPlayerCards>;
+    function GetPlayersTeam2: TPlayers<TPlayerCards>;
+    function GetTeam1Names: String;
+    function GetTeam2Names: String;
 
     //function Clone:TGame;
   public
@@ -64,8 +69,11 @@ type
     property TalonRounds:Integer read FTalonRounds write FTalonRounds;
     property Situation:TGameSituation<TPlayerCards> read FSituation write FSituation;
     property ActGame:TGameType read FActGame write FActGame;
-    property PlayersTeam1:String read GetPlayersTeam1;
-    property PlayersTeam2:String read GetPlayersTeam2;
+    property PlayersTeam1:TPlayers<TPlayerCards> read GetPlayersTeam1;
+    property PlayersTeam2:TPlayers<TPlayerCards> read GetPlayersTeam2;
+    property Team1Names:String read GetTeam1Names;
+    property Team2Names:String read GetTeam2Names;
+    property Doubles:TList<Smallint> read FDoubles write FDoubles;
 
     constructor Create(const APlayers:TPlayers<TPlayer>=nil);
     destructor Destroy;override;
@@ -115,6 +123,7 @@ begin
 
   FBets:=TBets.Create(True);
   FRounds:=TGameRounds.Create;
+  FDoubles:=TList<Smallint>.Create;
   FActive:=True;
 end;
 
@@ -124,6 +133,7 @@ begin
   FreeAndNil(FTalon);
   FreeAndNil(FBets);
   FreeAndNil(FRounds);
+  FreeAndNil(FDoubles);
 
   inherited;
 end;
@@ -158,28 +168,58 @@ begin
   Result:=FSituation.Players;
 end;
 
-function TGame.GetPlayersTeam1: String;
-var player:TPlayer;
+function TGame.GetPlayersTeam1: TPlayers<TPlayerCards>;
+var player:TPlayerCards;
 begin
-  Result:='';
+  Result:=TPlayers<TPlayerCards>.Create(False);
   for player in FSituation.Players do begin
     if player.Team=ttTeam1 then
-      Result:=Result+','+player.Name
+      Result.Add(player)
   end;
-  if Length(Result)>0 then
-    Result:=Copy(Result,2,Length(Result));
 end;
 
-function TGame.GetPlayersTeam2: String;
-var player:TPlayer;
+function TGame.GetPlayersTeam2: TPlayers<TPlayerCards>;
+var player:TPlayerCards;
 begin
-  Result:='';
+  Result:=TPlayers<TPlayerCards>.Create(False);
   for player in FSituation.Players do begin
     if player.Team=ttTeam2 then
-      Result:=Result+','+player.Name
+      Result.Add(player)
   end;
-  if Length(Result)>0 then
-    Result:=Copy(Result,2,Length(Result));
+end;
+
+function TGame.GetTeam1Names: String;
+var player:TPlayerCards;
+    plist:TPlayers<TPlayerCards>;
+begin
+  Result:='';
+  plist:=GetPlayersTeam1;
+  try
+    for player in pList do
+      Result:=Result+','+player.Name;
+
+    if Length(Result)>0 then
+      Result:=Copy(Result,2,Length(Result));
+  finally
+    FreeAndNil(pList);
+  end;
+end;
+
+function TGame.GetTeam2Names: String;
+var player:TPlayerCards;
+    plist:TPlayers<TPlayerCards>;
+begin
+  Result:='';
+  plist:=GetPlayersTeam2;
+  try
+    for player in pList do
+      Result:=Result+','+player.Name;
+
+    if Length(Result)>0 then
+      Result:=Copy(Result,2,Length(Result));
+  finally
+    FreeAndNil(pList);
+  end;
 end;
 
 function TGame.TeamOf(const APlayerName: String): TTeam;
@@ -195,6 +235,7 @@ begin
   if ASource is TPlayerCards then begin
     FIndex:=TPlayerCards(ASource).Index;
     FCards.Assign(TPlayerCards(ASource).Cards);
+    FPoints:=TPlayerCards(ASource).Points;
   end;
 end;
 

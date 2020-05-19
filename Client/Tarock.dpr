@@ -18,7 +18,8 @@ uses
   KingSelectFra in 'KingSelectFra.pas' {fraKingSelect: TFrame},
   TalonSelectFra in 'TalonSelectFra.pas' {fraTalonSelect: TFrame},
   BiddingFra in 'BiddingFra.pas' {fraBidding: TFrame},
-  ScoreFra in 'ScoreFra.pas' {fraScore: TFrame};
+  ScoreFra in 'ScoreFra.pas' {fraScore: TFrame},
+  RegistrationFrm in 'RegistrationFrm.pas' {frmRegistration};
 
 {$R *.res}
 
@@ -27,6 +28,5 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TdmTarock, dm);
   Application.CreateForm(TfrmTarock, frmTarock);
-  Application.CreateForm(TfrmConnectionError, frmConnectionError);
   Application.Run;
 end.
