@@ -929,9 +929,9 @@ begin
       FGame.Situation.GameInfo.Add('');
 
       if FGame.Situation.Doubles=1 then
-        FGame.Situation.GameInfo.Add(' Im Radl x 2')
+        FGame.Situation.GameInfo.Add('Im Radl x 2')
       else
-        FGame.Situation.GameInfo.Add(Format(' Im %d-fach Radl x %d',[FGame.Situation.Doubles,2*FGame.Situation.Doubles]));
+        FGame.Situation.GameInfo.Add(Format('Im %d-fach Radl x %d',[FGame.Situation.Doubles,2*FGame.Situation.Doubles]));
       ShowResult('Totale',FGame.Situation.Team1Results.GrandTotal,FGame.Situation.Team2Results.GrandTotal);
     end;
   end

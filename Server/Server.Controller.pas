@@ -20,7 +20,7 @@ type
   ['{43B8C3AB-4848-41EE-AAF9-30DE019D0059}']
     function GetPlayers:TPlayers<TPlayer>;
     function RegisterPlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
-    function DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+    function DeletePlayer(const APlayerName:String):TBaseRESTResponse;
 
     function GetGameSituation: TGameSituation<TPlayer>;
     procedure NewGameInfo(const AMessage: String);
@@ -44,7 +44,7 @@ type
   public
     function GetPlayers:TPlayers<TPlayer>;
     function RegisterPlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
-    function DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+    function DeletePlayer(const APlayerName:String):TBaseRESTResponse;
 
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
@@ -161,9 +161,9 @@ begin
   Result := GetContainer.Resolve<IRepository>.ChangeCards(ACards);
 end;
 
-function TApiV1Controller.DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+function TApiV1Controller.DeletePlayer(const APlayerName:String):TBaseRESTResponse;
 begin
-  Result:=GetContainer.Resolve<IRepository>.DeletePlayer(APlayer);
+  Result:=GetContainer.Resolve<IRepository>.DeletePlayer(APlayerName);
 end;
 
 end.

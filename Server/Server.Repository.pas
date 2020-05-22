@@ -22,7 +22,7 @@ type
   ['{52DC4164-4347-4D49-9CB3-D19E910062D9}']
     function GetPlayers:TPlayers<TPlayer>;
     function RegisterPlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
-    function DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+    function DeletePlayer(const APlayerName:String):TBaseRESTResponse;
 
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
@@ -57,7 +57,7 @@ type
 
     function GetPlayers:TPlayers<TPlayer>;
     function RegisterPlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
-    function DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+    function DeletePlayer(const APlayerName:String):TBaseRESTResponse;
 
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
@@ -357,24 +357,25 @@ begin
   end;
 end;
 
-function TRepository.DeletePlayer(const APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
-var p,p2:TPlayer;
+function TRepository.DeletePlayer(const APlayerName:String):TBaseRESTResponse;
+var p2:TPlayer;
 begin
   Result:=nil;
   Logger.Enter('TRepository.DeletePlayer');
 
-  for p in APlayer do begin
-    p2:=FPlayers.Find(p.Name);
-    if Assigned(p2) then begin
-      FPlayers.Remove(p2);
+  p2:=FPlayers.Find(APlayerName);
+  if Assigned(p2) then begin
+    FPlayers.Remove(p2);
+    NewGameInfo(p2.Name+' hat Spiel verlassen');
+    if Assigned(ActGame) and ActGame.Active then begin
+      ActGame.Active:=False;
+      NewGameInfo('Laufendes Spiel wurde abgebrochen');
+    end;
 
-      Result:=TBaseRESTResponse.BuildResponse(True);
-    end
-    else begin
-      Result:=TBaseRESTResponse.BuildResponse(False,p.Name +' is not a registered Player');
-      break;
-    end
-  end;
+    Result:=TBaseRESTResponse.BuildResponse(True);
+  end
+  else
+    Result:=TBaseRESTResponse.BuildResponse(False,APlayerName +' is not a registered Player');
 
   if Result=nil then
     Result:=TBaseRESTResponse.BuildResponse(True);

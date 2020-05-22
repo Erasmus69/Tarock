@@ -43,8 +43,8 @@ type
     [POST, Path('/players'),Produces(TMediaType.APPLICATION_JSON)]
     function RegisterPlayer([BodyParam]APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
 
-    [DELETE, Path('/players'),Produces(TMediaType.APPLICATION_JSON)]
-    function DeletePlayer([BodyParam]APlayer:TPlayers<TPlayer>):TBaseRESTResponse;
+    [DELETE, Path('/players/{AName}'),Produces(TMediaType.APPLICATION_JSON)]
+    function DeletePlayer([PathParam]APlayerName:String):TBaseRESTResponse;
 
 
     [GET, Path('/cards')]
@@ -172,10 +172,9 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.ChangeCards(ACards);
 end;
 
-function TApiV1Resource.DeletePlayer([BodyParam]APlayer:TPlayers<TPlayer>):
-    TBaseRESTResponse;
+function TApiV1Resource.DeletePlayer([PathParam]APlayerName:String): TBaseRESTResponse;
 begin
-  Result := GetContainer.Resolve<IApiV1Controller>.DeletePlayer(APlayer);
+  Result := GetContainer.Resolve<IApiV1Controller>.DeletePlayer(APlayerName);
 end;
 
 function TApiV1Resource.GetAllCards: TCards;

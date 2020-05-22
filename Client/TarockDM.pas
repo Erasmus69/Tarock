@@ -33,6 +33,7 @@ type
     resSetKing: TWiRLClientResourceJSON;
     resChangeCards: TWiRLClientResourceJSON;
     resNewGameInfo: TWiRLClientResourceJSON;
+    resUnregisterPlayer: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -56,6 +57,7 @@ type
     RESTClient:TNeonRESTClient;
     function GetPlayers:TPlayers;
     procedure RegisterPlayer(const AName:String);
+    procedure UnRegisterPlayer;
     procedure StartNewGame;
     procedure GetMyCards;
     function GetCards(AName:String):TCards;
@@ -127,8 +129,7 @@ begin
 end;
 
 function TdmTarock.GetPlayers: TPlayers;
-var response:String;
-    myIndex:Integer;
+var myIndex:Integer;
     i:Integer;
 begin
   resPlayers.GET;
@@ -343,6 +344,13 @@ begin
 
  if resGames.Response.GetValue<String>('status')<>'success' then
    Showmessage(resGames.Response.GetValue<String>('message'));
+end;
+
+procedure TdmTarock.UnRegisterPlayer;
+begin
+  resUnregisterPlayer.PathParamsValues.Clear;
+  resUnregisterPlayer.Resource:=Format('v1/players/%s',[MyName]);
+  resUnregisterPlayer.DELETE();
 end;
 
 procedure TdmTarock.GetBets;

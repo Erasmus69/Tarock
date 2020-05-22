@@ -43,6 +43,7 @@ type
     procedure bRegisterClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure tRefreshTimer(Sender: TObject);
   private
     { Private declarations }
@@ -52,6 +53,7 @@ type
     FTalonSelect:TfraTalonSelect;
     FBiddingSelect:TfraBidding;
     FLastThrowShown:Boolean;
+    FThrowActive:Boolean;
 
     procedure GetPlayers;
     procedure ShowCards;overload;
@@ -106,19 +108,10 @@ begin
 end;
 
 procedure TfrmTarock.DoThrowCard(Sender: TObject);
-var r:TGameRound;
 begin
-  if (dm.GameSituation.State=gsPlaying) and dm.IsMyTurn then begin
-    r:=dm.GetRound;
-    if Assigned(r) and r.Done then begin
-      beep;
-      Exit;
-    end;
-    if dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold then begin
-      beep;
-      Exit;
-    end;
+  if not FThrowActive then Exit;
 
+  if (dm.GameSituation.State=gsPlaying) and dm.IsMyTurn then begin
     dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
     dm.PutTurn(TCardControl(Sender).Card.ID);
     PostMessage(Handle,CSM_REFRESHCARDS,0,0);
@@ -148,6 +141,15 @@ begin
   GetWindowText(hWnd, Capt,Sizeof(capt)-1);
   if Capt='Tarock' then
     Inc(TaskCount);
+end;
+
+procedure TfrmTarock.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  tRefresh.Enabled:=false;
+  try
+    dm.UnRegisterPlayer;
+  except
+  end;
 end;
 
 procedure TfrmTarock.FormCreate(Sender: TObject);
@@ -372,6 +374,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     if not Assigned(dm.Players) or (dm.Players.Count<dm.GameSituation.Players.Count) then
       GetPlayers;
 
+    FThrowActive:=False;
     if dm.GameSituation.State<>gsNone then begin
       if not Assigned(dm.MyCards) then
          dm.GetMyCards;
@@ -452,6 +455,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   begin
     if Assigned(FBiddingSelect) then
       FreeAndnil(FBiddingSelect);
+    FThrowActive:=True;
 
     r:=dm.GetRound;
     try
@@ -459,9 +463,11 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
         ShowThrow(r);
 
         if r.Done and dm.IsMyTurn then begin
+          FThrowActive:=False;
           Application.ProcessMessages;
           Sleep(3000);
           dm.NewRound;
+          FThrowActive:=True;
         end;
       end;
 
