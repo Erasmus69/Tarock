@@ -2,8 +2,8 @@ object frmTarock: TfrmTarock
   Left = 0
   Top = 0
   Caption = 'Tarock'
-  ClientHeight = 833
-  ClientWidth = 1271
+  ClientHeight = 823
+  ClientWidth = 1184
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,6 +13,9 @@ object frmTarock: TfrmTarock
   OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
+  DesignSize = (
+    1184
+    823)
   PixelsPerInch = 96
   TextHeight = 13
   object Button2: TButton
@@ -25,11 +28,14 @@ object frmTarock: TfrmTarock
   end
   object pBottom: TPanel
     Left = 0
-    Top = 793
-    Width = 1271
+    Top = 783
+    Width = 1184
     Height = 40
     Align = alBottom
     TabOrder = 1
+    DesignSize = (
+      1184
+      40)
     object clME: TcxLabel
       Left = 1
       Top = 1
@@ -45,7 +51,7 @@ object frmTarock: TfrmTarock
       Style.IsFontAssigned = True
       Properties.Alignment.Horz = taCenter
       Properties.Alignment.Vert = taVCenter
-      AnchorX = 636
+      AnchorX = 592
       AnchorY = 20
     end
     object bRegister: TButton
@@ -58,10 +64,11 @@ object frmTarock: TfrmTarock
       OnClick = bRegisterClick
     end
     object bStartGame: TButton
-      Left = 1190
+      Left = 1098
       Top = 5
       Width = 75
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Starte Spiel'
       TabOrder = 2
       OnClick = BStartGameClick
@@ -84,7 +91,7 @@ object frmTarock: TfrmTarock
     Left = 0
     Top = 40
     Width = 40
-    Height = 753
+    Height = 743
     Align = alLeft
     TabOrder = 2
     object clFirstPlayer: TcxLabel
@@ -103,14 +110,14 @@ object frmTarock: TfrmTarock
       Properties.Alignment.Vert = taVCenter
       Properties.Angle = 90
       AnchorX = 20
-      AnchorY = 377
+      AnchorY = 372
     end
   end
   object pRight: TPanel
-    Left = 1231
+    Left = 1144
     Top = 40
     Width = 40
-    Height = 753
+    Height = 743
     Align = alRight
     TabOrder = 3
     object clThirdPlayer: TcxLabel
@@ -129,13 +136,13 @@ object frmTarock: TfrmTarock
       Properties.Alignment.Vert = taVCenter
       Properties.Angle = -90
       AnchorX = 20
-      AnchorY = 377
+      AnchorY = 372
     end
   end
   object pTop: TPanel
     Left = 0
     Top = 0
-    Width = 1271
+    Width = 1184
     Height = 40
     Align = alTop
     TabOrder = 4
@@ -153,56 +160,21 @@ object frmTarock: TfrmTarock
       Style.IsFontAssigned = True
       Properties.Alignment.Horz = taCenter
       Properties.Alignment.Vert = taVCenter
-      AnchorX = 636
+      AnchorX = 592
       AnchorY = 20
     end
   end
   object pBoard: TPanel
     Left = 40
     Top = 40
-    Width = 1191
-    Height = 753
+    Width = 1104
+    Height = 743
     Align = alClient
     TabOrder = 5
-    object imgThirdCard: TImage
-      Left = 686
-      Top = 297
-      Width = 85
-      Height = 154
-      Stretch = True
-    end
-    object imgMyCard: TImage
-      Left = 566
-      Top = 409
-      Width = 85
-      Height = 154
-      Stretch = True
-    end
-    object imgFirstCard: TImage
-      Left = 439
-      Top = 297
-      Width = 85
-      Height = 154
-      Stretch = True
-    end
-    object imgSecondCard: TImage
-      Left = 566
-      Top = 188
-      Width = 85
-      Height = 154
-      Stretch = True
-    end
-    object imgTalon: TImage
-      Left = 790
-      Top = 408
-      Width = 85
-      Height = 154
-      Stretch = True
-    end
     object pMyCards: TPanel
       Left = 1
-      Top = 568
-      Width = 1189
+      Top = 558
+      Width = 1102
       Height = 184
       Align = alBottom
       BevelOuter = bvNone
@@ -212,16 +184,16 @@ object frmTarock: TfrmTarock
       Left = 1
       Top = 41
       Width = 40
-      Height = 527
+      Height = 517
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 1
     end
     object pThirdPlayerCards: TPanel
-      Left = 1150
+      Left = 1063
       Top = 41
       Width = 40
-      Height = 527
+      Height = 517
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 2
@@ -229,16 +201,66 @@ object frmTarock: TfrmTarock
     object pSecondPlayerCards: TPanel
       Left = 1
       Top = 1
-      Width = 1189
+      Width = 1102
       Height = 40
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 3
     end
+    object pCenter: TPanel
+      Left = 41
+      Top = 41
+      Width = 1022
+      Height = 517
+      Align = alClient
+      BevelOuter = bvNone
+      TabOrder = 4
+      object imgSecondCard: TImage
+        AlignWithMargins = True
+        Left = 462
+        Top = 164
+        Width = 85
+        Height = 154
+        Stretch = True
+      end
+      object imgFirstCard: TImage
+        AlignWithMargins = True
+        Left = 335
+        Top = 273
+        Width = 85
+        Height = 154
+        Stretch = True
+      end
+      object imgMyCard: TImage
+        AlignWithMargins = True
+        Left = 462
+        Top = 348
+        Width = 85
+        Height = 154
+        Stretch = True
+      end
+      object imgThirdCard: TImage
+        AlignWithMargins = True
+        Left = 582
+        Top = 273
+        Width = 85
+        Height = 154
+        Stretch = True
+      end
+      object imgTalon: TImage
+        AlignWithMargins = True
+        Left = 686
+        Top = 348
+        Width = 85
+        Height = 154
+        Stretch = True
+      end
+    end
   end
   object mGameInfo: TcxMemo
-    Left = 968
+    Left = 881
     Top = 39
+    Anchors = [akTop, akRight]
     Lines.Strings = (
       'mGameInfo')
     ParentFont = False

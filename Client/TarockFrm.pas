@@ -7,13 +7,12 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
   cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round,
-  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra, ScoreFra;
+  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra, ScoreFra,Common.Entities.Player,
+  Classes.Entities;
 
 const
     CSM_REFRESHCARDS=WM_USER+1;
 type
-  TCardPosition=(cpMyCards,cpFirstPlayer,cpSecondPlayer,cpThirdPlayer);
-
   TfrmTarock = class(TForm)
     Button2: TButton;
     pBottom: TPanel;
@@ -31,13 +30,14 @@ type
     pFirstplayerCards: TPanel;
     pThirdPlayerCards: TPanel;
     pSecondPlayerCards: TPanel;
-    imgSecondCard: TImage;
-    imgThirdCard: TImage;
-    imgMyCard: TImage;
-    imgFirstCard: TImage;
     tRefresh: TTimer;
     mGameInfo: TcxMemo;
     cbPlayers: TComboBox;
+    pCenter: TPanel;
+    imgSecondCard: TImage;
+    imgFirstCard: TImage;
+    imgMyCard: TImage;
+    imgThirdCard: TImage;
     imgTalon: TImage;
 
     procedure bRegisterClick(Sender: TObject);
@@ -68,6 +68,7 @@ type
     procedure ShowBiddingSelect;
     procedure ReactiveServerConnection;
     procedure ClearThrownCards;
+    procedure ShowCardOfOthers;
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -78,7 +79,7 @@ var
   frmTarock: TfrmTarock;
 
 implementation
-uses System.JSON,TarockDM,Common.Entities.Player,Classes.Entities,Classes.CardControl,
+uses System.JSON,TarockDM,Classes.CardControl,
   Common.Entities.GameSituation, Common.Entities.GameType, ConnectionErrorFrm,
   WiRL.http.Client.Interfaces, RegistrationFrm;
 
@@ -147,7 +148,7 @@ procedure TfrmTarock.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   tRefresh.Enabled:=false;
   try
-    dm.UnRegisterPlayer;
+//    dm.UnRegisterPlayer;
   except
   end;
 end;
@@ -184,8 +185,6 @@ begin
     end;
   end;
   tRefresh.Enabled:=True;
-  GetPlayers;
-
 end;
 
 procedure TfrmTarock.GameInfo;
@@ -267,6 +266,34 @@ begin
     imgLeft:=(Width-((ACards.Count-1)*BACKCARDXOFFSET)-CARDWIDTH) div 2;
     for card in ACards do begin
       if not card.Fold then begin
+        with TCardControl.Create(Self,card) do begin
+          Parent:=cardParent;
+          dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
+          Top:=0;
+          Left:=imgLeft;
+        end;
+        imgLeft:=imgLeft+BACKCARDXOFFSET;
+      end;
+    end;
+  end
+  else begin
+    imgTop:=(pFirstPlayerCards.Height-((ACards.Count-1)*BACKCARDXOFFSET)-CARDWIDTH) div 2;
+    for card in ACards do begin
+      if not card.Fold then begin
+        with TCardControl.Create(Self,card) do begin
+          Parent:=cardParent;
+          dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
+          Top:=imgTop;
+          Left:=0;
+        end;
+        imgTop:=imgTop+CARDXOFFSET;
+      end;
+    end;
+  end;
+  (*  else if APosition=cpSecondPlayer then begin
+    imgLeft:=(Width-((ACards.Count-1)*BACKCARDXOFFSET)-CARDWIDTH) div 2;
+    for card in ACards do begin
+      if not card.Fold then begin
         with TBackCardControl.Create(Self,backCardKind) do begin
           Parent:=cardParent;
           Top:=0;
@@ -288,7 +315,7 @@ begin
         imgTop:=imgTop+BACKCARDXOFFSET;
       end;
     end;
-  end;
+  end;*)
 end;
 
 procedure TfrmTarock.ShowGameSelect;
@@ -316,6 +343,23 @@ end;
 procedure TfrmTarock.ShowCards;
 begin
   ShowCards(dm.MyCards,cpMyCards);
+end;
+
+procedure TfrmTarock.ShowCardOfOthers;
+var player:TPlayer;
+    cards:TCards;
+begin
+  mGameinfo.Visible:=False;
+  for player in dm.Players do begin
+    if player.Name<>dm.MyName then begin
+      cards:=dm.GetCards(player.Name);
+      try
+        ShowCards(cards,player.CardPosition);
+      finally
+        cards.Free;
+      end;
+    end;
+  end;
 end;
 
 procedure TfrmTarock.ShowTalon;
@@ -369,10 +413,38 @@ begin
 end;
 
 procedure TfrmTarock.tRefreshTimer(Sender: TObject);
+  procedure SetScore(const ALabel:TcxLabel; const AScore:Smallint);
+  begin
+    ALabel.Caption:=IntToStr(AScore);
+    if AScore<0 then
+      ALabel.Style.Font.Color:=clRed
+    else
+      ALabel.Style.Font.Color:=clBlack;
+  end;
+
+  procedure ShowScore;
+  begin
+    if not FScore.Visible then begin
+      FScore.clPlayer1.Caption:=dm.GameSituation.Players[0].Name;
+      FScore.clPlayer2.Caption:=dm.GameSituation.Players[1].Name;
+      FScore.clPlayer3.Caption:=dm.GameSituation.Players[2].Name;
+      FScore.clPlayer4.Caption:=dm.GameSituation.Players[3].Name;
+      SetScore(FScore.clScore1,dm.GameSituation.Players[0].Score);
+      SetScore(FScore.clScore2,dm.GameSituation.Players[1].Score);
+      SetScore(FScore.clScore3,dm.GameSituation.Players[2].Score);
+      SetScore(FScore.clScore4,dm.GameSituation.Players[3].Score);
+
+      FScore.Show;
+    end;
+  end;
+
   procedure Setup;
   begin
     if not Assigned(dm.Players) or (dm.Players.Count<dm.GameSituation.Players.Count) then
       GetPlayers;
+
+    if (dm.GameSituation.State>gsNone) then
+      ShowScore;
 
     FThrowActive:=False;
     if dm.GameSituation.State<>gsNone then begin
@@ -386,13 +458,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
 
   procedure Bidding;
   begin
-    if not FScore.Visible then begin
-      FScore.clPlayer1.Caption:=dm.GameSituation.Players[0].Name;
-      FScore.clPlayer2.Caption:=dm.GameSituation.Players[1].Name;
-      FScore.clPlayer3.Caption:=dm.GameSituation.Players[2].Name;
-      FScore.clPlayer4.Caption:=dm.GameSituation.Players[3].Name;
-      FScore.Show;
-    end;
+    ShowScore;
 
     if not Assigned(FGameSelect) then begin
       bStartGame.Enabled:=False;
@@ -412,9 +478,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   procedure ShowActGame;
   begin
     if Assigned(FGameSelect) and Assigned(dm.ActGame) then begin
-  //   GameInfo(dm.GameSituation.Gamer+' spielt '+dm.ActGame.Name);
       FreeAndNil(FGameSelect);
-//      FViewSelectedKing:=False;
     end;
   end;
 
@@ -453,8 +517,13 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   procedure Playing;
   var r:TGameRound;
   begin
-    if Assigned(FBiddingSelect) then
+    if Assigned(FBiddingSelect) then begin
       FreeAndnil(FBiddingSelect);
+      if dm.ActGame.TeamKind=tkOuvert then begin
+        ShowCardOfOthers;
+      end;
+
+    end;
     FThrowActive:=True;
 
     r:=dm.GetRound;
@@ -465,7 +534,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
         if r.Done and dm.IsMyTurn then begin
           FThrowActive:=False;
           Application.ProcessMessages;
-          Sleep(3000);
+          Sleep(2000);
           dm.NewRound;
           FThrowActive:=True;
         end;
@@ -477,17 +546,9 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   end;
 
   procedure GameTerminated;
-    procedure SetScore(const ALabel:TcxLabel; const AScore:Smallint);
-    begin
-      ALabel.Caption:=IntToStr(AScore);
-      if AScore<0 then
-        ALabel.Style.Font.Color:=clRed
-      else
-        ALabel.Style.Font.Color:=clBlack;
-    end;
-
   var r:TGameRound;
   begin
+    mGameInfo.Visible:=true;
     if not FLastThrowShown then begin
       r:=dm.GetRound;
       try

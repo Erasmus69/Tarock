@@ -115,14 +115,16 @@ begin
   ini:=TInifile.Create('.\Tarock.ini');
   try
     FDebugMode:=ini.ReadInteger('Debug','Debug',0)=1;
-    FUrl:=ini.ReadString('Debug','URL',URL);
+    FUrl:=ini.ReadString('SERVER','URL',URL);
+
+    RESTClient:=TNeonRESTClient.Create(FURL);
+    WirlClient1.WirlEngineURL:='http://'+FURL+'/rest';
+    WirlClient1.ConnectTimeout:=ini.ReadInteger('Server','ConnectTimeout',120000);
+    WirlClient1.ReadTimeout:=ini.ReadInteger('Server','ReadTimeout',120000);
+
   finally
     ini.Free;
   end;
-
-  RESTClient:=TNeonRESTClient.Create(FURL);
-  WirlClient1.WirlEngineURL:='http://'+FURL+'/rest';
-
   Common.Entities.Card.Initialize;
   Common.Entities.GameType.Initialize;
 
@@ -156,18 +158,22 @@ begin
             bpLeft:begin
                      FPlayers.Items[i].PlayerLabel:=frmTarock.clFirstPlayer;
                      FPlayers.Items[i].CardImage:=frmTarock.imgFirstCard;
+                     FPlayers.Items[i].CardPosition:=cpFirstPlayer;
                     end;
             bpUp:  begin
                      FPlayers.Items[i].PlayerLabel:=frmTarock.clSecondPlayer;
                      FPlayers.Items[i].CardImage:=frmTarock.imgSecondCard;
+                     FPlayers.Items[i].CardPosition:=cpSecondPlayer;
                    end;
             bpRight:begin
                      FPlayers.Items[i].PlayerLabel:=frmTarock.clThirdPlayer;
                      FPlayers.Items[i].CardImage:=frmTarock.imgThirdCard;
+                     FPlayers.Items[i].CardPosition:=cpThirdPlayer;
                    end;
             bpDown:begin
                      FPlayers.Items[i].PlayerLabel:=frmTarock.clME;
                      FPlayers.Items[i].CardImage:=frmTarock.imgMyCard;
+                     FPlayers.Items[i].CardPosition:=cpMyCards;
                    end;
           end;
        end;

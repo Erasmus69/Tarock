@@ -398,6 +398,7 @@ begin
     raise Exception.Create('Turn is just complete');
 
   FGame.ActRound.ThrowCard(APlayer,ACard);
+  FGame.Players.Find(APlayer).Cards.Find(ACard).Fold:=True;
 
   if FGame.ActRound.Done then begin
     CloseRound;

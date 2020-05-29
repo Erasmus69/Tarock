@@ -86,7 +86,7 @@ object fraBidding: TfraBidding
       Width = 90
       Height = 33
       Caption = 'Vogel IV'
-      SpeedButtonOptions.GroupIndex = 6
+      SpeedButtonOptions.GroupIndex = 14
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 4
       Font.Charset = DEFAULT_CHARSET
@@ -150,7 +150,7 @@ object fraBidding: TfraBidding
       Width = 90
       Height = 33
       Caption = 'XXI Fang'
-      SpeedButtonOptions.GroupIndex = 8
+      SpeedButtonOptions.GroupIndex = 10
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 8
       Font.Charset = DEFAULT_CHARSET
@@ -166,7 +166,7 @@ object fraBidding: TfraBidding
       Width = 90
       Height = 33
       Caption = 'Valat'
-      SpeedButtonOptions.GroupIndex = 9
+      SpeedButtonOptions.GroupIndex = 11
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 9
       Font.Charset = DEFAULT_CHARSET
@@ -198,7 +198,7 @@ object fraBidding: TfraBidding
       Width = 90
       Height = 33
       Caption = 'Vogel III'
-      SpeedButtonOptions.GroupIndex = 11
+      SpeedButtonOptions.GroupIndex = 13
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 11
       Font.Charset = DEFAULT_CHARSET
@@ -214,7 +214,7 @@ object fraBidding: TfraBidding
       Width = 90
       Height = 33
       Caption = 'Vogel II'
-      SpeedButtonOptions.GroupIndex = 10
+      SpeedButtonOptions.GroupIndex = 12
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 12
       Font.Charset = DEFAULT_CHARSET
@@ -230,7 +230,7 @@ object fraBidding: TfraBidding
       Width = 90
       Height = 33
       Caption = 'Pagat Fang'
-      SpeedButtonOptions.GroupIndex = 8
+      SpeedButtonOptions.GroupIndex = 9
       SpeedButtonOptions.AllowAllUp = True
       TabOrder = 13
       Font.Charset = DEFAULT_CHARSET

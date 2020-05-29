@@ -181,8 +181,9 @@ end;
 procedure TCards.Assign(const ASource:TCards);
 var itm:TCard;
 begin
-  for itm in ASource do
-    AddItem(itm.ID,itm.CType,itm.Value,itm.Points,itm.ImageIndex);
+  for itm in ASource do begin
+    AddItem(itm.ID,itm.CType,itm.Value,itm.Points,itm.ImageIndex).Fold:=itm.Fold;
+  end;
 end;
 
 { TCardsComparer }

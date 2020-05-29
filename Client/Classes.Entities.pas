@@ -10,6 +10,7 @@ type TBaseObjClass=class of TBaseObj;
      end;
 
      TBoardPosition=(bpDown,bpLeft,bpUp,bpRight);
+     TCardPosition=(cpMyCards,cpFirstPlayer,cpSecondPlayer,cpThirdPlayer);
 
      TPlayer=class(TBaseObj)
      private
@@ -17,11 +18,13 @@ type TBaseObjClass=class of TBaseObj;
        FPosition:TBoardPosition;
        FCardImage: TImage;
        FPlayerLabel: TcxLabel;
+    FCardPosition: TCardPosition;
      public
        property Name:String read FName write FName;
        property Position:TBoardPosition read FPosition write FPosition;
        property PlayerLabel:TcxLabel read FPlayerLabel write FPlayerLabel;
        property CardImage:TImage read FCardImage write FCardImage;
+       property CardPosition:TCardPosition read FCardPosition write FCardPosition;
      end;
      TPlayers=class(TObjectList<TPlayer>)
      public

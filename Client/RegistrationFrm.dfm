@@ -49911,10 +49911,11 @@ object frmRegistration: TfrmRegistration
   end
   object bRegister: TcxButton
     Left = 320
-    Top = 312
+    Top = 328
     Width = 97
     Height = 41
     Caption = 'Anmelden'
+    Default = True
     TabOrder = 1
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
