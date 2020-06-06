@@ -56,8 +56,10 @@ type
 
     RESTClient:TNeonRESTClient;
     function GetPlayers:TPlayers;
-    procedure RegisterPlayer(const AName:String);
+    function RegisterPlayer(const AName:String): Boolean;
     procedure UnRegisterPlayer;
+    procedure ReactiveServerConnection;
+
     procedure StartNewGame;
     procedure GetMyCards;
     function GetCards(AName:String):TCards;
@@ -99,7 +101,8 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
   WiRL.Rtti.Utils,
   WiRL.Core.JSON,
   Math,
-  TarockFrm, System.IniFiles;
+  TarockFrm, System.IniFiles, ConnectionErrorFrm, Vcl.Forms,
+  WiRL.http.Client.Interfaces, WiRL.http.URL;
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
@@ -143,7 +146,8 @@ begin
      if FMyName>'' then begin
        // reorder to relative board order
        for i := 0 to FPlayers.Count-1 do begin
-         if FPlayers[i].Name=FMyName then begin
+         if AnsiUpperCase(FPlayers[i].Name)=AnsiUpperCase(FMyName) then begin
+           FMyName:=FPlayers[i].Name;
            myindex:=i;
            break;
          end;
@@ -251,7 +255,7 @@ end;
 procedure TdmTarock.PutTurn(ACard: TCardKey);
 begin
   resRoundPut.PathParamsValues.Clear;
-  resRoundPut.Resource:=Format('v1/round/%s/%d',[FMyName,Ord(ACard)]);
+  resRoundPut.Resource:=TWiRLURL.URLEncode(Format('v1/round/%s/%d',[FMyName,Ord(ACard)]));
   resRoundPut.PUT;
 
    (* if resRound.Response.GetValue<String>('status')<>'success' then
@@ -300,25 +304,34 @@ begin
   end;
 end;
 
-procedure TdmTarock.RegisterPlayer(const AName: String);
+function TdmTarock.RegisterPlayer(const AName:String): Boolean;
 var p:TPlayer;
     pl:TPlayers;
+    msg:String;
 begin
   pl:=TPlayers.Create;
+  Result:=false;
 
   try
     p:=TPlayer.Create;
     p.Name:=AName;
     pl.Add(p);
-
     resPlayers.POST(procedure (AContent: TMemoryStream)
-        begin
-          FillBody(AContent, pl);
-        end
-      );
-
- (*   if resPlayers.Response.GetValue<String>('status')<>'success' then
-      Showmessage(resPlayers.Response.GetValue<String>('message'));*)
+          begin
+            FillBody(AContent, pl);
+          end
+    );
+    if resPlayers.Response.GetValue<String>('status')<>'success' then begin
+      msg:=resPlayers.Response.GetValue<String>('message');
+      if Pos('is just a registered',msg)>0 then begin
+        Showmessage('Willkommen zurück ' +AName);
+        Result:=true;
+      end
+      else
+        Showmessage(msg)
+    end
+    else
+      Result:=true;
 
   finally
     FreeAndNil(pl);
@@ -380,7 +393,8 @@ begin
   resPlayerCards.QueryParams.Clear;
 //  resPlayerCards.PathParamsValues.Values['AGameid'] :='0';
 //  resPlayerCards.PathParamsValues.Values['AName'] :=FMyNAme;
-  resPlayerCards.Resource:='v1/games/0/cards/'+AName;
+
+  resPlayerCards.Resource:=TWiRLURL.URLEncode('v1/games/0/cards/'+AName);
   resPlayerCards.GET;
 
   if resPlayerCards.ResponseAsString>'' then begin
@@ -411,4 +425,29 @@ begin
 end;
 
 
+procedure TdmTarock.ReactiveServerConnection;
+var frm:TfrmConnectionError;
+  i: Integer;
+begin
+  frm:=TfrmConnectionError.Create(Self);
+  try
+    frm.Show;
+    Application.ProcessMessages;
+    while True do begin
+      Sleep(500);
+      Application.ProcessMessages;
+
+      try
+        dm.RefreshGameSituation;
+        Break;
+      except
+        on E: EWiRLSocketException do
+        else
+          Raise;
+      end;
+    end;
+  finally
+    FreeAndNil(frm);
+  end;
+end;
 end.

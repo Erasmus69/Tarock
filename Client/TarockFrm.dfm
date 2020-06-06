@@ -13,6 +13,7 @@ object frmTarock: TfrmTarock
   OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
+  OnResize = FormResize
   DesignSize = (
     1184
     823)
@@ -215,45 +216,58 @@ object frmTarock: TfrmTarock
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
-      object imgSecondCard: TImage
-        AlignWithMargins = True
-        Left = 462
-        Top = 164
-        Width = 85
-        Height = 154
-        Stretch = True
-      end
-      object imgFirstCard: TImage
-        AlignWithMargins = True
-        Left = 335
-        Top = 273
-        Width = 85
-        Height = 154
-        Stretch = True
-      end
-      object imgMyCard: TImage
-        AlignWithMargins = True
-        Left = 462
-        Top = 348
-        Width = 85
-        Height = 154
-        Stretch = True
-      end
-      object imgThirdCard: TImage
-        AlignWithMargins = True
-        Left = 582
-        Top = 273
-        Width = 85
-        Height = 154
-        Stretch = True
-      end
-      object imgTalon: TImage
-        AlignWithMargins = True
-        Left = 686
-        Top = 348
-        Width = 85
-        Height = 154
-        Stretch = True
+      object pThrowCards: TPanel
+        Left = 257
+        Top = 126
+        Width = 512
+        Height = 361
+        BevelOuter = bvNone
+        TabOrder = 0
+        object imgFirstCard: TImage
+          AlignWithMargins = True
+          Left = 0
+          Top = 53
+          Width = 85
+          Height = 154
+          Proportional = True
+          Stretch = True
+        end
+        object imgSecondCard: TImage
+          AlignWithMargins = True
+          Left = 148
+          Top = 0
+          Width = 85
+          Height = 154
+          Proportional = True
+          Stretch = True
+        end
+        object imgMyCard: TImage
+          AlignWithMargins = True
+          Left = 148
+          Top = 184
+          Width = 85
+          Height = 154
+          Proportional = True
+          Stretch = True
+        end
+        object imgThirdCard: TImage
+          AlignWithMargins = True
+          Left = 292
+          Top = 53
+          Width = 85
+          Height = 154
+          Proportional = True
+          Stretch = True
+        end
+        object imgTalon: TImage
+          AlignWithMargins = True
+          Left = 420
+          Top = 184
+          Width = 85
+          Height = 154
+          Proportional = True
+          Stretch = True
+        end
       end
     end
   end

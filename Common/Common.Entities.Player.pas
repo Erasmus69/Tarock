@@ -94,9 +94,9 @@ function TPlayers<T>.Find(AName: String): T;
 var itm:T;
 begin
   Result:=nil;
-  AName:=Uppercase(AName);
+  AName:=AnsiUppercase(AName);
   for itm in Self do begin
-    if Uppercase(itm.Name)=AName then begin
+    if AnsiUppercase(itm.Name)=AName then begin
       Result:=itm;
       Break;
     end;

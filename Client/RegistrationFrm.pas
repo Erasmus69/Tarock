@@ -26,7 +26,7 @@ var
 implementation
 
 uses
-  TarockDM;
+  TarockDM, WiRL.http.Client.Interfaces;
 
 {$R *.dfm}
 
@@ -36,7 +36,19 @@ begin
   
   Screen.Cursor:=crHourGlass;
   try
-    dm.RegisterPlayer(eName.Text);
+    while true do begin
+      try
+        if dm.RegisterPlayer(eName.Text) then
+          Break
+        else
+          Exit;
+      except
+        on E:EWiRLSocketException do
+           dm.ReactiveServerConnection;
+        else Raise;
+      end;
+    end;
+
     dm.MyName:=eName.Text;
     ModalResult:=mrOk;
   finally

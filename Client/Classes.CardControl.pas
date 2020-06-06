@@ -3,10 +3,10 @@ unit Classes.CardControl;
 interface
 uses Classes,VCL.Controls,VCL.ExtCtrls,Common.Entities.Card;
 
-const
-  CARDHEIGHT=154;//256;
-  CARDWIDTH=85;//141;
-  CARDUPLIFT=30;
+var CARDHEIGHT:Integer=154;//256;
+    CARDWIDTH:Integer=85;//141;
+    CARDUPLIFT:Integer=30;
+    CARDXOFFSET:Integer=90;
 
 type
   TCardControl=class(TImage)
@@ -21,7 +21,7 @@ type
     procedure MouseDown(Button:TMouseButton;ShiftState:TShiftState;X,Y:Integer);override;
     procedure MouseUp(Button:TMouseButton;ShiftState:TShiftState;X,Y:Integer);override;
   public
-    constructor Create(AOwner:TComponent; const ACard:TCard);
+    constructor Create(AOwner: TComponent; const ACard:TCard);
     property Card:TCard read FCard;
     property RemainUp:Boolean read FRemainUp write FRemainUp;
     property Up:Boolean read FUp write SetUp;
@@ -42,6 +42,7 @@ begin
   inherited Create(AOwner);
   Height:=CARDHEIGHT;
   Width:=CARDWIDTH;
+  Autosize:=False;
   Stretch:=True;
   Proportional:=True;
   FCard:=ACard;
@@ -70,7 +71,7 @@ end;
 procedure TCardControl.SetUp(const Value: Boolean);
 begin
   if not FRemainUp then Exit;
-  
+
   if FUp<>Value then begin
     if FUp then
       Top:=Top+CARDUPLIFT

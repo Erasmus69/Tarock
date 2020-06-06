@@ -34,8 +34,9 @@ type
     mGameInfo: TcxMemo;
     cbPlayers: TComboBox;
     pCenter: TPanel;
-    imgSecondCard: TImage;
+    pThrowCards: TPanel;
     imgFirstCard: TImage;
+    imgSecondCard: TImage;
     imgMyCard: TImage;
     imgThirdCard: TImage;
     imgTalon: TImage;
@@ -44,6 +45,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure BStartGameClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormResize(Sender: TObject);
     procedure tRefreshTimer(Sender: TObject);
   private
     { Private declarations }
@@ -54,6 +56,8 @@ type
     FBiddingSelect:TfraBidding;
     FLastThrowShown:Boolean;
     FThrowActive:Boolean;
+    FActDPI:Integer;
+    FScalingFactor:Double;
 
     procedure GetPlayers;
     procedure ShowCards;overload;
@@ -66,9 +70,10 @@ type
     procedure ShowKingSelect;
     procedure ShowTalon;
     procedure ShowBiddingSelect;
-    procedure ReactiveServerConnection;
     procedure ClearThrownCards;
     procedure ShowCardOfOthers;
+    procedure ScaleCardImages;
+    procedure CenterFrame(AFrame:TFrame);
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -90,9 +95,9 @@ const
 
   MYCARDMOSTTOP=410;
   MYCARDMOSTLEFT=20;
-  CARDXOFFSET=90;
   BACKCARDXOFFSET=30;
   CARDYOFFSET=0;
+
 
 procedure TfrmTarock.bRegisterClick(Sender: TObject);
 begin
@@ -117,6 +122,12 @@ begin
     dm.PutTurn(TCardControl(Sender).Card.ID);
     PostMessage(Handle,CSM_REFRESHCARDS,0,0);
   end;
+end;
+
+procedure TfrmTarock.CenterFrame(AFrame: TFrame);
+begin
+  AFrame.Top:=(pBoard.Height-AFrame.Height) div 2;
+  AFrame.Left:=(pBoard.Width-AFrame.Width) div 2;
 end;
 
 procedure TfrmTarock.ClearThrownCards;
@@ -156,9 +167,16 @@ end;
 procedure TfrmTarock.FormCreate(Sender: TObject);
 var
   frm: TfrmRegistration;
+  dc:HDC;
 begin
   cbPlayers.Visible:=dm.DebugMode;
   bRegister.Visible:=dm.DebugMode;
+  dc:=GetDC(0);
+  FActDPI:=GetDeviceCaps(dc, LOGPIXELSX);
+  FScalingFactor:=GetDeviceCaps(dc, VERTRES)/1080;
+  CARDWIDTH:=Round(CARDWIDTH*FScalingFactor);
+  CARDHEIGHT:=Round(CARDHEIGHT*FScalingFactor);
+  CARDXOFFSET:=Round(CARDXOFFSET*FScalingFactor);
 
   mGameInfo.Lines.Clear;
   bStartGame.Enabled:=False;
@@ -172,6 +190,7 @@ begin
   FScore.Top:=0;
   FScore.Left:=0;
   FScore.Hide;
+  ScaleCardImages;
 
   if not dm.DebugMode then begin
     frm:=TfrmRegistration.Create(self);
@@ -185,6 +204,32 @@ begin
     end;
   end;
   tRefresh.Enabled:=True;
+end;
+
+procedure TfrmTarock.FormResize(Sender: TObject);
+begin
+  if Assigned(FGameSelect) and FGameSelect.Visible then begin
+    FGameSelect.Height:=400;
+    CenterFrame(FGameSelect);
+    if FGameSelect.Top+FGameSelect.Height>pMyCards.Top then
+      FGameSelect.Top:=pMyCards.Top-FGameSelect.Height;
+    if FgameSelect.Top<pSecondPlayerCards.height then begin
+      FGameSelect.Height:=pCenter.Height;
+      FGameSelect.Top:=pSecondPlayerCards.Height;
+    end;
+  end;
+
+  if Assigned(FTalonSelect) and FTalonSelect.Visible then
+    CenterFrame(FTalonSelect);
+  if Assigned(FBiddingSelect) and FBiddingSelect.Visible then
+    CenterFrame(FBiddingSelect);
+  if Assigned(FKingSelect) and FKingSelect.Visible then
+    CenterFrame(FKingSelect);
+
+  pThrowCards.Top:=(pCenter.Height-pThrowCards.Height) div 2;
+
+  pThrowCards.Left:=(pBoard.Width-pThrowCards.Width) div 2;
+
 end;
 
 procedure TfrmTarock.GameInfo;
@@ -204,14 +249,34 @@ begin
   end;
 end;
 
+procedure TfrmTarock.ScaleCardImages;
+begin
+  imgFirstCard.Height:=CARDHEIGHT;
+  imgFirstCard.Width:=CARDWIDTH;
+  imgSecondCard.Height:=CARDHEIGHT;
+  imgSecondCard.Width:=CARDWIDTH;
+  imgThirdCard.Height:=CARDHEIGHT;
+  imgThirdCard.Width:=CARDWIDTH;
+  imgMyCard.Height:=CARDHEIGHT;
+  imgMyCard.Width:=CARDWIDTH;
+  imgTalon.Height:=CARDHEIGHT;
+  imgTalon.Width:=CARDWIDTH;
+
+  imgFirstCard.Top:=imgSecondCard.Height div 2 +imgSecondCard.Top;
+  imgThirdCard.Top:=imgFirstCard.Top;
+  imgMyCard.Top:=imgSecondCard.Top+imgSecondCard.Height+30;
+  imgTalon.Top:=imgMyCard.Top;
+  pMyCards.Height:=imgFirstCard.Height+CARDUPLIFT;
+  pThrowCards.Height:=imgFirstCard.Height*2+CARDUPLIFT;
+end;
+
 procedure TfrmTarock.ShowBiddingSelect;
 begin
   FreeAndNil(FBiddingSelect);
 
   FBiddingSelect:=TfraBidding.Create(Self);
-  FBiddingSelect.Top:=(pBoard.Height-FBiddingSelect.Height) div 2;
-  FBiddingSelect.Left:=(pBoard.Width-FBiddingSelect.Width) div 2;
   FBiddingSelect.Parent:=pBoard;
+  CenterFrame(FBiddingSelect);
   FBiddingSelect.Show;
 end;
 
@@ -321,11 +386,9 @@ end;
 procedure TfrmTarock.ShowGameSelect;
 begin
   FreeAndNil(FGameSelect);
-
   FGameSelect:=TfraGameSelect.Create(Self);
-  FGameSelect.Top:=(pBoard.Height-FGameSelect.Height) div 2;
-  FGameSelect.Left:=(pBoard.Width-FGameSelect.Width) div 2;
   FGameSelect.Parent:=pBoard;
+  CenterFrame(FGameSelect);
   FGameSelect.Show;
 end;
 
@@ -334,9 +397,8 @@ begin
   FreeAndNil(FKingSelect);
 
   FKingSelect:=TfraKingSelect.Create(Self);
-  FKingSelect.Top:=(pBoard.Height-FKingSelect.Height) div 2;
-  FKingSelect.Left:=(pBoard.Width-FKingSelect.Width) div 2;
   FKingSelect.Parent:=pBoard;
+  CenterFrame(FKingSelect);
   FKingSelect.Show;
 end;
 
@@ -368,9 +430,8 @@ begin
   FreeAndNil(FTalonSelect);
 
   FTalonSelect:=TfraTalonSelect.Create(Self);
-  FTalonSelect.Top:=(pBoard.Height-FTalonSelect.Height) div 2;
-  FTalonSelect.Left:=(pBoard.Width-FTalonSelect.Width) div 2;
   FTalonSelect.Parent:=pBoard;
+  CenterFrame(FTalonSelect);
   FTalonSelect.Show;
 
   for i:=0 to pMyCards.ControlCount-1 do begin
@@ -592,8 +653,10 @@ begin
         gsTerminated:GameTerminated;
       end;
     except
-      on E:EWiRLSocketException do
-        ReactiveServerConnection;
+      on E:EWiRLSocketException do begin
+        tRefresh.Enabled:=False;
+        dm.ReactiveServerConnection;
+      end;
       on E:EInvalidCast do begin
         if E.Message='SS' then Beep;
 
@@ -604,34 +667,6 @@ begin
     end;
   finally
     tRefresh.Enabled:=True;
-  end;
-end;
-
-procedure TfrmTarock.ReactiveServerConnection;
-var frm:TfrmConnectionError;
-  i: Integer;
-begin
-  tRefresh.Enabled:=False;
-  frm:=TfrmConnectionError.Create(Self);
-  try
-    frm.Show;
-    while True do begin
-      for i :=0 to 50 do begin
-        Sleep(100);
-        Application.ProcessMessages;
-      end;
-
-      try
-        dm.RefreshGameSituation;
-        Break;
-      except
-        on E:EWiRLSocketException do
-        else
-          Raise;
-      end;
-    end;
-  finally
-    FreeAndNil(frm);
   end;
 end;
 
