@@ -34,13 +34,13 @@ type
     cbPlayers: TComboBox;
     pBoard: TPanel;
     pCenter: TPanel;
+    pSecondPlayerCards: TPanel;
     pThrowCards: TPanel;
     imgFirstCard: TImage;
     imgSecondCard: TImage;
     imgMyCard: TImage;
     imgThirdCard: TImage;
     imgTalon: TImage;
-    pSecondPlayerCards: TPanel;
 
     procedure bRegisterClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -60,6 +60,7 @@ type
     FScalingFactor:Double;
 
     procedure GetPlayers;
+    procedure ClearCards(const AParent:TWinControl);
     procedure ShowCards;overload;
     procedure ShowCards(ACards:TCards; APosition:TCardPosition);overload;
     procedure ShowThrow(const ARound:TGameRound);
@@ -176,6 +177,15 @@ begin
   AFrame.Left:=(pBoard.Width-AFrame.Width) div 2;
 end;
 
+procedure TfrmTarock.ClearCards(const AParent: TWinControl);
+var i: Integer;
+begin
+  for i:=AParent.ControlCount-1 downto 0 do begin
+    if AParent.Controls[i] is TCardControl then
+      AParent.Controls[i].Free
+  end;
+end;
+
 procedure TfrmTarock.ClearThrownCards;
 var player:TPlayer;
 begin
@@ -224,7 +234,9 @@ begin
   CARDWIDTH:=Round(CARDWIDTH*FScalingFactor);
   CARDHEIGHT:=Round(CARDHEIGHT*FScalingFactor);
   CARDXOFFSET:=Round(CARDXOFFSET*FScalingFactor);
-  OTHERCARDXOFFSET:=Round(OTHERCARDXOFFSET*FScalingFactor);
+  SMALLCARDWIDTH:=Round(SMALLCARDWIDTH*FScalingFactor);
+  SMALLCARDHEIGHT:=Round(SMALLCARDHEIGHT*FScalingFactor);
+  SMALLCARDXOFFSET:=Round(SMALLCARDXOFFSET*FScalingFactor);
 
   mGameInfo.Lines.Clear;
   bStartGame.Enabled:=False;
@@ -274,9 +286,8 @@ begin
   if Assigned(FKingSelect) and FKingSelect.Visible then
     CenterFrame(FKingSelect);
 
-  pThrowCards.Top:=(pCenter.Height-pThrowCards.Height) div 2;
-
-  pThrowCards.Left:=(pBoard.Width-pThrowCards.Width) div 2;
+  pThrowCards.Top:=(pCenter.Height-pSecondPlayerCards.Height-pThrowCards.Height) div 2+pSecondPlayerCards.Height;
+  pThrowCards.Left:=(pCenter.Width-pThrowCards.Width) div 2;
 
   CenterCards(pMyCards,True);
   if Assigned(dm.ActGame) and (dm.ActGame.TeamKind=tkOuvert) then begin
@@ -320,8 +331,10 @@ begin
   imgThirdCard.Top:=imgFirstCard.Top;
   imgMyCard.Top:=imgSecondCard.Top+imgSecondCard.Height+30;
   imgTalon.Top:=imgMyCard.Top;
-  pMyCards.Height:=imgFirstCard.Height+CARDUPLIFT;
-  pThrowCards.Height:=imgFirstCard.Height*2+CARDUPLIFT;
+  pMyCards.Height:=CARDHEIGHT+CARDUPLIFT;
+  pThrowCards.Height:=CARDHEIGHT*2+CARDUPLIFT;
+
+  FormResize(Self);
 end;
 
 procedure TfrmTarock.ShowBiddingSelect;
@@ -337,19 +350,31 @@ end;
 procedure TfrmTarock.ShowCards(ACards: TCards; APosition: TCardPosition);
 type TCardAlignment=(caUp,caLeft,caRight);
 
-  function CreateCardControl(ACard:TCard; AParent:TWinControl; AAlignment:TCardAlignment):TCardControl;
+  function CreateCardControl(ACard:TCard; AParent:TWinControl; AAlignment:TCardAlignment; ASmall:Boolean=False):TCardControl;
   var imageen: TImageEn;
   begin
     Result:=TCardControl.Create(Self,ACard);
     Result.Parent:=AParent;
     if AAlignment=caUp then begin
-      Result.Height:=CARDHEIGHT;
-      Result.Width:=CARDWIDTH;
+      if ASmall then begin
+        Result.Height:=SMALLCARDHEIGHT;
+        Result.Width:=SMALLCARDWIDTH;
+      end
+      else begin
+        Result.Height:=CARDHEIGHT;
+        Result.Width:=CARDWIDTH;
+      end;
       dm.imCards.GetBitmap(ACard.ImageIndex,Result.Picture.Bitmap);
     end
     else begin
-      Result.Width:=CARDHEIGHT;
-      Result.Height:=CARDWIDTH;
+      if ASmall then begin
+        Result.Width:=SMALLCARDHEIGHT;
+        Result.Height:=SMALLCARDWIDTH;
+      end
+      else begin
+        Result.Width:=CARDHEIGHT;
+        Result.Height:=CARDWIDTH;
+      end;
 
       imageen:=TImageEn.Create(nil);
       try
@@ -394,11 +419,7 @@ begin
                     backCardKind:=bckRight;
                   end;
   end;
-
-  for i:=cardParent.ControlCount-1 downto 0 do begin
-    if cardParent.Controls[i] is TCardControl then
-      cardParent.Controls[i].Free
-  end;
+  ClearCards(cardParent);
 
   if APosition in [cpMyCards] then begin
     for card in ACards do begin
@@ -412,28 +433,28 @@ begin
     end;
   end
   else if APosition=cpSecondPlayer then begin
-    imgLeft:=(Width-((ACards.UnFoldCount-1)*OTHERCARDXOFFSET)-CARDWIDTH) div 2;
+    imgLeft:=(Width-((ACards.UnFoldCount-1)*SMALLCARDXOFFSET)-SMALLCARDWIDTH) div 2;
     for card in ACards do begin
       if not card.Fold then begin
-        img:=CreateCardControl(card,cardParent,caUp);
+        img:=CreateCardControl(card,cardParent,caUp,True);
         img.Top:=0;
         img.Left:=imgLeft;
-        imgLeft:=imgLeft+OTHERCARDXOFFSET;
+        imgLeft:=imgLeft+SMALLCARDXOFFSET;
         img.Enabled:=False;
       end;
     end;
   end
   else begin
-    imgTop:=(pFirstPlayerCards.Height-((ACards.UnFoldCount-1)*OTHERCARDXOFFSET)-CARDWIDTH) div 2;
+    imgTop:=(pFirstPlayerCards.Height-((ACards.UnFoldCount-1)*SMALLCARDXOFFSET)-SMALLCARDWIDTH) div 2;
     for card in ACards do begin
       if not card.Fold then begin
         if APosition=cpFirstPlayer then
-          img:=CreateCardControl(card,cardParent,caLeft)
+          img:=CreateCardControl(card,cardParent,caLeft,True)
         else
-          img:=CreateCardControl(card,cardParent,caRight);
+          img:=CreateCardControl(card,cardParent,caRight,True);
         img.Top:=imgTop;
         img.Left:=0;
-        imgTop:=imgTop+OTHERCARDXOFFSET;
+        imgTop:=imgTop+SMALLCARDXOFFSET;
         img.Enabled:=False;
       end;
     end;
@@ -497,9 +518,9 @@ var player:TPlayer;
 begin
   mGameinfo.Visible:=False;
   FScore.Visible:=false;
-  pFirstPlayerCards.Width:=pMyCards.Height-CARDUPLIFT;
-  pSecondPlayerCards.Height:=pMyCards.Height-CARDUPLIFT;
-  pThirdPlayerCards.Width:=pMyCards.Height-CARDUPLIFT;
+  pFirstPlayerCards.Width:=SMALLCARDHEIGHT;
+  pSecondPlayerCards.Height:=SMALLCARDHEIGHT;
+  pThirdPlayerCards.Width:=SMALLCARDHEIGHT;
 
   for player in dm.Players do begin
     if player.Name<>dm.MyName then begin
@@ -511,9 +532,7 @@ begin
       end;
     end;
   end;
-  CenterCards(pFirstPlayerCards,False);
-  CenterCards(pSecondPlayerCards,True);
-  CenterCards(pThirdPlayerCards,False);
+  FormResize(Self);
 end;
 
 procedure TfrmTarock.ShowTalon;
@@ -552,16 +571,23 @@ begin
          dm.imCards.GetBitmap(ALLCARDS.Find(itm.Card).ImageIndex,player.CardImage.Picture.Bitmap);
      end;
   end;
+
+  if Assigned(dm.ActGame) and (dm.ActGame.TeamKind=tkOuvert) then
+    ShowCardOfOthers;
 end;
 
 procedure TfrmTarock.ShowTurn;
 var player:TPlayer;
 begin
   for player in dm.Players do begin
-    if Assigned(dm.GameSituation) and (dm.GameSituation.TurnOn=player.Name) then
-      player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style+[fsBold]
-    else
-      player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style-[fsBold]
+    if Assigned(dm.GameSituation) and (dm.GameSituation.TurnOn=player.Name) then begin
+      player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style+[fsBold];
+      player.PlayerLabel.Style.Color:=clSkyBlue;
+    end
+    else begin
+      player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style-[fsBold];
+      player.PlayerLabel.Style.Color:=clBtnFace;
+    end;
   end;
 end;
 
@@ -603,8 +629,12 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     if dm.GameSituation.State<>gsNone then begin
       if not Assigned(dm.MyCards) then begin
          dm.GetMyCards;
-         if Assigned(dm.ActGame) and (dm.ActGame.TeamKind=tkOuvert) then
-           ShowCardOfOthers;
+
+         if Assigned(dm.ActGame) and (dm.ActGame.GameTypeid='TRISCH') then
+           pThrowCards.Width:=imgTalon.Left+imgTalon.Width
+         else
+           pThrowCards.Width:=imgThirdCard.Left+imgThirdCard.Width;
+         FormResize(Self);
       end;
       ShowCards;
     end
@@ -675,10 +705,11 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   begin
     if Assigned(FBiddingSelect) then begin
       FreeAndnil(FBiddingSelect);
-      if dm.ActGame.TeamKind=tkOuvert then begin
-        ShowCardOfOthers;
-      end;
-
+      if Assigned(dm.ActGame) and (dm.ActGame.GameTypeid='TRISCH') then
+        pThrowCards.Width:=imgTalon.Left+imgTalon.Width
+      else
+        pThrowCards.Width:=imgThirdCard.Left+imgThirdCard.Width;
+      FormResize(Self);
     end;
     FThrowActive:=True;
 
@@ -717,9 +748,14 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
       finally
         r.Free;
       end;
-      pFirstPlayerCards.Width:=OTHERCARDPANELHEIGHT;
-      pSecondPlayerCards.Height:=OTHERCARDPANELHEIGHT;
-      pThirdPlayerCards.Width:=OTHERCARDPANELHEIGHT;
+      if dm.ActGame.TeamKind=tkOuvert then begin
+        pFirstPlayerCards.Width:=OTHERCARDPANELHEIGHT;
+        pSecondPlayerCards.Height:=OTHERCARDPANELHEIGHT;
+        pThirdPlayerCards.Width:=OTHERCARDPANELHEIGHT;
+        ClearCards(pFirstPlayerCards);
+        ClearCards(pSecondPlayerCards);
+        ClearCards(pThirdPlayerCards);
+      end;
    end;
 
     SetScore(FScore.clScore1,dm.GameSituation.Players[0].Score);

@@ -126,7 +126,9 @@ object frmTarock: TfrmTarock
       Top = 1
       Align = alClient
       Caption = 'clThirdPlayer'
+      ParentColor = False
       ParentFont = False
+      Style.Color = clBtnFace
       Style.Font.Charset = DEFAULT_CHARSET
       Style.Font.Color = clWindowText
       Style.Font.Height = -20
@@ -188,7 +190,6 @@ object frmTarock: TfrmTarock
       Height = 557
       Align = alLeft
       BevelOuter = bvNone
-      Color = clSkyBlue
       ParentBackground = False
       TabOrder = 1
     end
@@ -199,7 +200,6 @@ object frmTarock: TfrmTarock
       Height = 557
       Align = alRight
       BevelOuter = bvNone
-      Color = clGradientInactiveCaption
       ParentBackground = False
       TabOrder = 2
     end
@@ -211,13 +211,23 @@ object frmTarock: TfrmTarock
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 3
+      object pSecondPlayerCards: TPanel
+        Left = 0
+        Top = 0
+        Width = 1022
+        Height = 40
+        Align = alTop
+        BevelOuter = bvNone
+        TabOrder = 0
+      end
       object pThrowCards: TPanel
         Left = 257
-        Top = 126
+        Top = 98
         Width = 512
         Height = 361
         BevelOuter = bvNone
-        TabOrder = 0
+        ParentBackground = False
+        TabOrder = 1
         object imgFirstCard: TImage
           AlignWithMargins = True
           Left = 0
@@ -257,21 +267,12 @@ object frmTarock: TfrmTarock
         object imgTalon: TImage
           AlignWithMargins = True
           Left = 420
-          Top = 184
+          Top = 160
           Width = 85
           Height = 154
           Proportional = True
           Stretch = True
         end
-      end
-      object pSecondPlayerCards: TPanel
-        Left = 0
-        Top = 0
-        Width = 1022
-        Height = 40
-        Align = alTop
-        BevelOuter = bvNone
-        TabOrder = 1
       end
     end
   end
