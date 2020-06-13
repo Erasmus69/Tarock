@@ -183,39 +183,34 @@ object frmTarock: TfrmTarock
     end
     object pFirstplayerCards: TPanel
       Left = 1
-      Top = 41
+      Top = 1
       Width = 40
-      Height = 517
+      Height = 557
       Align = alLeft
       BevelOuter = bvNone
+      Color = clSkyBlue
+      ParentBackground = False
       TabOrder = 1
     end
     object pThirdPlayerCards: TPanel
       Left = 1063
-      Top = 41
+      Top = 1
       Width = 40
-      Height = 517
+      Height = 557
       Align = alRight
       BevelOuter = bvNone
+      Color = clGradientInactiveCaption
+      ParentBackground = False
       TabOrder = 2
-    end
-    object pSecondPlayerCards: TPanel
-      Left = 1
-      Top = 1
-      Width = 1102
-      Height = 40
-      Align = alTop
-      BevelOuter = bvNone
-      TabOrder = 3
     end
     object pCenter: TPanel
       Left = 41
-      Top = 41
+      Top = 1
       Width = 1022
-      Height = 517
+      Height = 557
       Align = alClient
       BevelOuter = bvNone
-      TabOrder = 4
+      TabOrder = 3
       object pThrowCards: TPanel
         Left = 257
         Top = 126
@@ -268,6 +263,15 @@ object frmTarock: TfrmTarock
           Proportional = True
           Stretch = True
         end
+      end
+      object pSecondPlayerCards: TPanel
+        Left = 0
+        Top = 0
+        Width = 1022
+        Height = 40
+        Align = alTop
+        BevelOuter = bvNone
+        TabOrder = 1
       end
     end
   end

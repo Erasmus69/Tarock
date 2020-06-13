@@ -8,7 +8,8 @@ uses
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
   cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round,
   cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra, ScoreFra,Common.Entities.Player,
-  Classes.Entities;
+  Classes.Entities, hyieutils, iexBitmaps, hyiedefs, iesettings, ieview,
+  imageenview, imageen;
 
 const
     CSM_REFRESHCARDS=WM_USER+1;
@@ -21,7 +22,6 @@ type
     clFirstPlayer: TcxLabel;
     pRight: TPanel;
     pTop: TPanel;
-    pBoard: TPanel;
     pMyCards: TPanel;
     clThirdPlayer: TcxLabel;
     clSecondPlayer: TcxLabel;
@@ -29,10 +29,10 @@ type
     bStartGame: TButton;
     pFirstplayerCards: TPanel;
     pThirdPlayerCards: TPanel;
-    pSecondPlayerCards: TPanel;
     tRefresh: TTimer;
     mGameInfo: TcxMemo;
     cbPlayers: TComboBox;
+    pBoard: TPanel;
     pCenter: TPanel;
     pThrowCards: TPanel;
     imgFirstCard: TImage;
@@ -40,6 +40,7 @@ type
     imgMyCard: TImage;
     imgThirdCard: TImage;
     imgTalon: TImage;
+    pSecondPlayerCards: TPanel;
 
     procedure bRegisterClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -56,7 +57,6 @@ type
     FBiddingSelect:TfraBidding;
     FLastThrowShown:Boolean;
     FThrowActive:Boolean;
-    FActDPI:Integer;
     FScalingFactor:Double;
 
     procedure GetPlayers;
@@ -74,6 +74,7 @@ type
     procedure ShowCardOfOthers;
     procedure ScaleCardImages;
     procedure CenterFrame(AFrame:TFrame);
+    procedure CenterCards(const APanel: TPanel; AHorizontal:Boolean);
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -97,6 +98,7 @@ const
   MYCARDMOSTLEFT=20;
   BACKCARDXOFFSET=30;
   CARDYOFFSET=0;
+  OTHERCARDPANELHEIGHT=40;
 
 
 procedure TfrmTarock.bRegisterClick(Sender: TObject);
@@ -121,6 +123,50 @@ begin
     dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
     dm.PutTurn(TCardControl(Sender).Card.ID);
     PostMessage(Handle,CSM_REFRESHCARDS,0,0);
+  end;
+end;
+
+procedure TfrmTarock.CenterCards(const APanel: TPanel; AHorizontal:Boolean);
+var i:Integer;
+    mostLeft: Integer;
+    mostRight: Integer;
+    offset: Integer;
+begin
+  mostLeft:=10000;
+  mostRight:=0;
+
+  for i:=0 to APanel.ControlCount-1 do begin
+    if APanel.Controls[i] is TCardControl then begin
+      if AHorizontal then begin
+        if APanel.Controls[i].Left<mostLeft then
+          mostLeft:=APanel.Controls[i].Left;
+        if APanel.Controls[i].Left+APanel.Controls[i].Width>mostRight then
+          mostRight:=APanel.Controls[i].Left+APanel.Controls[i].Width;
+      end
+      else begin
+        if APanel.Controls[i].Top<mostLeft then
+          mostLeft:=APanel.Controls[i].Top;
+        if APanel.Controls[i].Top+APanel.Controls[i].Height>mostRight then
+          mostRight:=APanel.Controls[i].Top+APanel.Controls[i].Height;
+
+      end;
+    end;
+  end;
+  if mostLeft=10000 then Exit;
+
+  if AHorizontal then begin
+    offset:=((APanel.Width-mostRight+mostleft) div 2)-mostleft;
+    for i:=0 to APanel.ControlCount-1 do begin
+      if APanel.Controls[i] is TCardControl then
+        APanel.Controls[i].Left:=APanel.Controls[i].Left+offset;
+    end;
+  end
+  else begin
+    offset:=((APanel.Height-mostRight+mostleft) div 2)-mostleft;
+    for i:=0 to APanel.ControlCount-1 do begin
+      if APanel.Controls[i] is TCardControl then
+        APanel.Controls[i].Top:=APanel.Controls[i].Top+offset;
+    end;
   end;
 end;
 
@@ -168,15 +214,17 @@ procedure TfrmTarock.FormCreate(Sender: TObject);
 var
   frm: TfrmRegistration;
   dc:HDC;
+  dpi:Double;
 begin
   cbPlayers.Visible:=dm.DebugMode;
   bRegister.Visible:=dm.DebugMode;
   dc:=GetDC(0);
-  FActDPI:=GetDeviceCaps(dc, LOGPIXELSX);
+  dpi:=GetDeviceCaps(dc, LOGPIXELSX)/96;
   FScalingFactor:=GetDeviceCaps(dc, VERTRES)/1080;
   CARDWIDTH:=Round(CARDWIDTH*FScalingFactor);
   CARDHEIGHT:=Round(CARDHEIGHT*FScalingFactor);
   CARDXOFFSET:=Round(CARDXOFFSET*FScalingFactor);
+  OTHERCARDXOFFSET:=Round(OTHERCARDXOFFSET*FScalingFactor);
 
   mGameInfo.Lines.Clear;
   bStartGame.Enabled:=False;
@@ -230,6 +278,12 @@ begin
 
   pThrowCards.Left:=(pBoard.Width-pThrowCards.Width) div 2;
 
+  CenterCards(pMyCards,True);
+  if Assigned(dm.ActGame) and (dm.ActGame.TeamKind=tkOuvert) then begin
+    CenterCards(pFirstPlayerCards,False);
+    CenterCards(pSecondPlayerCards,True);
+    CenterCards(pThirdPlayerCards,False);
+  end;
 end;
 
 procedure TfrmTarock.GameInfo;
@@ -281,6 +335,38 @@ begin
 end;
 
 procedure TfrmTarock.ShowCards(ACards: TCards; APosition: TCardPosition);
+type TCardAlignment=(caUp,caLeft,caRight);
+
+  function CreateCardControl(ACard:TCard; AParent:TWinControl; AAlignment:TCardAlignment):TCardControl;
+  var imageen: TImageEn;
+  begin
+    Result:=TCardControl.Create(Self,ACard);
+    Result.Parent:=AParent;
+    if AAlignment=caUp then begin
+      Result.Height:=CARDHEIGHT;
+      Result.Width:=CARDWIDTH;
+      dm.imCards.GetBitmap(ACard.ImageIndex,Result.Picture.Bitmap);
+    end
+    else begin
+      Result.Width:=CARDHEIGHT;
+      Result.Height:=CARDWIDTH;
+
+      imageen:=TImageEn.Create(nil);
+      try
+        dm.imCards.GetBitmap(ACard.ImageIndex,imageen.Bitmap);
+        if AAlignment=caLeft then
+          imageen.Proc.Rotate(90)
+        else
+          imageen.Proc.Rotate(-90);
+
+        Result.Picture.Bitmap:=imageen.Bitmap;
+
+      finally
+        imageen.Free;
+      end;
+    end;
+  end;
+
 var i:Integer;
     imgLeft,imgTop:Integer;
     img:TCardControl;
@@ -291,7 +377,7 @@ begin
 
   case APosition of
     cpMyCards:begin
-                imgLeft:=(Width-((ACards.Count-1)*CARDXOFFSET)-CARDWIDTH) div 2;
+                imgLeft:=(Width-((ACards.UnFoldCount-1)*CARDXOFFSET)-CARDWIDTH) div 2;
                 imgLeft:=imgLeft-(CARDXOFFSET div 2);
                 cardParent:=pMyCards
               end;
@@ -317,9 +403,7 @@ begin
   if APosition in [cpMyCards] then begin
     for card in ACards do begin
       if not card.Fold then begin
-        img:=TCardControl.Create(Self,card);
-        img.Parent:=cardParent;
-        dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
+        img:=CreateCardControl(card,cardParent,caUp);
         img.OnDblClick:=DoThrowCard;
         img.Top:=CARDUPLIFT;
         img.Left:=imgLeft;
@@ -328,30 +412,29 @@ begin
     end;
   end
   else if APosition=cpSecondPlayer then begin
-    imgLeft:=(Width-((ACards.Count-1)*BACKCARDXOFFSET)-CARDWIDTH) div 2;
+    imgLeft:=(Width-((ACards.UnFoldCount-1)*OTHERCARDXOFFSET)-CARDWIDTH) div 2;
     for card in ACards do begin
       if not card.Fold then begin
-        with TCardControl.Create(Self,card) do begin
-          Parent:=cardParent;
-          dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
-          Top:=0;
-          Left:=imgLeft;
-        end;
-        imgLeft:=imgLeft+BACKCARDXOFFSET;
+        img:=CreateCardControl(card,cardParent,caUp);
+        img.Top:=0;
+        img.Left:=imgLeft;
+        imgLeft:=imgLeft+OTHERCARDXOFFSET;
+        img.Enabled:=False;
       end;
     end;
   end
   else begin
-    imgTop:=(pFirstPlayerCards.Height-((ACards.Count-1)*BACKCARDXOFFSET)-CARDWIDTH) div 2;
+    imgTop:=(pFirstPlayerCards.Height-((ACards.UnFoldCount-1)*OTHERCARDXOFFSET)-CARDWIDTH) div 2;
     for card in ACards do begin
       if not card.Fold then begin
-        with TCardControl.Create(Self,card) do begin
-          Parent:=cardParent;
-          dm.imCards.GetBitmap(card.ImageIndex,img.Picture.Bitmap);
-          Top:=imgTop;
-          Left:=0;
-        end;
-        imgTop:=imgTop+CARDXOFFSET;
+        if APosition=cpFirstPlayer then
+          img:=CreateCardControl(card,cardParent,caLeft)
+        else
+          img:=CreateCardControl(card,cardParent,caRight);
+        img.Top:=imgTop;
+        img.Left:=0;
+        imgTop:=imgTop+OTHERCARDXOFFSET;
+        img.Enabled:=False;
       end;
     end;
   end;
@@ -405,6 +488,7 @@ end;
 procedure TfrmTarock.ShowCards;
 begin
   ShowCards(dm.MyCards,cpMyCards);
+  CenterCards(pMyCards,True);
 end;
 
 procedure TfrmTarock.ShowCardOfOthers;
@@ -412,6 +496,11 @@ var player:TPlayer;
     cards:TCards;
 begin
   mGameinfo.Visible:=False;
+  FScore.Visible:=false;
+  pFirstPlayerCards.Width:=pMyCards.Height-CARDUPLIFT;
+  pSecondPlayerCards.Height:=pMyCards.Height-CARDUPLIFT;
+  pThirdPlayerCards.Width:=pMyCards.Height-CARDUPLIFT;
+
   for player in dm.Players do begin
     if player.Name<>dm.MyName then begin
       cards:=dm.GetCards(player.Name);
@@ -422,6 +511,9 @@ begin
       end;
     end;
   end;
+  CenterCards(pFirstPlayerCards,False);
+  CenterCards(pSecondPlayerCards,True);
+  CenterCards(pThirdPlayerCards,False);
 end;
 
 procedure TfrmTarock.ShowTalon;
@@ -509,8 +601,11 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
 
     FThrowActive:=False;
     if dm.GameSituation.State<>gsNone then begin
-      if not Assigned(dm.MyCards) then
+      if not Assigned(dm.MyCards) then begin
          dm.GetMyCards;
+         if Assigned(dm.ActGame) and (dm.ActGame.TeamKind=tkOuvert) then
+           ShowCardOfOthers;
+      end;
       ShowCards;
     end
     else if dm.Players.Count=4 then
@@ -610,7 +705,9 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
   var r:TGameRound;
   begin
     mGameInfo.Visible:=true;
+    FScore.Visible:=True;
     if not FLastThrowShown then begin
+
       r:=dm.GetRound;
       try
         if Assigned(r) then begin //show last cards thrown
@@ -620,7 +717,10 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
       finally
         r.Free;
       end;
-    end;
+      pFirstPlayerCards.Width:=OTHERCARDPANELHEIGHT;
+      pSecondPlayerCards.Height:=OTHERCARDPANELHEIGHT;
+      pThirdPlayerCards.Width:=OTHERCARDPANELHEIGHT;
+   end;
 
     SetScore(FScore.clScore1,dm.GameSituation.Players[0].Score);
     SetScore(FScore.clScore2,dm.GameSituation.Players[1].Score);

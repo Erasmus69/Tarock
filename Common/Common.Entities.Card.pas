@@ -39,6 +39,8 @@ type
     function Compare(const Left, Right: TCard): Integer; override;
   end;
   TCards=class(TObjectList<TCard>)
+  private
+    function GetUnFoldCount: Integer;
   public
     function AddItem(AID:TCardKey;ACType:TCardType;AValue:Byte;APoints:Byte;AImageIdx:Integer):TCard;
     function Clone:TCards;
@@ -46,6 +48,7 @@ type
     function Find(const AID:TCardKey):TCard;
     function Exists(const AID:TCardKey):Boolean;
     procedure Sort;
+    property UnFoldCount:Integer read GetUnFoldCount;
   end;
 
   TCardKeySerializer=class(TCustomSerializer)
@@ -165,6 +168,16 @@ begin
       Break;
     end;
   end;
+end;
+
+function TCards.GetUnFoldCount: Integer;
+var
+  itm: TCard;
+begin
+  Result:=0;
+  for itm in Self do
+    if not itm.Fold then
+      Inc(Result);
 end;
 
 procedure TCards.Sort;

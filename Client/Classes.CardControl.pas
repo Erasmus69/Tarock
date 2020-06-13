@@ -7,7 +7,7 @@ var CARDHEIGHT:Integer=154;//256;
     CARDWIDTH:Integer=85;//141;
     CARDUPLIFT:Integer=30;
     CARDXOFFSET:Integer=90;
-
+    OTHERCARDXOFFSET:Integer=55;
 type
   TCardControl=class(TImage)
   private
