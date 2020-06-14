@@ -275,6 +275,7 @@ begin
     else
       r.TurnOn:=FGame.ActRound.Winner;
     FGame.Situation.TurnOn:=r.TurnOn;
+    FGame.Situation.RoundNo:=FGame.Situation.RoundNo+1;
 
     // reihenfolge der Spieler definieren
     for i := FGame.FindPlayer(r.TurnOn).Index to 3 do
@@ -779,7 +780,7 @@ begin
     end;
 
     if winner=ttTeam1 then begin
-      if FGame.ActGame.TeamKind in [tkSolo,tkOuvert] then
+      if FGame.ActGame.TeamKind in [tkSolo,tkOuvert,tkAllOuvert] then
         FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' gewinnt')
       else
         FGame.Situation.GameInfo.Add('Das Team1 ('+FGame.Team1Names+') gewinnt')
@@ -1162,7 +1163,7 @@ begin
   team2.CatchXXI:=-team1.CatchXXI;
   team2.Valat:=-team1.Valat;
 
-  if FGame.ActGame.TeamKind in [tkSolo,tkOuvert] then begin
+  if FGame.ActGame.TeamKind in [tkSolo,tkOuvert,tkAllOuvert] then begin
     team1.Game:=team1.Game*3;
     team1.ContraGame:=team1.ContraGame*3;
     team1.Minus10:=team1.Minus10*3;

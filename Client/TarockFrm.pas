@@ -76,6 +76,7 @@ type
     procedure ScaleCardImages;
     procedure CenterFrame(AFrame:TFrame);
     procedure CenterCards(const APanel: TPanel; AHorizontal:Boolean);
+    function GetCardParent(const APosition: TCardPosition): TPanel;
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -224,12 +225,12 @@ procedure TfrmTarock.FormCreate(Sender: TObject);
 var
   frm: TfrmRegistration;
   dc:HDC;
-  dpi:Double;
+//  dpi:Double;
 begin
   cbPlayers.Visible:=dm.DebugMode;
   bRegister.Visible:=dm.DebugMode;
   dc:=GetDC(0);
-  dpi:=GetDeviceCaps(dc, LOGPIXELSX)/96;
+//  dpi:=GetDeviceCaps(dc, LOGPIXELSX)/96;
   FScalingFactor:=GetDeviceCaps(dc, VERTRES)/1080;
   CARDWIDTH:=Round(CARDWIDTH*FScalingFactor);
   CARDHEIGHT:=Round(CARDHEIGHT*FScalingFactor);
@@ -290,7 +291,7 @@ begin
   pThrowCards.Left:=(pCenter.Width-pThrowCards.Width) div 2;
 
   CenterCards(pMyCards,True);
-  if Assigned(dm.ActGame) and (dm.ActGame.TeamKind=tkOuvert) then begin
+  if Assigned(dm.ActGame) and (dm.ActGame.TeamKind in [tkOuvert,tkAllOuvert]) then begin
     CenterCards(pFirstPlayerCards,False);
     CenterCards(pSecondPlayerCards,True);
     CenterCards(pThirdPlayerCards,False);
@@ -392,36 +393,18 @@ type TCardAlignment=(caUp,caLeft,caRight);
     end;
   end;
 
-var i:Integer;
-    imgLeft,imgTop:Integer;
+var imgLeft,imgTop:Integer;
     img:TCardControl;
     card:TCard;
     cardParent:TPanel;
-    backCardKind:TBackCardKind;
 begin
-
-  case APosition of
-    cpMyCards:begin
-                imgLeft:=(Width-((ACards.UnFoldCount-1)*CARDXOFFSET)-CARDWIDTH) div 2;
-                imgLeft:=imgLeft-(CARDXOFFSET div 2);
-                cardParent:=pMyCards
-              end;
-     cpFirstPlayer:begin
-                    cardParent:=pFirstPlayerCards;
-                    backCardKind:=bckLeft;
-                  end;
-    cpSecondPlayer:begin
-                    cardParent:=pSecondPlayerCards;
-                    backCardKind:=bckDown;
-                  end;
-    cpThirdPlayer:begin
-                    cardParent:=pThirdPlayerCards;
-                    backCardKind:=bckRight;
-                  end;
-  end;
+  cardParent:=GetCardParent(APosition);
   ClearCards(cardParent);
 
   if APosition in [cpMyCards] then begin
+    imgLeft:=(Width-((ACards.UnFoldCount-1)*CARDXOFFSET)-CARDWIDTH) div 2;
+    imgLeft:=imgLeft-(CARDXOFFSET div 2);
+
     for card in ACards do begin
       if not card.Fold then begin
         img:=CreateCardControl(card,cardParent,caUp);
@@ -516,14 +499,20 @@ procedure TfrmTarock.ShowCardOfOthers;
 var player:TPlayer;
     cards:TCards;
 begin
+  if not (dm.ActGame.TeamKind in [tkOuvert,tkAllOuvert]) then Exit;
+
   mGameinfo.Visible:=False;
   FScore.Visible:=false;
-  pFirstPlayerCards.Width:=SMALLCARDHEIGHT;
-  pSecondPlayerCards.Height:=SMALLCARDHEIGHT;
-  pThirdPlayerCards.Width:=SMALLCARDHEIGHT;
 
   for player in dm.Players do begin
-    if player.Name<>dm.MyName then begin
+    if (player.Name<>dm.MyName) and
+       ((dm.ActGame.TeamKind=tkAllOuvert) or (player.Name=dm.GameSituation.Gamer)) then begin
+
+      if player.CardPosition=cpSecondPlayer then
+        GetCardParent(player.CardPosition).Height:=SMALLCARDHEIGHT
+      else
+        GetCardParent(player.CardPosition).Width:=SMALLCARDHEIGHT;
+
       cards:=dm.GetCards(player.Name);
       try
         ShowCards(cards,player.CardPosition);
@@ -572,7 +561,7 @@ begin
      end;
   end;
 
-  if Assigned(dm.ActGame) and (dm.ActGame.TeamKind=tkOuvert) then
+  if Assigned(dm.ActGame) and (dm.ActGame.TeamKind in [tkOuvert,tkAllOuvert]) and (dm.GameSituation.RoundNo>1) then
     ShowCardOfOthers;
 end;
 
@@ -588,6 +577,16 @@ begin
       player.PlayerLabel.Style.Font.Style:=player.PlayerLabel.Style.Font.Style-[fsBold];
       player.PlayerLabel.Style.Color:=clBtnFace;
     end;
+  end;
+end;
+
+function TfrmTarock.GetCardParent(const APosition:TCardPosition):TPanel;
+begin
+  case APosition of
+    cpMyCards:     Result:=pMyCards ;
+    cpFirstPlayer: Result:=pFirstPlayerCards;
+    cpSecondPlayer:Result:=pSecondPlayerCards;
+    cpThirdPlayer: Result:=pThirdPlayerCards;
   end;
 end;
 
@@ -748,7 +747,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
       finally
         r.Free;
       end;
-      if dm.ActGame.TeamKind=tkOuvert then begin
+      if dm.ActGame.TeamKind in [tkOuvert,tkAllOuvert] then begin
         pFirstPlayerCards.Width:=OTHERCARDPANELHEIGHT;
         pSecondPlayerCards.Height:=OTHERCARDPANELHEIGHT;
         pThirdPlayerCards.Width:=OTHERCARDPANELHEIGHT;
