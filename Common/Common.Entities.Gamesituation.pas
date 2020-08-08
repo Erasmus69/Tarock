@@ -123,6 +123,8 @@ begin
   FPlayers:=TPlayers<T>.Create(True);
   FState:=gsNone;
   FGameInfo:=TStringList.Create;
+  FAddBets.ContraGame.BetType:=abtBet;
+  FAddBets.ContraGame.Team:=ttTeam1;
   FRoundNo:=0;
 end;
 

@@ -4,7 +4,7 @@ interface
 uses Neon.Core.Attributes,Generics.Collections,Common.Entities.Player;
 
 type
-  TAddBetType=(abtNone,abtBet,abtContra);
+  TAddBetType=(abtNone,abtBet,abtContra,abtRe);
   TAddBet=record
     BetType:TAddBetType;
     Team:TTeam;

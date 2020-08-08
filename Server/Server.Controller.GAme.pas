@@ -157,13 +157,15 @@ end;
 
 function TGameController.FinalBet(const ABet:TBet):String;
 
-  function MergeBets(ASource,ADest:TAddBets; const ASourceTeam:TTeam):TAddBets;
-    procedure Merge(const ASourceBet:TAddBet; var ADestBet:TAddBet);
+  function MergeBets(var ASource:TAddBets; ADest:TAddBets; const ASourceTeam:TTeam):TAddBets;
+    procedure Merge(var ASourceBet:TAddBet; var ADestBet:TAddBet);
     begin
-      if ASourceBet.BetType>ADestBet.BetType then begin
-        ADestBet.BetType:=ASourceBet.BetType;
+      if (Ord(ASourceBet.BetType)>0) and (ASourceBet.BetType>ADestBet.BetType) and (ADestBet.BetType<abtRe) then begin
+        Inc(ADestBet.BetType);
         ADestBet.Team:=ASourceTeam;
-      end;
+      end
+      else
+        ASourceBet.BetType:=abtNone;
     end;
 
   begin
@@ -190,13 +192,15 @@ function TGameController.FinalBet(const ABet:TBet):String;
       s:=APlayer+' sagt '+AMessage+' an'
     else if ABet.BetType=abtContra then
       s:=APlayer+' sagt contra '+AMessage
-    else
+    else if ABet.BetType=abtRe then
+      s:=APlayer+' sagt re '+AMessage    else
       Exit;
     ASL.Add(s);
   end;
 
 var player:TPlayerCards;
     sl:TStringList;
+    addBets:TAddBets;
 begin
   if FGame.LastFinalBidder='' then
     FGame.LastFinalBidder:=PreviousPlayer(FGame.Situation.Gamer);
@@ -208,26 +212,25 @@ begin
   if FGame.Situation.TurnOn<>ABet.Player then
     raise Exception.Create('Is not your turn');
 
-  FGame.Situation.AddBets:=MergeBets(ABet.AddBets,FGame.Situation.AddBets,player.Team);
+  addBets:=ABet.AddBets;
+  FGame.Situation.AddBets:=MergeBets(addBets,FGame.Situation.AddBets,player.Team);
 
   sl:=TStringList.Create;
   try
-    AddInfo(sl,'Sack',ABet.Player,ABet.AddBets.Minus10);
-    AddInfo(sl,'König ult',ABet.Player,ABet.AddBets.KingUlt);
-    AddInfo(sl,'Pagat ult',ABet.Player,ABet.AddBets.PagatUlt);
-    AddInfo(sl,'Vogel II',ABet.Player,ABet.AddBets.VogelII);
-    AddInfo(sl,'Vogel III',ABet.Player,ABet.AddBets.VogelIII);
-    AddInfo(sl,'Vogel IV',ABet.Player,ABet.AddBets.VogelIV);
-    AddInfo(sl,'alle 4 Könige',ABet.Player,ABet.AddBets.AllKings);
-    AddInfo(sl,'Trull',ABet.Player,ABet.AddBets.Trull);
-    AddInfo(sl,'König Fang',ABet.Player,ABet.AddBets.CatchKing);
-    AddInfo(sl,'Pagat Fang',ABet.Player,ABet.AddBets.CatchPagat);
-    AddInfo(sl,'XXI Fang',ABet.Player,ABet.AddBets.CatchXXI);
-    AddInfo(sl,'Valat',ABet.Player,ABet.AddBets.Valat);
-    case ABet.AddBets.ContraGame.BetType of
-      abtBet:   sl.Add(ABet.Player+' sagt contra Spiel an');
-      abtContra:sl.Add(ABet.Player+' sagt re Spiel an');
-    end;
+    if addBets.ContraGame.BetType >abtBet then
+      AddInfo(sl,'Spiel',ABet.Player,addBets.ContraGame);
+    AddInfo(sl,'Sack',ABet.Player,addBets.Minus10);
+    AddInfo(sl,'König ult',ABet.Player,addBets.KingUlt);
+    AddInfo(sl,'Pagat ult',ABet.Player,addBets.PagatUlt);
+    AddInfo(sl,'Vogel II',ABet.Player,addBets.VogelII);
+    AddInfo(sl,'Vogel III',ABet.Player,addBets.VogelIII);
+    AddInfo(sl,'Vogel IV',ABet.Player,addBets.VogelIV);
+    AddInfo(sl,'alle 4 Könige',ABet.Player,addBets.AllKings);
+    AddInfo(sl,'Trull',ABet.Player,addBets.Trull);
+    AddInfo(sl,'König Fang',ABet.Player,addBets.CatchKing);
+    AddInfo(sl,'Pagat Fang',ABet.Player,addBets.CatchPagat);
+    AddInfo(sl,'XXI Fang',ABet.Player,addBets.CatchXXI);
+    AddInfo(sl,'Valat',ABet.Player,addBets.Valat);
 
     if sl.Count>0 then begin
       FGame.LastFinalBidder:=PreviousPlayer(ABet.Player);
@@ -775,7 +778,7 @@ begin
     FGame.Situation.GameInfo.Add('Spiel ist beendet');
 
     FGame.Situation.GameInfo.Add('======================');
-    if FGame.ActGame.WinCondition=wc12Rounds then begin
+    if FGame.ActGame.WinCondition in [wc12Rounds,wcT1Trick,wcT2Trick,wcT3Trick,wcT4Trick] then begin
       FGame.Situation.GameInfo.Add('Das Team1 macht '+FGame.Situation.Team1Results.PointsAsString)
     end;
 
@@ -894,7 +897,9 @@ procedure TGameController.ShowResults;
     if AAddBet.BetType=abtBet then
       ABet:=ABet+'(B)'
     else if AAddBet.BetType=abtContra then
-      ABet:=ABet+'(C)';
+      ABet:=ABet+'(C)'
+    else if AAddBet.BetType=abtRe then
+      ABet:=ABet+'(R)';
     ShowResult(ABet,ATeam1,ATeam2);
   end;
 
@@ -906,13 +911,9 @@ begin
   if FGame.ActGame.TeamKind<>tkSinglePlayer then begin
     FGame.Situation.GameInfo.Add(         '            Team1  Team2');
     ShowResult('Spiel',FGame.Situation.Team1Results.Game,FGame.Situation.Team2Results.Game);
+    if FGame.Situation.AddBets.ContraGame.BetType>abtBet then
+      ShowResult('Spiel',FGame.Situation.Team1Results.ContraGame,FGame.Situation.Team2Results.ContraGame,FGame.Situation.AddBets.ContraGame);
     ShowResult('Valat',FGame.Situation.Team1Results.Valat,FGame.Situation.Team2Results.Valat,FGame.Situation.AddBets.Valat);
-    if FGame.Situation.Team1Results.ContraGame<>0 then begin
-      if FGame.Situation.AddBets.ContraGame.BetType=abtContra then
-        ShowResult('Re Spiel',FGame.Situation.Team1Results.ContraGame,FGame.Situation.Team2Results.ContraGame)
-      else
-        ShowResult('Contra Spiel',FGame.Situation.Team1Results.ContraGame,FGame.Situation.Team2Results.ContraGame)
-    end;
     ShowResult(IntToStr(FGame.Situation.Team1Results.Minus10Count)+' Sack ',FGame.Situation.Team1Results.Minus10,FGame.Situation.Team2Results.Minus10,FGame.Situation.AddBets.Minus10);
     ShowResult('König Ult',FGame.Situation.Team1Results.KingUlt,FGame.Situation.Team2Results.KingUlt,FGame.Situation.AddBets.KingUlt);
     ShowResult('Pagat Ult',FGame.Situation.Team1Results.PagatUlt,FGame.Situation.Team2Results.PagatUlt,FGame.Situation.AddBets.PagatUlt);
@@ -995,6 +996,7 @@ procedure TGameController.CalcResults(AWinner:TTeam);
     case AAddBet.BetType of
       abtBet:    Result:=AValue*2;
       abtContra: Result:=AValue*4;
+      abtRe:     Result:=AValue*8;
      else        if not AIsValat then
                     Result:=AValue
                  else
@@ -1077,7 +1079,7 @@ begin
   else
     value:=FGame.ActGame.Value;
 
-  contraGame:=AddBet(value,FGame.Situation.AddBets.ContraGame,False)-value;
+  contraGame:=(AddBet(value,FGame.Situation.AddBets.ContraGame,False) div 2)-value;
   case AWinner of
     ttTeam1: begin
                team1.Game:=value;
@@ -1104,7 +1106,8 @@ begin
          team1.Valat:=-(AddBet(4,FGame.Situation.AddBets.Valat,False)-1)*team1.Game;
      end
      else if FGame.Situation.AddBets.Valat.BetType>abtNone then begin
-       if FGame.Situation.AddBets.Valat.Team=ttTeam1 then
+       if ((FGame.Situation.AddBets.Valat.Team=ttTeam1) and (FGame.Situation.AddBets.Valat.BetType in [abtBet,abtRe])) or
+          ((FGame.Situation.AddBets.Valat.Team=ttTeam2) and (FGame.Situation.AddBets.Valat.BetType=abtContra)) then
          team1.Valat:=-(AddBet(4,FGame.Situation.AddBets.Valat,False)-1)*team1.Game
        else
          team1.Valat:=(AddBet(4,FGame.Situation.AddBets.Valat,False)-1)*team1.Game;
@@ -1119,8 +1122,15 @@ begin
          team1.Minus10Count:=-2
        else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-10 then
          team1.Minus10Count:=-1;
+       if team1.Minus10Count>=0 then
+         CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat)
+       else
+         CheckBet(team1.Minus10,False ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat);
+       if team1.Minus10Count>1 then
+         team1.Minus10:=team1.Minus10+team1.Minus10Count-1
+       else if team1.Minus10Count<-1 then
+         team1.Minus10:=team1.Minus10+team1.Minus10Count+1;
 
-       CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,Abs(team1.Minus10Count),FGame.Situation.AddBets.Minus10,valat);
        if FGame.ActGame.WinCondition<>wcT1Trick then
          CheckBet(team1.PagatUlt,TrickBy(T1,FGame.Rounds.Count-1,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.PagatUlt,valat);
        if FGame.ActGame.WinCondition<>wcT2Trick then
