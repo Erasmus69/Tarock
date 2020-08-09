@@ -117,7 +117,7 @@ begin
     else if ABet.GameTypeID='PASS' then
       InsertBet(ABet)
     else begin
-      if (value>FGame.Situation.BestBet) or ((value=FGame.Situation.BestBet) and (ABet.Player=FGame.Situation.Beginner)) then begin
+      if (value>FGame.Situation.BestBet) or ((ABet.Player=FGame.Situation.Beginner) and (ABet.GameTypeID=FGame.Bets.WinningGame)) then begin
         InsertBet(ABet);
         FGame.Situation.BestBet:=value;
         player.BetState:=btBet;
@@ -546,18 +546,6 @@ begin
 end;
 
 function TGameController.CheckBetTerminated: Boolean;
-
-  function WinningGame(ABets:TBets):String;
-  var i: Integer;
-  begin
-    for i:=ABets.Count-1 downto 0  do begin
-       if ABets[i].GameTypeID<>'PASS' then begin
-         result:=ABets[i].GameTypeID;
-         break;
-       end;
-    end;
-  end;
-
 var passed:Smallint;
     player:TPlayerCards;
 begin
@@ -581,7 +569,7 @@ begin
   end;
 
   if Result then begin
-    FGame.ActGame:=ALLGames.Find(WinningGame(FGame.Bets));
+    FGame.ActGame:=ALLGames.Find(FGame.Bets.WinningGame);
     FGame.Situation.GameType:=FGame.ActGame.GameTypeid;
     FGame.Situation.TurnOn:=FGame.Situation.Gamer;
     FGame.Situation.GameInfo.Clear;
@@ -1122,10 +1110,18 @@ begin
          team1.Minus10Count:=-2
        else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-10 then
          team1.Minus10Count:=-1;
-       if team1.Minus10Count>=0 then
+       if team1.Minus10Count=0 then
          CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat)
-       else
-         CheckBet(team1.Minus10,False ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat);
+       else if team1.Minus10Count>0 then begin
+         CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat);
+         if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
+           Inc(team1.Minus10);  // team2 lost his sack and get once more
+       end
+       else begin
+         CheckBet(team1.Minus10,team1.Minus10Count<0,ttTeam2,1,FGame.Situation.AddBets.Minus10,valat);
+         if (FGame.Situation.AddBets.Minus10.Team=ttTeam1) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
+           Dec(team1.Minus10);  // team1 lost his sack and get once more
+       end;
        if team1.Minus10Count>1 then
          team1.Minus10:=team1.Minus10+team1.Minus10Count-1
        else if team1.Minus10Count<-1 then

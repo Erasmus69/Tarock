@@ -61,7 +61,7 @@ var
   selectedCards:TCards;
   c:TCard;
   normalCards: Integer;
-  selectedTarock: Integer;
+  selectedForbiddenCards:Integer;
 begin
   selectedCards:=TCards.Create(true);
   try
@@ -97,23 +97,46 @@ begin
         end;
       end;
 
-      selectedTarock:=0;
-      for c in selectedCards do begin
-        if c.CType=ctTarock then begin
-          Inc(selectedTarock);
-          Break;
+      if dm.ActGame.JustColors then begin
+        selectedForbiddenCards:=0;
+        for c in selectedCards do begin
+          if c.CType<>ctTarock then begin
+            Inc(selectedForbiddenCards);
+            Break;
+          end;
         end;
-      end;
-      if selectedTarock>0 then begin
-        normalCards:=0;
-        for c in dm.MyCards do begin
-          if (c.CType<>ctTarock) and not (c.Id in [HK,CK,DK,SK]) then
-            Inc(normalCards);
+        if selectedForbiddenCards>0 then begin
+          normalCards:=0;
+          for c in dm.MyCards do begin
+            if (c.CType=ctTarock) then
+              Inc(normalCards);
+          end;
+          if normalcards>selectedCards.Count-selectedForbiddenCards then begin
+            Beep;
+            ShowMessage('Du darfst Farben erst ablegen, wenn du nicht genügend Tarock hast');
+            Exit;
+          end;
         end;
-        if normalcards>selectedCards.Count-selectedTarock then begin
-          Beep;
-          ShowMessage('Du darfst Tarock erst ablegen, wenn du nicht genügend normale Karten hast');
-          Exit;
+      end
+      else begin
+        selectedForbiddenCards:=0;
+        for c in selectedCards do begin
+          if c.CType=ctTarock then begin
+            Inc(selectedForbiddenCards);
+            Break;
+          end;
+        end;
+        if selectedForbiddenCards>0 then begin
+          normalCards:=0;
+          for c in dm.MyCards do begin
+            if (c.CType<>ctTarock) and not (c.Id in [HK,CK,DK,SK]) then
+              Inc(normalCards);
+          end;
+          if normalcards>selectedCards.Count-selectedForbiddenCards then begin
+            Beep;
+            ShowMessage('Du darfst Tarock erst ablegen, wenn du nicht genügend normale Karten hast');
+            Exit;
+          end;
         end;
       end;
 

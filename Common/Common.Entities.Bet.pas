@@ -44,6 +44,7 @@ type
   public
     function Clone:TBets;
     function AllPassed:Boolean;
+    function WinningGame:String;
   end;
 
 implementation
@@ -75,6 +76,18 @@ begin
     bets.Add(bet);
   end;
   Result:=bets;
+end;
+
+function TBets.WinningGame: String;
+var i: Integer;
+begin
+  Result:='';
+  for i:=Count-1 downto 0  do begin
+     if Items[i].GameTypeID<>'PASS' then begin
+       result:=Items[i].GameTypeID;
+       break;
+     end;
+  end;
 end;
 
 { TBet }

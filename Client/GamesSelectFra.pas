@@ -109,7 +109,8 @@ begin
     ALLGAMES.ForEach(procedure (const AGame:TPair<String,TGameType>) begin
                        if (not  AGame.Value.ByFirstPlayer or (showFirstPlays and (AGame.Key<>'63')) or
                           ((AGame.Key='63') and show63)) and
-                          ((AGame.Value.Value>dm.GameSituation.BestBet) or ((AGame.Value.Value=dm.GameSituation.BestBet) and dm.IAmBeginner)) then begin
+                          ((AGame.Value.Value>dm.GameSituation.BestBet) or
+                           (dm.IAmBeginner and (AGame.Key=dm.Bets.WinningGame))) then begin
                           inc(r);
                           gvGames.DataController.RecordCount:=r;
                           gvGames.DataController.Values[r-1,gcID.Index]:=AGame.Value.GameTypeid;
