@@ -6,13 +6,14 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, cxGraphics, cxControls, cxLookAndFeels,
   cxLookAndFeelPainters, cxContainer, cxEdit, Vcl.Menus, Vcl.StdCtrls,
-  cxButtons, cxTextEdit, dxGDIPlusClasses, Vcl.ExtCtrls;
+  cxButtons, cxTextEdit, dxGDIPlusClasses, Vcl.ExtCtrls, cxLabel;
 
 type
   TfrmRegistration = class(TForm)
     eName: TcxTextEdit;
     bRegister: TcxButton;
     Image1: TImage;
+    lVersion: TcxLabel;
     procedure bRegisterClick(Sender: TObject);
   private
     { Private declarations }

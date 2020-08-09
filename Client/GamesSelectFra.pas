@@ -93,6 +93,7 @@ begin
   inherited;
   RefreshGames;
   bHold.Visible:=dm.IAmBeginner;
+  bPass.Visible:=not bHold.Visible;
   CheckMyTurn;
 end;
 

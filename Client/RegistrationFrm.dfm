@@ -49925,4 +49925,20 @@ object frmRegistration: TfrmRegistration
     ParentFont = False
     OnClick = bRegisterClick
   end
+  object lVersion: TcxLabel
+    Left = 620
+    Top = 387
+    Caption = 'Version 1.01'
+    ParentFont = False
+    Style.Font.Charset = DEFAULT_CHARSET
+    Style.Font.Color = clWindow
+    Style.Font.Height = -11
+    Style.Font.Name = 'Tahoma'
+    Style.Font.Style = []
+    Style.IsFontAssigned = True
+    Properties.Alignment.Horz = taRightJustify
+    Properties.Alignment.Vert = taVCenter
+    AnchorX = 684
+    AnchorY = 396
+  end
 end
