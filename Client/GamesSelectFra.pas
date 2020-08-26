@@ -93,7 +93,7 @@ begin
   inherited;
   RefreshGames;
   bHold.Visible:=dm.IAmBeginner;
-  bPass.Visible:=not bHold.Visible;
+  bPass.Enabled:=not dm.IAmBeginner or (Assigned(dm.Bets) and (dm.Bets.Count>0));
   CheckMyTurn;
 end;
 
@@ -146,7 +146,10 @@ procedure TfraGameSelect.CheckMyTurn;
 begin
   bBet.Enabled:=dm.GameSituation.TurnOn=dm.MyName;
   bHold.Enabled:=bBet.Enabled and Assigned(dm.Bets) and (dm.Bets.Count=0);
-  bPass.Enabled:=bBet.Enabled;
+  if dm.IAmBeginner then
+    bPass.Enabled:=bBet.Enabled and (Assigned(dm.Bets) and (dm.Bets.Count>0)) and not dm.GameSituation.FirstPlayerGamesEnabled
+  else
+    bPass.Enabled:=bBet.Enabled;
 end;
 
 end.
