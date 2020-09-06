@@ -384,6 +384,7 @@ begin
     for I := 0 to FGame.Players.Count-1 do
       IntShuffle(cards,FGame.Players[i],12);
     IntShuffle(cards,FGame.Talon,6);
+    FGame.Talon.Cards[2]:=Allcards[0];
   finally
     cards.Free
   end;
@@ -437,12 +438,8 @@ function TGameController.DetermineWinner(ACards: TCardsThrown):String;
     begin
       if not Assigned(AFormerCard) then
         Result:=True
-      else if AActCard.CType=AFormerCard.CType then
-        Result:=AActCard.Value>AFormerCard.Value
-      else if not FGame.ActGame.JustColors then
-        Result:=AActCard.CType=ctTarock
       else
-        Result:=False;
+        Result:=AActCard.IsStronger(AFormerCard,FGame.ActGame.JustColors);
     end;
 
 var c:TCardThrown;
@@ -868,9 +865,9 @@ end;
 
 procedure TGameController.ShowResults;
 
-  procedure ShowResult(ABet:String;const ATeam1,ATeam2:Integer);overload;
+  procedure ShowResult(ABet:String;const ATeam1,ATeam2:Integer;AShowAlways:Boolean=False);overload;
   begin
-    if ATeam1=0 then Exit;
+    if AShowAlways or (ATeam1=0) then Exit;
 
     if Length(ABet)<12 then
       ABet:=ABet+StringOfChar(' ',12-Length(ABet));
@@ -914,7 +911,7 @@ begin
     ShowResult('Pagat Fang',FGame.Situation.Team1Results.CatchPagat,FGame.Situation.Team2Results.CatchPagat,FGame.Situation.AddBets.CatchPagat);
     ShowResult('XXI Fang',FGame.Situation.Team1Results.CatchXXI,FGame.Situation.Team2Results.CatchXXI,FGame.Situation.AddBets.CatchXXI);
     FGame.Situation.GameInfo.Add(         '=========================');
-    ShowResult('Summe',FGame.Situation.Team1Results.Total,FGame.Situation.Team2Results.Total);
+    ShowResult('Summe',FGame.Situation.Team1Results.Total,FGame.Situation.Team2Results.Total,True);
 
     if FGame.Situation.Doubles>0 then begin
       FGame.Situation.GameInfo.Add('');
@@ -1040,9 +1037,15 @@ procedure TGameController.CalcResults(AWinner:TTeam);
          else
            AResultTeam1:=-AddBet(AValue,AAddBet,AIsValat);
        end
-       else if AAddBet.BetType>abtNone then begin
+       else if AAddBet.BetType=abtContra then begin
          if AAddBet.Team=ttTeam1 then
-           AResultTeam1:=-(AddBet(AValue,AAddBet,AIsValat))
+           AResultTeam1:=AddBet(AValue,AAddBet,AIsValat)
+         else
+           AResultTeam1:=-AddBet(AValue,AAddBet,AIsValat);
+       end
+       else if AAddBet.BetType<>abtNone then begin
+         if AAddBet.Team=ttTeam1 then
+           AResultTeam1:=-AddBet(AValue,AAddBet,AIsValat)
          else
            AResultTeam1:=AddBet(AValue,AAddBet,AIsValat);
        end;
@@ -1101,32 +1104,34 @@ begin
          team1.Valat:=(AddBet(4,FGame.Situation.AddBets.Valat,False)-1)*team1.Game;
      end;
 
-     if not FGame.ActGame.JustColors then begin
-       if FGame.Situation.Team1Results.Points>=POINTSTOWIN+20 then
-         team1.Minus10Count:=2
-       else if FGame.Situation.Team1Results.Points>=POINTSTOWIN+10 then
-         team1.Minus10Count:=1
-       else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-20 then
-         team1.Minus10Count:=-2
-       else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-10 then
-         team1.Minus10Count:=-1;
-       if team1.Minus10Count=0 then
-         CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat)
-       else if team1.Minus10Count>0 then begin
-         CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat);
-         if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
-           Inc(team1.Minus10);  // team2 lost his sack and get once more
-       end
-       else begin
-         CheckBet(team1.Minus10,team1.Minus10Count<0,ttTeam2,1,FGame.Situation.AddBets.Minus10,valat);
-         if (FGame.Situation.AddBets.Minus10.Team=ttTeam1) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
-           Dec(team1.Minus10);  // team1 lost his sack and get once more
-       end;
-       if team1.Minus10Count>1 then
-         team1.Minus10:=team1.Minus10+team1.Minus10Count-1
-       else if team1.Minus10Count<-1 then
-         team1.Minus10:=team1.Minus10+team1.Minus10Count+1;
+     if FGame.Situation.Team1Results.Points>=POINTSTOWIN+20 then
+       team1.Minus10Count:=2
+     else if FGame.Situation.Team1Results.Points>=POINTSTOWIN+10 then
+       team1.Minus10Count:=1
+     else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-20 then
+       team1.Minus10Count:=-2
+     else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-10 then
+       team1.Minus10Count:=-1;
+     if team1.Minus10Count=0 then
+       CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat)
+     else if team1.Minus10Count>0 then begin
+       CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat);
+       if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
+         Inc(team1.Minus10);  // team2 lost his sack and get once more
+     end
+     else begin
+       CheckBet(team1.Minus10,team1.Minus10Count<0,ttTeam2,1,FGame.Situation.AddBets.Minus10,valat);
+       if (FGame.Situation.AddBets.Minus10.Team=ttTeam1) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
+         Dec(team1.Minus10)  // team1 lost his sack and get once more
+       else if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtContra]) then  // Sack was done by other team whos bet it
+         Dec(team1.Minus10);  // team1 lost his sack and get once more
+     end;
+     if team1.Minus10Count>1 then
+       team1.Minus10:=team1.Minus10+team1.Minus10Count-1
+     else if team1.Minus10Count<-1 then
+       team1.Minus10:=team1.Minus10+team1.Minus10Count+1;
 
+     if not FGame.ActGame.JustColors then begin
        if FGame.ActGame.WinCondition<>wcT1Trick then
          CheckBet(team1.PagatUlt,TrickBy(T1,FGame.Rounds.Count-1,winsByTeam),winsByTeam,1,FGame.Situation.AddBets.PagatUlt,valat);
        if FGame.ActGame.WinCondition<>wcT2Trick then
@@ -1148,9 +1153,12 @@ begin
          winsByTeam:=BelongsTo(T1);
          CheckBet(team1.Trull,(BelongsTo(T21)=winsByTeam) and (BelongsTo(T22)=winsByTeam),winsByTeam,1,FGame.Situation.AddBets.Trull,valat);
 
-         winsByTeam:=BelongsTo(HK);
-         CheckBet(team1.AllKings,(BelongsTo(SK)=winsByTeam) and (BelongsTo(CK)=winsByTeam) and (BelongsTo(DK)=winsByTeam),winsByTeam,1,FGame.Situation.AddBets.AllKings,valat);
        end;
+     end;
+
+     if not valat then begin
+       winsByTeam:=BelongsTo(HK);
+       CheckBet(team1.AllKings,(BelongsTo(SK)=winsByTeam) and (BelongsTo(CK)=winsByTeam) and (BelongsTo(DK)=winsByTeam),winsByTeam,1,FGame.Situation.AddBets.AllKings,valat);
      end;
   end;
 
@@ -1169,7 +1177,7 @@ begin
   team2.CatchXXI:=-team1.CatchXXI;
   team2.Valat:=-team1.Valat;
 
-  if FGame.ActGame.TeamKind in [tkSolo,tkOuvert,tkAllOuvert] then begin
+  if FGame.PlayersTeam2.Count>2 then begin
     team1.Game:=team1.Game*3;
     team1.ContraGame:=team1.ContraGame*3;
     team1.Minus10:=team1.Minus10*3;

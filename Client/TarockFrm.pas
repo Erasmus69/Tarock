@@ -118,13 +118,22 @@ begin
 end;
 
 procedure TfrmTarock.DoThrowCard(Sender: TObject);
+var error:String;
+    card:TCard;
 begin
   if not FThrowActive then Exit;
 
   if (dm.GameSituation.State=gsPlaying) and dm.IsMyTurn then begin
-    dm.MyCards.Find(TCardControl(Sender).Card.ID).Fold:=True;
-    dm.PutTurn(TCardControl(Sender).Card.ID);
-    PostMessage(Handle,CSM_REFRESHCARDS,0,0);
+    card:=dm.MyCards.Find(TCardControl(Sender).Card.ID);
+    if dm.CanThrow(card,error) then begin
+      card.Fold:=True;
+      dm.PutTurn(TCardControl(Sender).Card.ID);
+      PostMessage(Handle,CSM_REFRESHCARDS,0,0);
+    end
+    else begin
+      Beep;
+      ShowMessage('Du kannst diese Karte nicht werfen. '+error);
+    end;
   end;
 end;
 

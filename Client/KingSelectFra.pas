@@ -53,6 +53,7 @@ end;
 procedure TfraKingSelect.DoSelectCard(Sender: TObject);
 begin
   dm.SelectKing(TCardControl(Sender).Card.ID);
+  dm.KingSelected:=TCardControl(Sender).Card.ID;
 end;
 
 end.

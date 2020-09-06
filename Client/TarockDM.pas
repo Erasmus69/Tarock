@@ -45,6 +45,7 @@ type
     FGameSituation: TGameSituation<Common.Entities.Player.TPlayer>;
     FBets: TBets;
     FActGame: TGameType;
+    FKingSelected: TCardKey;
     procedure FillBody(AContent: TMemoryStream; APatchData: TObject);
     function GetIAmBeginner: Boolean;
     function GetIsMyTurn: Boolean;
@@ -73,6 +74,7 @@ type
     procedure LayDownCards(const ACards:TCards);
 
     function GetRound:TGameRound;
+    function CanThrow(ACard:TCard;var AError:String):Boolean;
     procedure PutTurn(ACard:TCardKey);
     procedure NewRound;
 
@@ -86,6 +88,7 @@ type
     property GameSituation: TGameSituation<Common.Entities.Player.TPlayer> read FGameSituation;
     property ActGame:TGameType read FActGame;
     property DebugMode:Boolean read FDebugMode;
+    property KingSelected:TCardKey read FKingSelected write FKingSelected;
   end;
 
 var
@@ -111,6 +114,7 @@ uses   {$IFDEF HAS_NETHTTP_CLIENT}
 { TdmTarock }
 
 const URL='185.154.66.221:20000';
+
 procedure TdmTarock.DataModuleCreate(Sender: TObject);
 var
   ini: TInifile;
@@ -450,4 +454,74 @@ begin
     FreeAndNil(frm);
   end;
 end;
+
+function TdmTarock.CanThrow(ACard: TCard; var AError: String): Boolean;
+var r:TGameRound;
+    firstCard,highestThrownCard,card:TCard;
+    i:Integer;
+begin
+  Result:=False;
+
+  r:=dm.GetRound;
+
+  try
+    if FActGame.JustColors and (ACard.CType=ctTarock) then begin
+      if FMyCards.ExistsCardType(ctHeart) or FMyCards.ExistsCardType(ctCross) or
+         FMyCards.ExistsCardType(ctDiamond) or FMyCards.ExistsCardType(ctSpade) then begin
+        AError:='Tarock können erst ausgespielt werden, wenn keine Farben mehr auf der Hand sind';
+        Exit;
+      end;
+    end;
+
+    if Assigned(r) and (r.CardsThrown[0].Card<>None) then begin
+      firstCard:=ALLCARDS.Find(r.CardsThrown[0].Card);
+
+      if FMyCards.ExistsCardType(firstCard.CType) then begin
+        if ACard.CType<>firstCard.CType then begin
+          if firstCard.CType=ctTarock then
+            AError:='Es besteht Tarockwang'
+          else
+            AError:='Es besteht Farbzwang';
+          Exit;
+        end
+      end
+      else if not FActGame.JustColors and (FMyCards.ExistsCardType(ctTarock) and (ACard.CType<>ctTarock)) then begin
+        AError:='Es besteht Tarockzwang';
+        Exit;
+      end;
+
+      if not FActGame.Positive then begin
+        highestThrownCard:=firstCard;
+
+        for i:=1 to r.CardsThrown.Count-1 do begin
+          if r.CardsThrown[i].Card<>None then begin
+            card:=ALLCARDS.Find(r.CardsThrown[i].Card);
+            if card.IsStronger(highestThrownCard,FActGame.JustColors) then
+              highestThrownCard:=card;
+          end;
+        end;
+
+        if highestThrownCard.IsStronger(ACard,True) then begin
+          if FMyCards.ExistsStronger(highestThrownCard,True) then begin
+            AError:='Es besteht Stichzwang';
+            Exit;
+          end
+          else if r.CardsThrown.Exists(T22) and
+                 (r.CardsThrown.Exists(T21) or r.CardsThrown.Exists(T1)) and
+                 (FMyCards.ExistsUnFold(T21) or FMyCards.ExistsUnFold(T1)) then begin // whole Trull present
+            AError:='Es besteht Stichzwang';
+            Exit;
+          end;
+        end;
+      end;
+    end;
+  finally
+    r.free;
+  end;
+// pagat als letzten ,
+
+  AError:='';
+  Result:=True;
+end;
+
 end.

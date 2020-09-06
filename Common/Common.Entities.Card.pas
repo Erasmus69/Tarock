@@ -33,6 +33,7 @@ type
 
     procedure Assign(const ASource:TCard);
     function Clone:TCard;
+    function IsStronger(const ACard:TCard; const AColorGame:Boolean):Boolean;
   end;
 
   TCardsComparer=class(TComparer<TCard>)
@@ -47,6 +48,9 @@ type
     procedure Assign(const ASource:TCards);
     function Find(const AID:TCardKey):TCard;
     function Exists(const AID:TCardKey):Boolean;
+    function ExistsUnfold(const AID: TCardKey): Boolean;
+    function ExistsCardType(const ACType:TCardType):Boolean;
+    function ExistsStronger(const ACard:TCard; const AColorGame:Boolean):Boolean;
     procedure Sort;
     property UnFoldCount:Integer read GetUnFoldCount;
   end;
@@ -158,6 +162,37 @@ begin
   Result:=Assigned(Find(AID));
 end;
 
+function TCards.ExistsUnfold(const AID: TCardKey): Boolean;
+var itm:TCard;
+begin
+  itm:=Find(AID);
+  Result:=Assigned(itm) and not itm.Fold;
+end;
+
+function TCards.ExistsCardType(const ACType: TCardType): Boolean;
+var itm:TCard;
+begin
+  Result:=False;
+  for itm in Self do begin
+    if not itm.Fold and (itm.CType=ACType) then begin
+      Result:=True;
+      Exit;
+    end;
+  end;
+end;
+
+function TCards.ExistsStronger(const ACard: TCard; const AColorGame:Boolean): Boolean;
+var itm:TCard;
+begin
+  Result:=False;
+  for itm in Self do begin
+    if not itm.Fold and itm.IsStronger(ACard,AColorGame) then begin
+      Result:=True;
+      Break;
+    end;
+  end;
+end;
+
 function TCards.Find(const AID:TCardKey): TCard;
 var itm:TCard;
 begin
@@ -226,6 +261,16 @@ function TCard.Clone: TCard;
 begin
   Result:=TCard.Create;
   Result.Assign(Self);
+end;
+
+function TCard.IsStronger(const ACard: TCard; const AColorGame:Boolean): Boolean;
+begin
+  if CType=ACard.CType then
+    Result:=Value>ACard.Value
+  else if not AColorGame then
+    Result:=CType=ctTarock
+  else
+    Result:=false;
 end;
 
 { TCardKeySerializer }

@@ -42,12 +42,24 @@ const CARDXOFFSET=90;
 procedure TfraTalonSelect.bLeftClick(Sender: TObject);
 var i: Integer;
 begin
+  // check if called king stays on other talon
+  if dm.ActGame.TeamKind=tkPair then begin
+    for i:=3 to 5 do begin
+      if FCards[i].Card.ID=dm.GameSituation.KingSelected then begin
+        Beep;
+        ShowMessage('Du muss jenen Talon wählen, in dem der gerufene König liegt')
+      end;
+    end;
+  end;
+
   for i:=0 to 2 do
     FCards[i].Enabled:=True;
   for i:=3 to 5 do begin
     FCards[i].Enabled:=False;
     FCards[i].Up:=False;
   end;
+
+  if True then
 
   lCaption.Caption:='Wähle die 3 Karten, die du weglegen willst';
   bOK.Enabled:=True;
@@ -100,15 +112,14 @@ begin
       if dm.ActGame.JustColors then begin
         selectedForbiddenCards:=0;
         for c in selectedCards do begin
-          if c.CType<>ctTarock then begin
+          if (c.CType<>ctTarock) then begin
             Inc(selectedForbiddenCards);
-            Break;
           end;
         end;
         if selectedForbiddenCards>0 then begin
           normalCards:=0;
           for c in dm.MyCards do begin
-            if (c.CType=ctTarock) then
+            if (c.CType=ctTarock) and  not (c.ID in [T1,T21,T22]) then
               Inc(normalCards);
           end;
           if normalcards>selectedCards.Count-selectedForbiddenCards then begin
@@ -123,7 +134,6 @@ begin
         for c in selectedCards do begin
           if c.CType=ctTarock then begin
             Inc(selectedForbiddenCards);
-            Break;
           end;
         end;
         if selectedForbiddenCards>0 then begin
@@ -157,6 +167,16 @@ end;
 procedure TfraTalonSelect.bRightClick(Sender: TObject);
 var i: Integer;
 begin
+  // check if called king stays on other talon
+  if dm.ActGame.TeamKind=tkPair then begin
+    for i:=0 to 2 do begin
+      if FCards[i].Card.ID=dm.GameSituation.KingSelected then begin
+        Beep;
+        ShowMessage('Du muss jenen Talon wählen, in dem der gerufene König liegt')
+      end;
+    end;
+  end;
+
   for i:=0 to 2 do begin
     FCards[i].Enabled:=False;
     FCards[i].Up:=False;

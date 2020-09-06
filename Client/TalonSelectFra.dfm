@@ -69,7 +69,7 @@ object fraTalonSelect: TfraTalonSelect
         OnClick = bOKClick
       end
       object bLeft: TcxButton
-        Left = 112
+        Left = 104
         Top = 14
         Width = 90
         Height = 33

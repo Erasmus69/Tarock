@@ -99,6 +99,7 @@ begin
   Result.BestBet:=FBestBet;
   Result.Doubles:=FDoubles;
   Result.RoundNo:=FRoundNo;
+  Result.KingSelected:=FKingSelected;
 
   for itm in FPlayers do begin
     itm2:=TPlayer.Create(itm.Name);

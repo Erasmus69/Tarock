@@ -164,8 +164,6 @@ begin
     bValat.Enabled:=False;
   end
   else if dm.ActGame.JustColors then begin
-    bSack.Enabled:=False;
-    bAllKings.Enabled:=False;
     bTrull.Enabled:=False;
     bPagatUlt.Enabled:=False;
     bVogel2.Enabled:=False;
