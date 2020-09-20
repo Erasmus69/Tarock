@@ -19,7 +19,8 @@ uses
   TalonSelectFra in 'TalonSelectFra.pas' {fraTalonSelect: TFrame},
   BiddingFra in 'BiddingFra.pas' {fraBidding: TFrame},
   ScoreFra in 'ScoreFra.pas' {fraScore: TFrame},
-  RegistrationFrm in 'RegistrationFrm.pas' {frmRegistration};
+  RegistrationFrm in 'RegistrationFrm.pas' {frmRegistration},
+  TalonInfoFra in 'TalonInfoFra.pas' {fraTalonInfo};
 
 {$R *.res}
 

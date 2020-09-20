@@ -153,7 +153,7 @@ end;
 
 function TCards.Clone:TCards;
 begin
-  Result:=TCards.Create;
+  Result:=TCards.Create(True);
   Result.Assign(Self);
 end;
 

@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cxGraphics, cxControls,
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxTextEdit,
   cxMaskEdit, CSEdit, CSLabel, Vcl.ExtCtrls,Common.Entities.Card, cxLabel,Common.Entities.Round,
-  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra, ScoreFra,Common.Entities.Player,
+  cxMemo,GamesSelectFra,KingSelectFra,TalonSelectFra, BiddingFra, ScoreFra,TalonInfoFra,Common.Entities.Player,
   Classes.Entities, hyieutils, iexBitmaps, hyiedefs, iesettings, ieview,
   imageenview, imageen;
 
@@ -55,6 +55,7 @@ type
     FKingSelect:TfraKingSelect;
     FTalonSelect:TfraTalonSelect;
     FBiddingSelect:TfraBidding;
+    FTalonInfo:TfraTalonInfo;
     FLastThrowShown:Boolean;
     FThrowActive:Boolean;
     FScalingFactor:Double;
@@ -70,6 +71,7 @@ type
     procedure ShowGameSelect;
     procedure ShowKingSelect;
     procedure ShowTalon;
+    procedure CreateTalonInfo;
     procedure ShowBiddingSelect;
     procedure ClearThrownCards;
     procedure ShowCardOfOthers;
@@ -77,6 +79,7 @@ type
     procedure CenterFrame(AFrame:TFrame);
     procedure CenterCards(const APanel: TPanel; AHorizontal:Boolean);
     function GetCardParent(const APosition: TCardPosition): TPanel;
+    procedure ShowForbiddenCardsLaysDown;
   protected
     procedure WndProc(var Message:TMessage);override;
   public
@@ -305,6 +308,11 @@ begin
     CenterCards(pSecondPlayerCards,True);
     CenterCards(pThirdPlayerCards,False);
   end;
+
+  if Assigned(FTalonInfo) then begin
+    FTalonInfo.Top:=pMyCards.Top-FTalonInfo.Height;
+    FTalonInfo.Left:=pBoard.Width-FTalonInfo.Width;
+  end;
 end;
 
 procedure TfrmTarock.GameInfo;
@@ -355,6 +363,30 @@ begin
   FBiddingSelect.Parent:=pBoard;
   CenterFrame(FBiddingSelect);
   FBiddingSelect.Show;
+end;
+
+procedure TfrmTarock.ShowForbiddenCardsLaysDown;
+var card:TCard;
+    forbiddenCards:TCards;
+begin
+  dm.RefreshGameSituation;
+  if Assigned(FTalonInfo) or (dm.ActGame.Talon=tkNoTalon) or not Assigned(dm.GameSituation.CardsLayedDown) then Exit;
+  forbiddenCards:=TCards.Create(false);
+  try
+    for card in dm.GameSituation.CardsLayedDown do begin
+      if dm.ActGame.JustColors and (card.CType<>ctTarock) then
+        forbiddenCards.Add(card)
+      else if not dm.ActGame.JustColors and (card.CType=ctTarock) then
+        forbiddenCards.Add(card)
+    end;
+
+    if forbiddenCards.Count>0 then begin
+      CreateTalonInfo;
+      FTalonInfo.ShowCards(forbiddenCards);
+    end;
+  finally
+    FreeAndNil(forbiddenCards);
+  end;
 end;
 
 procedure TfrmTarock.ShowCards(ACards: TCards; APosition: TCardPosition);
@@ -551,6 +583,16 @@ begin
   end;
 end;
 
+procedure TfrmTarock.CreateTalonInfo;
+begin
+  FreeAndNil(FTalonInfo);
+
+  FTalonInfo:=TfraTalonInfo.Create(Self);
+  FTalonInfo.Parent:=pBoard;
+  FTalonInfo.Top:=pMyCards.Top-FTalonInfo.Height;
+  FTalonInfo.Left:=pBoard.Width-FTalonInfo.Width;
+end;
+
 procedure TfrmTarock.ShowThrow(const ARound:TGameRound);
 var itm:TCardThrown;
     player:TPlayer;
@@ -658,6 +700,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
       bStartGame.Enabled:=False;
       FLastThrowShown:=False;
       ClearThrownCards;
+      FreeAndnil(FTalonInfo);
 
       dm.GetMyCards;
       ShowCards;
@@ -705,6 +748,12 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     end;
     if not Assigned(FBiddingSelect) then
       ShowBiddingSelect;
+
+    if (dm.MyName<>dm.GameSituation.Gamer) and not Assigned(FTalonInfo) then begin
+      ShowForbiddenCardsLaysDown;
+    end;
+
+
     FBiddingSelect.CheckMyTurn;
   end;
 
@@ -764,7 +813,13 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
         ClearCards(pSecondPlayerCards);
         ClearCards(pThirdPlayerCards);
       end;
-   end;
+    end;
+
+    if (dm.ActGame.Talon=tkNoTalon) and not Assigned(FTalonInfo) then begin
+     CreateTalonInfo;
+     FTalonInfo.ShowCards(dm.GetCards('TALON'));
+    end;
+
 
     SetScore(FScore.clScore1,dm.GameSituation.Players[0].Score);
     SetScore(FScore.clScore2,dm.GameSituation.Players[1].Score);
