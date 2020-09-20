@@ -384,7 +384,7 @@ begin
     for I := 0 to FGame.Players.Count-1 do
       IntShuffle(cards,FGame.Players[i],12);
     IntShuffle(cards,FGame.Talon,6);
-    FGame.Talon.Cards[2]:=Allcards[0];
+//    FGame.Talon.Cards[2]:=Allcards[0];
   finally
     cards.Free
   end;
@@ -867,7 +867,7 @@ procedure TGameController.ShowResults;
 
   procedure ShowResult(ABet:String;const ATeam1,ATeam2:Integer;AShowAlways:Boolean=False);overload;
   begin
-    if AShowAlways or (ATeam1=0) then Exit;
+    if not AShowAlways and (ATeam1=0) then Exit;
 
     if Length(ABet)<12 then
       ABet:=ABet+StringOfChar(' ',12-Length(ABet));

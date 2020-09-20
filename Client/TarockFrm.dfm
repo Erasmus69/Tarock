@@ -277,7 +277,7 @@ object frmTarock: TfrmTarock
     end
   end
   object mGameInfo: TcxMemo
-    Left = 881
+    Left = 875
     Top = 39
     Anchors = [akTop, akRight]
     Lines.Strings = (
@@ -291,7 +291,7 @@ object frmTarock: TfrmTarock
     Style.Font.Style = []
     Style.IsFontAssigned = True
     TabOrder = 6
-    Height = 210
+    Height = 254
     Width = 263
   end
   object tRefresh: TTimer

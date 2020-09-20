@@ -465,7 +465,7 @@ begin
   r:=dm.GetRound;
 
   try
-    if FActGame.JustColors and (ACard.CType=ctTarock) then begin
+    if FActGame.JustColors and (ACard.CType=ctTarock) and Assigned(r) and (r.CardsThrown[0].Card=none) then begin  // on justcolor tarock can thrown at last
       if FMyCards.ExistsCardType(ctHeart) or FMyCards.ExistsCardType(ctCross) or
          FMyCards.ExistsCardType(ctDiamond) or FMyCards.ExistsCardType(ctSpade) then begin
         AError:='Tarock können erst ausgespielt werden, wenn keine Farben mehr auf der Hand sind';
@@ -485,7 +485,7 @@ begin
           Exit;
         end
       end
-      else if not FActGame.JustColors and (FMyCards.ExistsCardType(ctTarock) and (ACard.CType<>ctTarock)) then begin
+      else if (FMyCards.ExistsCardType(ctTarock) and (ACard.CType<>ctTarock)) then begin
         AError:='Es besteht Tarockzwang';
         Exit;
       end;
@@ -506,9 +506,8 @@ begin
             AError:='Es besteht Stichzwang';
             Exit;
           end
-          else if r.CardsThrown.Exists(T22) and
-                 (r.CardsThrown.Exists(T21) or r.CardsThrown.Exists(T1)) and
-                 (FMyCards.ExistsUnFold(T21) or FMyCards.ExistsUnFold(T1)) then begin // whole Trull present
+          else if r.CardsThrown.Exists(T22) and r.CardsThrown.Exists(T21) and
+                 (ACard.ID<>T1) and FMyCards.ExistsUnFold(T1) then begin // whole Trull present
             AError:='Es besteht Stichzwang';
             Exit;
           end;

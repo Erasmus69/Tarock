@@ -66,7 +66,7 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.3.0</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <DCC_UsePackage>DBXSqliteDriver;dxSpreadSheetConditionalFormattingDialogsRS24;DBXDb2Driver;dxPSdxGaugeControlLnkRS24;OIPKGRXE10;vclactnband;dxSpreadSheetRS24;rbADO1724;dxDockingRS24;SMImportR24;tethering;dxPScxTLLnkRS24;dxBarExtItemsRS24;RDCompR24;clInetSuiteSSHR24;vcltouch;vcldb;dxSkinscxSchedulerPainterRS24;JamShellR24;SMExportR24;dxSkinsdxBarPainterRS24;dxADOServerModeRS24;dxGDIPlusRS24;dxPSdxDBTVLnkRS24;GFDSTDRXE10;tmsexdXE10;rbRCL1724;dxNavBarRS24;vclx;cxTreeListRS24;dxtrmdRS24;rbCIDE1724;PKIECtrl24;RESTBackendComponents;dxRibbonRS24;VCLRESTComponents;rbFireDAC1724;cxExportRS24;cxPivotGridChartRS24;cxTreeListdxBarPopupMenuRS24;dxTabbedMDIRS24;vclie;akmgrdR24;bindengine;CloudService;cxPivotGridOLAPRS24;rRwWebBrowserVCL240;DataSnapClient;dxPSLnksRS24;rRwEasyMAPI240;DBXSybaseASEDriver;IndyIPServer;dxSkinsdxRibbonPainterRS24;dxCoreRS24;IndySystem;dsnapcon;rbDB1724;TMSWorkflow;vclimg;emshosting;dxBarDBNavRS24;TMSDiagram;DUnitXRuntime;DBXOdbcDriver;rbIDE1724;dxPSdxLCLnkRS24;dxPScxExtCommonRS24;dxPScxPivotGridLnkRS24;soaprtl;DbxCommonDriver;xmlrtl;DataSnapNativeClient;soapmidas;rtl;wPDF3R24;DbxClientDriver;cxGridRS24;DBXSybaseASADriver;dxLayoutControlRS24;dxSpellCheckerRS24;GFDLIBRXE10;cxLibraryRS24;appanalytics;dxDBXServerModeRS24;dxSkinsCoreRS24;dxMapControlRS24;IndyIPClient;bindcompvcl;dxPSdxMapControlLnkRS24;rbBDE1724;cxPageControlRS24;dxPsPrVwAdvRS24;cxEditorsRS24;VclSmp;cxSchedulerRibbonStyleEventEditorRS24;VirtualTreesR24;DataSnapIndy10ServerTransport;dxSkinscxPCPainterRS24;dxPSPrVwRibbonRS24;dxSpreadSheetReportDesignerRS24;DataSnapProviderClient;dxdborRS24;dxmdsRS24;cxSchedulerGridRS24;RESTComponents;rbDAD1724;dxHttpIndyRequestRS24;rbTCUI1724;DBXInterBaseDriver;cxPivotGridRS24;DataSnapServerMidas;JvclR24;rRwControlsVCL240;dxdbtrRS24;dxPScxPCProdRS24;DBXMSSQLDriver;DatasnapConnectorsFreePascal;dxWizardControlRS24;CPortLibR24;dxBarExtDBItemsRS24;DBXOracleDriver;rbDBE1724;inetdb;cxSchedulerTreeBrowserRS24;dxPSdxOCLnkRS24;dxPSdxFCLnkRS24;emsedge;AbbreviaZipR24;RDRepositoryR24;dbexpress;IndyCore;dxTileControlRS24;dxPSdxSpreadSheetLnkRS24;dsnap;DataSnapCommon;emsclient;cxDataRS24;rbUSERDesign1724;DataSnapConnectors;soapserver;dxOfficeCoreRS24;dxBarRS24;DBXMySQLDriver;PKIEDB24;dxPSRichEditControlLnkRS24;DBXFirebirdDriver;dxPScxCommonRS24;clInetSuiteR24;dxPSdxPDFViewerLnkRS24;inet;rbUSER1724;IndyIPCommon;vcl;dxPSdxDBOCLnkRS24;dxThemeRS24;dxPScxGridLnkRS24;dxPScxVGridLnkRS24;DropMasterVclR24;rRwCommon240;dxServerModeRS24;TMSCloudPkgDXE10;WPToolsR24;DataSnapServer;WPToolsRTR24;vclwinx;cxSchedulerRS24;dxSkinsdxDLPainterRS24;dxPSCoreRS24;CustomIPTransport;vcldsnap;dxPScxSchedulerLnkRS24;dxRibbonCustomizationFormRS24;bindcomp;EXLReportR24;DBXInformixDriver;dxorgcRS24;dxPDFViewerRS24;EurekaLogCore;WPViewPDFR24;dxRichEditControlRS24;dxSkinsdxNavBarPainterRS24;dbxcds;rRwEasyMAPIVCL240;ThrdPartyCmpsR24;adortl;rbTC1724;dxComnRS24;cxVerticalGridRS24;dxFlowChartRS24;dsnapxml;dbrtl;IndyProtocols;inetdbxpress;dxGaugeControlRS24;tmsdXE10;WiRLRunTime;$(DCC_UsePackage)</DCC_UsePackage>
@@ -80,6 +80,7 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_Keys>FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.3.0</VerInfo_Keys>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppEnableHighDPI>true</AppEnableHighDPI>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
@@ -91,6 +92,7 @@
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_Keys>FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.3.0</VerInfo_Keys>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppEnableHighDPI>true</AppEnableHighDPI>
     </PropertyGroup>
@@ -197,12 +199,27 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -581,27 +598,12 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
