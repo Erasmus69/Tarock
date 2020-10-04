@@ -520,9 +520,7 @@ begin
             forMyTeam.CardsThrown.Add(cthrown);
             if (not FGame.ActGame.JustColors and (laydown.CType=ctTarock)) or
                (FGame.ActGame.JustColors and (laydown.CType<>ctTarock)) then begin
-              if not Assigned(FGame.Situation.CardsLayedDown) then
-                FGame.Situation.CardsLayedDown:=TList<TCardKey>.Create;
-              FGame.Situation.CardsLayedDown.Add(laydown.ID);
+              FGame.Situation.CardsLayedDown.AddItem(laydown.ID,laydown.CType,laydown.Value,laydown.Points,laydown.ImageIndex);
             end;
           end;
           laydown.Free;

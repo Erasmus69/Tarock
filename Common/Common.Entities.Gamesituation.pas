@@ -114,12 +114,9 @@ begin
   Result.Team1Results:=FTeam1Results;
   Result.Team2Results:=FTeam2Results;
 
-(*  if Assigned(FCardsLayedDown) then begin
-    Result.CardsLayedDown:=TCards.Create(True);
-    REsult.CardsLayedDown.AddItem(T1,ctTarock,1,5,0);
-  end;*)
-//    Result.CardsLayedDown:=TCards.Create(True);            // AV auf client
-//    REsult.CardsLayedDown.AddItem(T1,ctTarock,1,5,0);
+  Result.CardsLayedDown.Assign(FCardsLayedDown);
+//  REsult.CardsLayedDown.AddItem(T13,ctTarock,1,13,0);
+//  REsult.CardsLayedDown.AddItem(T17,ctTarock,5,17,0);
 end;
 
 constructor TGameSituation<T>.Create;
@@ -131,7 +128,7 @@ begin
   FAddBets.ContraGame.BetType:=abtBet;
   FAddBets.ContraGame.Team:=ttTeam1;
   FRoundNo:=0;
-  FCardsLayedDown:=nil;
+  FCardsLayedDown:=TCards.Create(True);;
 end;
 
 destructor TGameSituation<T>.Destroy;

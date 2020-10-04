@@ -366,26 +366,13 @@ begin
 end;
 
 procedure TfrmTarock.ShowForbiddenCardsLaysDown;
-var card:TCard;
-    forbiddenCards:TCards;
 begin
   dm.RefreshGameSituation;
-  if Assigned(FTalonInfo) or (dm.ActGame.Talon=tkNoTalon) or not Assigned(dm.GameSituation.CardsLayedDown) then Exit;
-  forbiddenCards:=TCards.Create(false);
-  try
-    for card in dm.GameSituation.CardsLayedDown do begin
-      if dm.ActGame.JustColors and (card.CType<>ctTarock) then
-        forbiddenCards.Add(card)
-      else if not dm.ActGame.JustColors and (card.CType=ctTarock) then
-        forbiddenCards.Add(card)
-    end;
-
-    if forbiddenCards.Count>0 then begin
-      CreateTalonInfo;
-      FTalonInfo.ShowCards(forbiddenCards);
-    end;
-  finally
-    FreeAndNil(forbiddenCards);
+  if not Assigned(FTalonInfo) and (dm.ActGame.Talon<>tkNoTalon) and
+     Assigned(dm.GameSituation.CardsLayedDown) and (dm.GameSituation.CardsLayedDown.Count>0) then begin
+    CreateTalonInfo;
+    FTalonInfo.lCaption.Caption:=dm.GameSituation.Gamer+' hat abgelegt';
+    FTalonInfo.ShowCards(dm.GameSituation.CardsLayedDown);
   end;
 end;
 
@@ -768,6 +755,8 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
         pThrowCards.Width:=imgThirdCard.Left+imgThirdCard.Width;
       FormResize(Self);
     end;
+    if Assigned(FTalonInfo) then
+      FreeAndnil(FTalonInfo);
     FThrowActive:=True;
 
     r:=dm.GetRound;
