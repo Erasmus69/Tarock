@@ -38,6 +38,8 @@ constructor TfraKingSelect.Create(AOwner: TComponent);
     img.Parent:=pCards;
     img.Top:=CARDUPLIFT+5;
     img.Left:=ALeft+10;
+    img.Height:=CARDHEIGHT;
+    img.Width:=CARDWIDTH;
     dm.imCards.GetBitmap(img.Card.ImageIndex,img.Picture.Bitmap);
     img.OnDblClick:=DoSelectCard;
   end;
@@ -48,6 +50,8 @@ begin
   CreateCard(DK,CARDWIDTH*1);
   CreateCard(CK,CARDWIDTH*2);
   CreateCard(SK,CARDWIDTH*3);
+  Height:=CARDUPLIFT+5+CARDHEIGHT+20+pCards.Top;
+  Width:=CARDWIDTH*4+35;
 end;
 
 procedure TfraKingSelect.DoSelectCard(Sender: TObject);

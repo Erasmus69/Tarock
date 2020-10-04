@@ -1,13 +1,13 @@
 object fraKingSelect: TfraKingSelect
   Left = 0
   Top = 0
-  Width = 373
+  Width = 433
   Height = 241
   TabOrder = 0
   object pBackground: TPanel
     Left = 0
     Top = 0
-    Width = 373
+    Width = 433
     Height = 241
     Align = alClient
     BevelInner = bvRaised
@@ -17,7 +17,7 @@ object fraKingSelect: TfraKingSelect
     object pCards: TPanel
       Left = 4
       Top = 27
-      Width = 361
+      Width = 421
       Height = 206
       Align = alClient
       BevelOuter = bvNone
@@ -38,7 +38,7 @@ object fraKingSelect: TfraKingSelect
       Style.IsFontAssigned = True
       Properties.Alignment.Horz = taCenter
       Properties.Alignment.Vert = taVCenter
-      AnchorX = 185
+      AnchorX = 215
       AnchorY = 16
     end
   end

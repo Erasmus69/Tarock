@@ -362,7 +362,7 @@ end;
 
 procedure TGameController.Shuffle;
 
-  procedure IntShuffle(var ACards: TCards; const APlayerCards:TPlayerCards; const ACount: Integer);
+  procedure IntShuffle(var ACards: TCards; const APlayerCards:TPlayerCards; const ACount: Integer; ASort:Boolean);
   var i,r:Integer;
       itm:TCard;
   begin
@@ -373,7 +373,8 @@ procedure TGameController.Shuffle;
       itm:=ACards.Extract(ACards.Items[r]);
       APlayerCards.Cards.Add(itm);
     end;
-    APlayerCards.Cards.Sort;
+    if ASort then
+      APlayerCards.Cards.Sort;
   end;
 
 var cards:TCards;
@@ -382,8 +383,8 @@ begin
   cards:=ALLCARDS.Clone;
   try
     for I := 0 to FGame.Players.Count-1 do
-      IntShuffle(cards,FGame.Players[i],12);
-    IntShuffle(cards,FGame.Talon,6);
+      IntShuffle(cards,FGame.Players[i],12,True);
+    IntShuffle(cards,FGame.Talon,6,False);
 //    FGame.Talon.Cards[2]:=Allcards[0];
   finally
     cards.Free
@@ -423,11 +424,10 @@ begin
   FGame.Situation.TurnOn:=FGame.ActRound.Winner;
 
   // on Trischaken distribute talon to first 6 tricks
-  if (FGame.ActGame.GameTypeid='TRISCH') and (FGame.Talon.Cards.Count>0) then begin
+  if (FGame.ActGame.GameTypeid='TRISCH') and (FGame.Rounds.Count<=FGame.Talon.Cards.Count) then begin
     c:=TCardThrown.Create('TALON');
-    c.Card:=FGame.Talon.Cards.First.ID;
+    c.Card:=FGame.Talon.Cards[FGame.Rounds.Count-1].ID;
     FGame.ActRound.CardsThrown.Add(c);
-    FGame.Talon.Cards.Delete(0);
   end;
 
   CheckGameTerminated;
@@ -518,10 +518,11 @@ begin
           else begin                                     // cards belongs to my team
             cthrown.PlayerName:=FGame.Situation.Gamer;
             forMyTeam.CardsThrown.Add(cthrown);
-            if laydown.CType=ctTarock then begin
+            if (not FGame.ActGame.JustColors and (laydown.CType=ctTarock)) or
+               (FGame.ActGame.JustColors and (laydown.CType<>ctTarock)) then begin
               if not Assigned(FGame.Situation.CardsLayedDown) then
-                FGame.Situation.CardsLayedDown:=TCards.Create(True);
-              FGame.Situation.CardsLayedDown.AddItem(laydown.ID,laydown.CType,laydown.Value,laydown.Points,laydown.ImageIndex);
+                FGame.Situation.CardsLayedDown:=TList<TCardKey>.Create;
+              FGame.Situation.CardsLayedDown.Add(laydown.ID);
             end;
           end;
           laydown.Free;
