@@ -20,8 +20,18 @@ object fraTalonSelect: TfraTalonSelect
       Width = 647
       Height = 206
       Align = alClient
+      BevelKind = bkFlat
       BevelOuter = bvNone
+      ParentColor = True
       TabOrder = 0
+      object pbBackground: TPaintBox
+        Left = 0
+        Top = 0
+        Width = 643
+        Height = 202
+        Align = alClient
+        OnPaint = pbBackgroundPaint
+      end
     end
     object lCaption: TcxLabel
       Left = 4
@@ -53,7 +63,7 @@ object fraTalonSelect: TfraTalonSelect
         647
         58)
       object bOK: TcxButton
-        Left = 248
+        Left = 240
         Top = 14
         Width = 153
         Height = 33
@@ -69,7 +79,7 @@ object fraTalonSelect: TfraTalonSelect
         OnClick = bOKClick
       end
       object bLeft: TcxButton
-        Left = 104
+        Left = 112
         Top = 14
         Width = 90
         Height = 33
@@ -86,7 +96,7 @@ object fraTalonSelect: TfraTalonSelect
         OnClick = bLeftClick
       end
       object bRight: TcxButton
-        Left = 447
+        Left = 431
         Top = 14
         Width = 90
         Height = 33
@@ -101,6 +111,24 @@ object fraTalonSelect: TfraTalonSelect
         Font.Style = []
         ParentFont = False
         OnClick = bRightClick
+      end
+      object bGiveUp: TcxButton
+        Left = 527
+        Top = 14
+        Width = 113
+        Height = 33
+        Anchors = [akLeft, akBottom]
+        Caption = 'Spiel schleifen'
+        ModalResult = 3
+        SpeedButtonOptions.GroupIndex = 1
+        TabOrder = 3
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        OnClick = bGiveUpClick
       end
     end
   end

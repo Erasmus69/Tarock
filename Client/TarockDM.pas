@@ -34,6 +34,7 @@ type
     resChangeCards: TWiRLClientResourceJSON;
     resNewGameInfo: TWiRLClientResourceJSON;
     resUnregisterPlayer: TWiRLClientResourceJSON;
+    resGiveup: TWiRLClientResourceJSON;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -77,6 +78,7 @@ type
     function CanThrow(ACard:TCard;var AError:String):Boolean;
     procedure PutTurn(ACard:TCardKey);
     procedure NewRound;
+    procedure GiveUp;
 
     property Players:TPlayers read FPlayers;
     property Bets:TBets read FBets;
@@ -205,6 +207,15 @@ begin
     end;
 
   end;
+end;
+
+procedure TdmTarock.GiveUp;
+begin
+  resGiveUp.PathParamsValues.Clear;
+  resGiveUp.POST;
+
+   if resGiveUp.Response.GetValue<String>('status')<>'success' then
+      Showmessage(resGiveUp.Response.GetValue<String>('message'));
 end;
 
 procedure TdmTarock.LayDownCards(const ACards: TCards);

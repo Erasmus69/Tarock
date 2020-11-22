@@ -29,6 +29,7 @@ type
     function GetGame:TGame;
     function GetGameSituation: TGameSituation<TPlayer>;
     procedure NewGameInfo(const AMessage: String);
+    function GiveUp: TBaseRESTResponse;
 
     function GetBets:TBets;
     function NewBet(const AParam: TBet): TBaseRESTResponse;
@@ -74,6 +75,7 @@ type
     function GetRound:TGameRound;
     function NewRound: TBaseRESTResponse;
     function Turn(AName:String; ACard:TCardKey): TBaseRESTResponse;
+    function GiveUp: TBaseRESTResponse;
 
     property ActGame:TGame read GetActGame;
     property GameController:TGameController read FGameController;
@@ -209,6 +211,22 @@ begin
     Result:=g.ActRound
   else
     raise Exception.Create('No active game');
+end;
+
+function TRepository.GiveUp: TBaseRESTResponse;
+begin
+  try
+    if not Assigned(FGameController) then
+      Result:=TBaseRESTResponse.BuildResponse(False,'No active Game')
+    else begin
+      FGameController.GiveUp;
+      Result:=TBaseRESTResponse.BuildResponse(True,ActGame.Situation.Gamer+' fold');
+    end;
+  except
+    on E:Exception do
+      Result:=TBaseRESTResponse.BuildResponse(False,E.Message)
+  end;
+
 end;
 
 function TRepository.NewBet(const ABet: TBet): TBaseRESTResponse;

@@ -28,6 +28,7 @@ type
     function GetAllCards:TCards;
     function NewGame:TExtendedRESTResponse;
     function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
+    function GiveUp: TBaseRESTResponse;
 
     function GetBets:TBets;
     function NewBet(const AParam: TBet): TBaseRESTResponse;
@@ -51,6 +52,7 @@ type
     function GetGame:TGame;
     function GetGameSituation: TGameSituation<TPlayer>;
     procedure NewGameInfo(const AMessage: String);
+    function GiveUp: TBaseRESTResponse;
 
     function GetPlayerCards(AGameID:String; APlayerName:String):TCards;
 
@@ -108,6 +110,11 @@ end;
 function TApiV1Controller.GetRound: TGameRound;
 begin
   Result:=GetContainer.Resolve<IRepository>.GetRound;
+end;
+
+function TApiV1Controller.GiveUp: TBaseRESTResponse;
+begin
+  Result:=GetContainer.Resolve<IRepository>.GiveUp;
 end;
 
 function TApiV1Controller.NewBet(const AParam: TBet): TBaseRESTResponse;

@@ -316,10 +316,24 @@ begin
 end;
 
 procedure TfrmTarock.GameInfo;
+var i:Integer;
 begin
   if mGameInfo.Lines.Text<>dm.GameSituation.GameInfo.Text then begin
     mGameInfo.Lines.Assign(dm.GameSituation.GameInfo);
     SendMessage(mGameInfo.InnerControl.Handle,EM_LINESCROLL,0,mGameInfo.Lines.Count-1);
+
+    if Assigned(FTalonSelect) and FTalonSelect.Visible then begin
+      for I := mGameInfo.Lines.Count-1 downto 0 do begin
+        if Pos('hat den linken Talon',mGameInfo.Lines[i])>0 then begin
+          FTalonSelect.HighlightTalon(tsLeft);
+          Break;
+        end
+        else if Pos('hat den rechten Talon',mGameInfo.Lines[i])>0 then begin
+          FTalonSelect.HighlightTalon(tsRight);
+          Break;
+        end;
+      end;
+    end;
   end;
 end;
 
@@ -804,6 +818,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
       end;
     end;
 
+    FreeAndnil(FTalonSelect);
     if (dm.ActGame.Talon=tkNoTalon) and not Assigned(FTalonInfo) then begin
      CreateTalonInfo;
      FTalonInfo.ShowCards(dm.GetCards('TALON'));

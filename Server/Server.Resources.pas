@@ -87,6 +87,10 @@ type
     [Produces(TMediaType.APPLICATION_JSON)]
     function NewRound: TBaseRESTResponse;
 
+    [POST, Path('/giveup')]
+    [Produces(TMediaType.APPLICATION_JSON)]
+    function GiveUp: TBaseRESTResponse;
+
     [POST, Path('/gameinfo/{AMessage}')]
     procedure NewGameInfo([PathParam]AMessage:String);
 
@@ -215,6 +219,11 @@ begin
   Result := GetContainer.Resolve<IApiV1Controller>.GetRound;
   if Assigned(Result) then
     Result:=Result.Clone;
+end;
+
+function TApiV1Resource.GiveUp: TBaseRESTResponse;
+begin
+  Result := GetContainer.Resolve<IApiV1Controller>.GiveUp;
 end;
 
 initialization

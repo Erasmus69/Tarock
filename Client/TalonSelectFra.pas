@@ -9,6 +9,7 @@ uses
   Vcl.StdCtrls, cxButtons, cxLabel, Vcl.ExtCtrls, Classes.CardControl;
 
 type
+  TTalonSide=(tsNone,tsLeft,tsRight);
   TfraTalonSelect = class(TFrame)
     pBackground: TPanel;
     pCards: TPanel;
@@ -17,15 +18,21 @@ type
     bOK: TcxButton;
     bLeft: TcxButton;
     bRight: TcxButton;
+    bGiveUp: TcxButton;
+    pbBackground: TPaintBox;
+    procedure bGiveUpClick(Sender: TObject);
     procedure bLeftClick(Sender: TObject);
     procedure bRightClick(Sender: TObject);
     procedure bOKClick(Sender: TObject);
+    procedure pbBackgroundPaint(Sender: TObject);
   private
     { Private declarations }
+    FTalonSideSelected:TTalonSide;
   public
     { Public declarations }
     FCards:TArray<TCardControl>;
     constructor Create(AOwner:TComponent); override;
+    procedure HighLightTalon(ASide:TTalonSide);
   end;
 
 implementation
@@ -58,8 +65,6 @@ begin
     FCards[i].Enabled:=False;
     FCards[i].Up:=False;
   end;
-
-  if True then
 
   lCaption.Caption:='Wähle die 3 Karten, die du weglegen willst';
   bOK.Enabled:=True;
@@ -193,6 +198,8 @@ var card:TCard;
     imgLeft: Integer;
 begin
   inherited;
+  FTalonSideSelected:=tsNone;
+
   imgLeft:=10;
   i:=-1;
 
@@ -229,6 +236,46 @@ begin
     bRight.Visible:=False;
     bOK.Visible:=False;
     lCaption.Caption:='Der Talon';
+  end;
+
+  bGiveUp.Visible:=false;
+  if (dm.MyName=dm.GameSituation.Gamer) and (dm.ActGame.TeamKind=tkPair) then begin
+    for i:=0 to 5 do begin
+      if FCards[i].Card.ID=dm.GameSituation.KingSelected then
+        bGiveUp.Visible:=True;
+    end;
+  end;
+end;
+
+procedure TfraTalonSelect.HighLightTalon(ASide: TTalonSide);
+begin
+  FTalonSideSelected:=ASide;
+  pbBackground.Invalidate
+end;
+
+procedure TfraTalonSelect.bGiveUpClick(Sender: TObject);
+begin
+  if MessageDlg('Willst du dieses Spiel wirklich aufgeben und zahlen ?',mtConfirmation,[mbYes,mbNo],0,mbNo)=mrYes then begin
+    dm.Giveup;
+  end;
+end;
+
+procedure TfraTalonSelect.pbBackgroundPaint(Sender: TObject);
+begin
+  pbBackground.Canvas.Pen.Style:=psSolid;
+  pbBackground.Canvas.Pen.Width:=3;
+  pbBackground.Canvas.Pen.Color:=clSkyBlue;
+  pbBackground.Canvas.Brush.Style:=bsClear;
+
+  if FTalonSideSelected=tsLeft then begin
+    pbBackground.Canvas.Polygon([Point(5,CARDUPLIFT),Point(5*5+CARDWIDTH*3,CARDUPLIFT),Point(5*5+CARDWIDTH*3,CARDUPLIFT+CARDHEIGHT+10),Point(5,CARDUPLIFT+CARDHEIGHT+10)]);
+    pbBackground.Canvas.Pen.Color:=pCards.Color;
+    pbBackground.Canvas.Polygon([Point(355,CARDUPLIFT),Point(355+5*4+CARDWIDTH*3,CARDUPLIFT),Point(355+5*4+CARDWIDTH*3,CARDUPLIFT+CARDHEIGHT+10),Point(355,CARDUPLIFT+CARDHEIGHT+10)]);
+  end
+  else if FTalonSideSelected=tsRight then begin
+    pbBackground.Canvas.Polygon([Point(355,CARDUPLIFT),Point(355+5*4+CARDWIDTH*3,CARDUPLIFT),Point(355+5*4+CARDWIDTH*3,CARDUPLIFT+CARDHEIGHT+10),Point(355,CARDUPLIFT+CARDHEIGHT+10)]);
+    pbBackground.Canvas.Pen.Color:=pCards.Color;
+    pbBackground.Canvas.Polygon([Point(5,CARDUPLIFT),Point(5*5+CARDWIDTH*3,CARDUPLIFT),Point(5*5+CARDWIDTH*3,CARDUPLIFT+CARDHEIGHT+10),Point(5,CARDUPLIFT+CARDHEIGHT+10)]);
   end;
 end;
 
