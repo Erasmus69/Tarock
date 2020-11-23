@@ -55,6 +55,7 @@ type
     FTeam1Results: TGameResults;
     FDoubles: SmallInt;
     FRoundNo: Smallint;
+    FGameNo:Smallint;
   public
     property Players: TPlayers<T> read FPlayers write FPlayers;
     property State: TGameState read FState write FState;
@@ -72,6 +73,7 @@ type
     property Team1Results:TGameResults read FTeam1Results write FTeam1Results;
     property Team2Results:TGameResults read FTeam2Results write FTeam2Results;
     property RoundNo:Smallint read FRoundNo write FRoundNo;
+    property GameNo:Smallint read FGameNo write FGameNo;
 
 
     constructor Create;
@@ -99,6 +101,7 @@ begin
   Result.BestBet:=FBestBet;
   Result.Doubles:=FDoubles;
   Result.RoundNo:=FRoundNo;
+  Result.GameNo:=FGameNo;
   Result.KingSelected:=FKingSelected;
 
   for itm in FPlayers do begin
@@ -128,7 +131,7 @@ begin
   FAddBets.ContraGame.BetType:=abtBet;
   FAddBets.ContraGame.Team:=ttTeam1;
   FRoundNo:=0;
-  FCardsLayedDown:=TCards.Create(True);;
+  FCardsLayedDown:=TCards.Create(True);
 end;
 
 destructor TGameSituation<T>.Destroy;

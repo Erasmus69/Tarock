@@ -19,6 +19,7 @@ type
     clScore3: TcxLabel;
     clPlayer4: TcxLabel;
     clScore4: TcxLabel;
+    clGameNo: TcxLabel;
   private
     { Private declarations }
   public

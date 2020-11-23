@@ -271,6 +271,7 @@ begin
       else
         g.Situation.Beginner:=FPlayers[0].Name;
       FGames.Push(g);
+      g.Situation.GameNo:=FGames.Count;
 
       Result:=TExtendedRESTResponse.BuildResponse(True);
       Result.Message:=g.Situation.Beginner;

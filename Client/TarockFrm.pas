@@ -663,9 +663,10 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
       SetScore(FScore.clScore2,dm.GameSituation.Players[1].Score);
       SetScore(FScore.clScore3,dm.GameSituation.Players[2].Score);
       SetScore(FScore.clScore4,dm.GameSituation.Players[3].Score);
-
       FScore.Show;
     end;
+    if dm.Gamesituation.GameNo>0 then
+      FScore.clGameNo.Caption:=IntToStr(dm.Gamesituation.GameNo)+'. Spiel';
   end;
 
   procedure Setup;

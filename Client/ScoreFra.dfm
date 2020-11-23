@@ -2,13 +2,13 @@ object fraScore: TfraScore
   Left = 0
   Top = 0
   Width = 288
-  Height = 68
+  Height = 92
   TabOrder = 0
   object pBackground: TPanel
     Left = 0
     Top = 0
     Width = 288
-    Height = 68
+    Height = 92
     Align = alClient
     BevelInner = bvRaised
     BevelKind = bkSoft
@@ -43,6 +43,24 @@ object fraScore: TfraScore
       Height = 20
       Width = 39
       AnchorX = 126
+    end
+    object clGameNo: TcxLabel
+      Left = 16
+      Top = 57
+      AutoSize = False
+      ParentFont = False
+      Style.Font.Charset = DEFAULT_CHARSET
+      Style.Font.Color = clWindowText
+      Style.Font.Height = -13
+      Style.Font.Name = 'Tahoma'
+      Style.Font.Style = []
+      Style.IsFontAssigned = True
+      Properties.Alignment.Horz = taCenter
+      Properties.Alignment.Vert = taVCenter
+      Height = 17
+      Width = 246
+      AnchorX = 139
+      AnchorY = 66
     end
   end
   object clPlayer2: TcxLabel
