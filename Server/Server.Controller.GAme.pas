@@ -46,7 +46,7 @@ type
 implementation
 uses System.SysUtils, System.Generics.Collections,Common.Entities.GameType,
      Common.Entities.GameSituation, dialogs,
-     System.Classes;
+     System.Classes, System.Math;
 
 const EPS=1E-04;
       POINTSTOWIN=35.666-EPS;
@@ -586,6 +586,8 @@ begin
     FGame.Situation.TurnOn:=FGame.Situation.Gamer;
     FGame.Situation.GameInfo.Clear;
     FGame.Situation.GameInfo.Add(FGame.Situation.Gamer+' spielt '+FGame.ActGame.Name);
+    if FGame.ActGame.Positive then
+      FGame.Situation.GameInfo.Add(FGame.Situation.Beginner+' hat die Vorhand');
 
     if FGame.ActGame.Positive and (FGame.ActGame.TeamKind=tkPair) then
       FGame.Situation.State:=gsCallKing        // teams will be build later
@@ -769,6 +771,20 @@ begin
                      winner:=ttTeam2;
                  end;
                end;
+    wc3Trick:  begin
+                 if (FGame.ActRound.Winner=FGame.Situation.Gamer) and
+                    (CountTricks(FGame.Rounds,FGame.Situation.Gamer)>3) then begin
+                   FGame.Active:=False;
+                   winner:=ttTeam2;
+                 end
+                 else if allRoundsPlayed then begin
+                   FGame.Active:=False;
+                   if CountTricks(FGame.Rounds,FGame.Situation.Gamer)=3 then
+                     winner:=ttTeam1
+                   else
+                     winner:=ttTeam2;
+                 end;
+               end;
   end;
 
   TerminateGame(winner);
@@ -834,7 +850,7 @@ begin
   if FGame.ActGame.TeamKind=tkSinglePlayer then begin
     for player in FGame.Situation.Players do begin
       if FGame.Situation.Doubles>0 then
-        player.Score:=player.Score+(player.Results*2*FGame.Situation.Doubles)
+        player.Score:=player.Score+(player.Results*Trunc(Power(2,FGame.Situation.Doubles)))
       else
         player.Score:=player.Score+player.Results;
       player.Results:=0;
@@ -906,7 +922,7 @@ begin
       if FGame.Situation.Doubles=1 then
         FGame.Situation.GameInfo.Add('Im Radl x 2')
       else
-        FGame.Situation.GameInfo.Add(Format('Im %d-fach Radl x %d',[FGame.Situation.Doubles,2*FGame.Situation.Doubles]));
+        FGame.Situation.GameInfo.Add(Format('Im %d-fach Radl x %d',[FGame.Situation.Doubles,Trunc(Power(2,FGame.Situation.Doubles))]));
       ShowResult('Totale',FGame.Situation.Team1Results.GrandTotal,FGame.Situation.Team2Results.GrandTotal);
     end;
   end
@@ -1128,32 +1144,34 @@ begin
            team1.Valat:=(AddBet(4,FGame.Situation.AddBets.Valat,False)-1)*team1.Game;
        end;
 
-       if FGame.Situation.Team1Results.Points>=POINTSTOWIN+20 then
-         team1.Minus10Count:=2
-       else if FGame.Situation.Team1Results.Points>=POINTSTOWIN+10 then
-         team1.Minus10Count:=1
-       else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-20 then
-         team1.Minus10Count:=-2
-       else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-10 then
-         team1.Minus10Count:=-1;
-       if team1.Minus10Count=0 then
-         CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat)
-       else if team1.Minus10Count>0 then begin
-         CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat);
-         if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
-           Inc(team1.Minus10);  // team2 lost his sack and get once more
-       end
-       else begin
-         CheckBet(team1.Minus10,team1.Minus10Count<0,ttTeam2,1,FGame.Situation.AddBets.Minus10,valat);
-         if (FGame.Situation.AddBets.Minus10.Team=ttTeam1) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
-           Dec(team1.Minus10)  // team1 lost his sack and get once more
-         else if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtContra]) then  // Sack was done by other team whos bet it
-           Dec(team1.Minus10);  // team1 lost his sack and get once more
+       if not valat then begin
+         if FGame.Situation.Team1Results.Points>=POINTSTOWIN+20 then
+           team1.Minus10Count:=2
+         else if FGame.Situation.Team1Results.Points>=POINTSTOWIN+10 then
+           team1.Minus10Count:=1
+         else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-20 then
+           team1.Minus10Count:=-2
+         else if FGame.Situation.Team1Results.Points<=POINTSTOWIN-10 then
+           team1.Minus10Count:=-1;
+         if team1.Minus10Count=0 then
+           CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat)
+         else if team1.Minus10Count>0 then begin
+           CheckBet(team1.Minus10,team1.Minus10Count>0 ,ttTeam1,1,FGame.Situation.AddBets.Minus10,valat);
+           if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
+             Inc(team1.Minus10);  // team2 lost his sack and get once more
+         end
+         else begin
+           CheckBet(team1.Minus10,team1.Minus10Count<0,ttTeam2,1,FGame.Situation.AddBets.Minus10,valat);
+           if (FGame.Situation.AddBets.Minus10.Team=ttTeam1) and (FGame.Situation.AddBets.Minus10.BetType in [abtBet,abtRe]) then  // Sack was done by other team whos bet it
+             Dec(team1.Minus10)  // team1 lost his sack and get once more
+           else if (FGame.Situation.AddBets.Minus10.Team=ttTeam2) and (FGame.Situation.AddBets.Minus10.BetType in [abtContra]) then  // Sack was done by other team whos bet it
+             Dec(team1.Minus10);  // team1 lost his sack and get once more
+         end;
+         if team1.Minus10Count>1 then
+           team1.Minus10:=team1.Minus10+team1.Minus10Count-1
+         else if team1.Minus10Count<-1 then
+           team1.Minus10:=team1.Minus10+team1.Minus10Count+1;
        end;
-       if team1.Minus10Count>1 then
-         team1.Minus10:=team1.Minus10+team1.Minus10Count-1
-       else if team1.Minus10Count<-1 then
-         team1.Minus10:=team1.Minus10+team1.Minus10Count+1;
 
        if not FGame.ActGame.JustColors then begin
          if FGame.ActGame.WinCondition<>wcT1Trick then

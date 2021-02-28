@@ -50,8 +50,10 @@ object fraGameSelect: TfraGameSelect
         Height = 306
         Anchors = [akLeft, akTop, akRight, akBottom]
         TabOrder = 0
+        LookAndFeel.NativeStyle = False
         object gvGames: TcxGridTableView
           Navigator.Buttons.CustomButtons = <>
+          ScrollbarAnnotations.CustomAnnotations = <>
           DataController.Summary.DefaultGroupSummaryItems = <>
           DataController.Summary.FooterSummaryItems = <>
           DataController.Summary.SummaryGroups = <>
@@ -69,7 +71,7 @@ object fraGameSelect: TfraGameSelect
           OptionsSelection.CellSelect = False
           OptionsView.ColumnAutoWidth = True
           OptionsView.GroupByBox = False
-          Styles.Content = cxStyle1
+          Styles.Header = cxStyle2
           object gcID: TcxGridColumn
             Visible = False
             VisibleForCustomization = False
@@ -77,6 +79,7 @@ object fraGameSelect: TfraGameSelect
           object gcName: TcxGridColumn
             Caption = 'Spiel'
             MinWidth = 200
+            Styles.Header = cxStyle2
             Width = 200
           end
           object gcValue: TcxGridColumn
@@ -166,6 +169,10 @@ object fraGameSelect: TfraGameSelect
       Font.Height = -13
       Font.Name = 'Tahoma'
       Font.Style = []
+    end
+    object cxStyle2: TcxStyle
+      AssignedValues = [svColor]
+      Color = clScrollBar
     end
   end
 end

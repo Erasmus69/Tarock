@@ -49928,7 +49928,7 @@ object frmRegistration: TfrmRegistration
   object lVersion: TcxLabel
     Left = 620
     Top = 387
-    Caption = 'Version 1.05'
+    Caption = 'Version 2.00'
     ParentFont = False
     Style.Font.Charset = DEFAULT_CHARSET
     Style.Font.Color = clWindow

@@ -6,7 +6,7 @@ uses Spring.Collections.Dictionaries;
 type
   TTeamKind=(tkPair,tkSolo,tkOuvert,tkAllOuvert,tkSinglePlayer);
   TTalon=(tkNoTalon,tk3Talon,tk6Talon);
-  TWinCondition=(wc12Rounds,wc0Trick,wc1Trick,wc2Trick,wcT1Trick,wcT2Trick,wcT3Trick,wcT4Trick);
+  TWinCondition=(wc12Rounds,wc0Trick,wc1Trick,wc2Trick,wc3Trick,wcT1Trick,wcT2Trick,wcT3Trick,wcT4Trick);
 
   TGameType=class(TObject)
   private
@@ -72,41 +72,46 @@ procedure Initialize;
 begin
   ALLGames:=TGameTypes.Create;
   ALLGames.AddItem('RUFER','Königrufer',1,True,tkPair,True);
-  ALLGames.AddItem('TRISCH','Trischaken (Fahren)',1,False,tkSinglePlayer,True,tkNoTalon);
+  ALLGames.AddItem('TRISCH','Trischaken',1,False,tkSinglePlayer,True,tkNoTalon);
   ALLGames.AddItem('63','Sechser-Dreier',1,True,tkSolo,True,tk6Talon);
 
-  ALLGames.AddItem('SUPRA','Solorufer (Supra)',2,True,tkPair,False,tkNoTalon);
+  ALLGames.AddItem('SUPRA','Solorufer',2,True,tkPair,False,tkNoTalon);
   ALLGames.AddItem('PICC','Piccolo',2,False,tkSolo,False,tkNoTalon,wc1Trick);
-  ALLGames.AddItem('GRANDE','Zwiccolo (Grande)',2,False,tkSolo,False,tkNoTalon,wc2Trick);
+  ALLGames.AddItem('GRANDE','Zwiccolo',2,False,tkSolo,False,tkNoTalon,wc2Trick);
+  ALLGames.AddItem('TRICC','Triccolo',2,False,tkSolo,False,tkNoTalon,wc3Trick);
 
-  AllGames.AddItem('VOGEL1','Pagatrufer (Vogel I)', 3,True,tkPair,False,tk3Talon,wcT1Trick);
-  AllGames.AddItem('PICC_OU','Piccolo Ouvert',3,False,tkOuvert,False,tkNoTalon,wc1Trick);
-  AllGames.AddItem('GRAND_OU','Zwiccolo (Grande) Ouvert',3,False,tkOuvert,False,tkNoTalon,wc2Trick);
+  AllGames.AddItem('VOGEL1','Pagatrufer', 3,True,tkPair,False,tk3Talon,wcT1Trick);
 
   ALLGames.AddItem('BETTL','Bettel',4,False,tkSolo,False,tkNoTalon,wc0Trick);
-  AllGames.AddItem('PICC_POU','Piccolo Plauderer',4,False,tkAllOuvert,False,tkNoTalon,wc1Trick);
-  AllGames.AddItem('GRAND_POU','Zwiccolo (Grande) Plauderer',4,False,tkAllOuvert,False,tkNoTalon,wc2Trick);
+  AllGames.AddItem('PICC_OU','Piccolo Ouvert',4,False,tkOuvert,False,tkNoTalon,wc1Trick);
+  AllGames.AddItem('GRAND_OU','Zwiccolo Ouvert',4,False,tkOuvert,False,tkNoTalon,wc2Trick);
+  AllGames.AddItem('TRICC_OU','Triccolo Ouvert',4,False,tkOuvert,False,tkNoTalon,wc3Trick);
 
-  AllGames.AddItem('VOGEL2','Uhurufer (Vogel II)',5,True,tkPair,False,tk3Talon,wcT2Trick);
+
+
+  AllGames.AddItem('VOGEL2','Uhurufer',5,True,tkPair,False,tk3Talon,wcT2Trick);
   ALLGames.AddItem('FARB3','Farben-Dreier',5,True,tkSolo,False,tk3Talon,wc12Rounds,True);
 
-  ALLGames.AddItem('SOLO','Dreier (Solo)',6, True,tkSolo);
+  ALLGames.AddItem('SOLO','Dreier',6, True,tkSolo);
   ALLGames.AddItem('BETT_OU','Bettel Ouvert',6,False,tkOuvert,False,tkNoTalon,wc0Trick);
+  AllGames.AddItem('PICC_POU','Piccolo Plauderer',6,False,tkAllOuvert,False,tkNoTalon,wc1Trick);
+  AllGames.AddItem('GRAND_POU','Zwiccolo Plauderer',6,False,tkAllOuvert,False,tkNoTalon,wc2Trick);
+  AllGames.AddItem('TRICCR_POU','Triccolo Plauderer',6,False,tkAllOuvert,False,tkNoTalon,wc3Trick);
 
-  AllGames.AddItem('VOGEL3','Kakadurufer (Vogel III)',7,True,tkPair,False,tk3Talon,wcT3Trick);
-  AllGames.AddItem('SVOGEL1','Pagatdreier (Solo Vogel I)',8,True,tkSolo,False,tk3Talon,wcT1Trick);
+  AllGames.AddItem('VOGEL3','Kakadurufer',7,True,tkPair,False,tk3Talon,wcT3Trick);
+  AllGames.AddItem('SVOGEL1','Pagatdreier',8,True,tkSolo,False,tk3Talon,wcT1Trick);
 
   ALLGames.AddItem('BETT_POU','Bettel Plauderer',8,False,tkAllOuvert,False,tkNoTalon,wc0Trick);
 
-  AllGames.AddItem('VOGEL4','Quapilrufer (Vogel IV)',9,True,tkPair,False,tk3Talon,wcT4Trick);
+  AllGames.AddItem('VOGEL4','Quapilrufer',9,True,tkPair,False,tk3Talon,wcT4Trick);
 
-  AllGames.AddItem('SVOGEL2','Uhudreier (Solo Vogel II)',10,True,tkSolo,False,tk3Talon,wcT2Trick);
+  AllGames.AddItem('SVOGEL2','Uhudreier',10,True,tkSolo,False,tk3Talon,wcT2Trick);
   ALLGames.AddItem('FARBSOLO','Farben-Solo',10,True,tkSolo,False,tkNoTalon,wc12Rounds,True);
 
-  AllGames.AddItem('SVOGEL3','Kakadudreier (Solo Vogel III)',12,True,tkSolo,False,tk3Talon,wcT3Trick);
-  ALLGames.AddItem('SOLLIS','Solo Dreier (Solissimo)',12,True,tkSolo,False,tkNoTalon);
+  AllGames.AddItem('SVOGEL3','Kakadudreier',12,True,tkSolo,False,tk3Talon,wcT3Trick);
+  ALLGames.AddItem('SOLLIS','Solo Dreier',12,True,tkSolo,False,tkNoTalon);
 
-  AllGames.AddItem('SVOGEL4','Quapildreier (Solo Vogel IV)',14,True,tkSolo,False,tk3Talon,wcT4Trick);
+  AllGames.AddItem('SVOGEL4','Quapildreier',14,True,tkSolo,False,tk3Talon,wcT4Trick);
   (* Wiener VAriante
    ALLGames.AddItem('ENTRO','Entro (Königsrufer)',1,True,tkPair,True);
   ALLGames.AddItem('63','Sechser-Dreier',2,True,tkSolo,True);

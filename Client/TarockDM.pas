@@ -126,7 +126,7 @@ begin
     FDebugMode:=ini.ReadInteger('Debug','Debug',0)=1;
     FUrl:=ini.ReadString('SERVER','URL',URL);
 
-    RESTClient:=TNeonRESTClient.Create(FURL);
+    RESTClient:=TNeonRESTClient.Create('//'+FURL);
     WirlClient1.WirlEngineURL:='http://'+FURL+'/rest';
     WirlClient1.ConnectTimeout:=ini.ReadInteger('Server','ConnectTimeout',120000);
     WirlClient1.ReadTimeout:=ini.ReadInteger('Server','ReadTimeout',120000);

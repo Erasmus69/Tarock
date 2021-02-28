@@ -18,7 +18,7 @@ type TBaseObjClass=class of TBaseObj;
        FPosition:TBoardPosition;
        FCardImage: TImage;
        FPlayerLabel: TcxLabel;
-    FCardPosition: TCardPosition;
+       FCardPosition: TCardPosition;
      public
        property Name:String read FName write FName;
        property Position:TBoardPosition read FPosition write FPosition;

@@ -8,7 +8,8 @@ uses
   cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, Vcl.Menus,
   cxStyles, cxCustomData, cxFilter, cxData, cxDataStorage, cxNavigator,
   cxTextEdit, cxGridCustomTableView, cxGridTableView, cxGridCustomView,
-  cxClasses, cxGridLevel, cxGrid, Vcl.StdCtrls, cxButtons, cxLabel, Vcl.ExtCtrls;
+  cxClasses, cxGridLevel, cxGrid, Vcl.StdCtrls, cxButtons, cxLabel, Vcl.ExtCtrls,
+  dxDateRanges, dxScrollbarAnnotations;
 
 type
   TfraGameSelect = class(TFrame)
@@ -27,6 +28,7 @@ type
     gcName: TcxGridColumn;
     gcValue: TcxGridColumn;
     rdGamesLevel1: TcxGridLevel;
+    cxStyle2: TcxStyle;
     procedure bBetClick(Sender: TObject);
     procedure bHoldClick(Sender: TObject);
     procedure bPassClick(Sender: TObject);

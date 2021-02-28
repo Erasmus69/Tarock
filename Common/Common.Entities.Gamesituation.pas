@@ -85,7 +85,7 @@ type
 implementation
 
 uses
-  System.SysUtils;
+  System.SysUtils, System.Math;
 
 { TGameSituation }
 
@@ -167,7 +167,7 @@ function TGameResults.GetGrandTotal: Smallint;
 begin
   Result:=Total;
   if Doubles>0 then
-    Result:=Doubles*2*Result;
+    Result:=Trunc(Power(2,Doubles))*Result;
 end;
 
 function TGameResults.GetTotal: Smallint;

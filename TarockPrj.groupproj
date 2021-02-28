@@ -9,9 +9,6 @@
         <Projects Include="Server\TarockServiceDBG.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="D:\PROJECTSME\ERGOME\Program\BankOrder\BankOrder.dproj">
-            <Dependencies/>
-        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -38,23 +35,14 @@
     <Target Name="TarockServiceDBG:Make">
         <MSBuild Projects="Server\TarockServiceDBG.dproj" Targets="Make"/>
     </Target>
-    <Target Name="BankOrder">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\BankOrder\BankOrder.dproj"/>
-    </Target>
-    <Target Name="BankOrder:Clean">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\BankOrder\BankOrder.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="BankOrder:Make">
-        <MSBuild Projects="D:\PROJECTSME\ERGOME\Program\BankOrder\BankOrder.dproj" Targets="Make"/>
-    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Tarock;TarockServiceDBG;BankOrder"/>
+        <CallTarget Targets="Tarock;TarockServiceDBG"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean;BankOrder:Clean"/>
+        <CallTarget Targets="Tarock:Clean;TarockServiceDBG:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make;BankOrder:Make"/>
+        <CallTarget Targets="Tarock:Make;TarockServiceDBG:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

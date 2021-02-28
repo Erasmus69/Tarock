@@ -32,8 +32,7 @@ implementation
 { TServerREST }
 
 uses
-  System.SysUtils,Common.Entities.Card, Wirl.Configuration.Neon
-;
+  System.SysUtils,Common.Entities.Card, WiRL.Configuration.Neon;
 
 
 {======================================================================================================================}
@@ -55,9 +54,12 @@ begin
       .SetAppName('Tarock')
       .SetResources('*')
       .SetFilters('*')
-//      .ConfigureSerializer
-        .SetUseUTCDate(True) ;
-//        .SetMemberCase(TNeonCase.SnakeCase);
+      .Plugin.Configure<IWiRLConfigurationNeon>
+        .SetUseUTCDate(True)
+        .SetMemberCase(TNeonCase.SnakeCase)
+        .BackToApp;
+
+   //   .ConfigureSerializer
   //    .GetSerializers.RegisterSerializer(TCardKeySerializer);
 
   Logger.Leave('TServerREST.Create');

@@ -42,6 +42,7 @@ object frmTarock: TfrmTarock
       Top = 1
       Align = alClient
       Anchors = [akLeft, akTop, akBottom]
+      AutoSize = False
       Caption = 'clME'
       ParentFont = False
       Style.Font.Charset = DEFAULT_CHARSET
@@ -52,7 +53,9 @@ object frmTarock: TfrmTarock
       Style.IsFontAssigned = True
       Properties.Alignment.Horz = taCenter
       Properties.Alignment.Vert = taVCenter
-      AnchorX = 23
+      Height = 38
+      Width = 1182
+      AnchorX = 592
       AnchorY = 20
     end
     object bRegister: TButton

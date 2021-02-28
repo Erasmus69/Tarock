@@ -820,7 +820,7 @@ procedure TfrmTarock.tRefreshTimer(Sender: TObject);
     end;
 
     FreeAndnil(FTalonSelect);
-    if (dm.ActGame.Talon=tkNoTalon) and not Assigned(FTalonInfo) then begin
+    if (dm.ActGame.Talon in [tkNoTalon,tk6Talon]) and not Assigned(FTalonInfo) then begin
      CreateTalonInfo;
      FTalonInfo.ShowCards(dm.GetCards('TALON'));
     end;
