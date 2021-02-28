@@ -22,7 +22,7 @@ type
 
   TExtendedRESTResponse = class(TBaseRESTResponse)
   public
-    [NeonInclude(Include.Always)]
+    [NeonInclude(IncludeIf.Always)]
     ID:TGUID;
     SomeString: String;
     SomeInt: Integer;

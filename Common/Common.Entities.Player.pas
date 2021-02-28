@@ -22,7 +22,7 @@ type
     destructor Destroy;override;
     function ToString:String;override;
 
-    [NeonInclude(Include.Always)]
+    [NeonInclude(IncludeIf.Always)]
     property Name:String read FName write FName;
     property BetState:TBetState read FBetState write FBetState;
     property Score: Integer read FScore write FScore;

@@ -13,9 +13,7 @@ uses
   Common.Entities.Card,
   Neon.Core.Types
 , Neon.Core.Persistence
-, Neon.Core.Persistence.JSON,
-
-  Neon.Core.Serializers;
+, Neon.Core.Persistence.JSON;
 
 type
   TNeonRESTClient = class(TRESTClient)
@@ -47,7 +45,7 @@ uses
 , System.SysUtils
 , Neon.Core.Utils
 //,  Neon.Core.Serializers.RTL
-;
+, Neon.Core.Serializers.RTL;
 
 const  REST_APP_PATH = '/rest/app/';
 

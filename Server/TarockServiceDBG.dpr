@@ -1,8 +1,8 @@
 program TarockServiceDBG;
-
+  (*
 {$IF CompilerVersion >= 33.0}  // XE10.3 RIO
 {$R 'WIRLSERVERTEMPLATEDBG_VI.RES' 'WIRLSERVERTEMPLATEDBG_VI.RC'}
-{$IFEND}
+{$IFEND} *)
 
 uses
   Vcl.Forms,

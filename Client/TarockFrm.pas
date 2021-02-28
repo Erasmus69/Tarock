@@ -92,7 +92,7 @@ var
 implementation
 uses System.JSON,TarockDM,Classes.CardControl,
   Common.Entities.GameSituation, Common.Entities.GameType, ConnectionErrorFrm,
-  WiRL.http.Client.Interfaces, RegistrationFrm;
+  WiRL.http.Client.Interfaces, RegistrationFrm, System.UIConsts, System.UITypes;
 
 {$R *.dfm}
 

@@ -52,7 +52,7 @@ object frmTarock: TfrmTarock
       Style.IsFontAssigned = True
       Properties.Alignment.Horz = taCenter
       Properties.Alignment.Vert = taVCenter
-      AnchorX = 592
+      AnchorX = 23
       AnchorY = 20
     end
     object bRegister: TButton

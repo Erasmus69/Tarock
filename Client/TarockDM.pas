@@ -151,6 +151,7 @@ begin
 
      if FMyName>'' then begin
        // reorder to relative board order
+       myindex:=-1;
        for i := 0 to FPlayers.Count-1 do begin
          if AnsiUpperCase(FPlayers[i].Name)=AnsiUpperCase(FMyName) then begin
            FMyName:=FPlayers[i].Name;
@@ -442,7 +443,6 @@ end;
 
 procedure TdmTarock.ReactiveServerConnection;
 var frm:TfrmConnectionError;
-  i: Integer;
 begin
   frm:=TfrmConnectionError.Create(Self);
   try

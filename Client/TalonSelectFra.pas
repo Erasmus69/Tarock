@@ -38,7 +38,8 @@ type
 implementation
 
 uses
-  Common.Entities.Card, TarockDM, Common.Entities.GameType, TarockFrm;
+  Common.Entities.Card, TarockDM, Common.Entities.GameType, TarockFrm,
+  System.Types, System.UITypes;
 
 {$R *.dfm}
 

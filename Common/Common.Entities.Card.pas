@@ -9,7 +9,7 @@ uses
 type
   TCardType=(ctTarock,ctHeart,ctSpade,ctCross,ctDiamond);
 
-  [NeonInclude(Include.Always)]
+  [NeonInclude(IncludeIf.Always)]
   TCardKey=(None,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,
              H1,H2,H3,H4,HB,HR,HD,HK,D1,D2,D3,D4,DB,DR,DD,DK,
              S7,S8,S9,S10,SB,SR,SD,SK,C7,C8,C9,C10,CB,CR,CD,CK);
@@ -60,8 +60,8 @@ type
     class function GetTargetInfo: PTypeInfo; override;
  //   class function CanHandle(AType: PTypeInfo): Boolean; override;
   public
-    function Serialize(const AValue: TValue; AContext: ISerializerContext): TJSONValue; override;
-    function Deserialize(AValue:TJsonValue;const AData:TValue; AContext:IDeserializerContext):TValue;override;
+    function Serialize(const AValue: TValue; ANeonObject: TNeonRttiObject;  AContext: ISerializerContext): TJSONValue; override;
+    function Deserialize(AValue:TJsonValue;const AData:TValue;ANeonObject: TNeonRttiObject; AContext:IDeserializerContext):TValue;override;
   end;
 
 var ALLCARDS:TCards;
@@ -275,7 +275,8 @@ end;
 
 { TCardKeySerializer }
 
-function TCardKeySerializer.Deserialize(AValue: TJsonValue; const AData: TValue; AContext: IDeserializerContext):TValue;
+function TCardKeySerializer.Deserialize(AValue:TJsonValue;const AData:TValue;
+    ANeonObject: TNeonRttiObject; AContext:IDeserializerContext): TValue;
 var cd:TCardKey;
 begin
   inherited;
@@ -288,7 +289,7 @@ begin
   Result := TypeInfo(TCardKey);
 end;
 
-function TCardKeySerializer.Serialize(const AValue: TValue; AContext: ISerializerContext): TJSONValue;
+function TCardKeySerializer.Serialize(const AValue: TValue; ANeonObject:  TNeonRttiObject; AContext: ISerializerContext): TJSONValue;
 begin
   Result:=TJSONNumber.Create(AValue.AsOrdinal);
 end;

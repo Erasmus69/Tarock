@@ -50,7 +50,6 @@ type
     FCardsLayedDown: TCards;
     FGameInfo: TStringList;
     FAddBets: TAddBets;
-    FWinner: TTeam;
     FTeam2Results: TGameResults;
     FTeam1Results: TGameResults;
     FDoubles: SmallInt;

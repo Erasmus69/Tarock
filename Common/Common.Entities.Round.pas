@@ -31,7 +31,7 @@ type
     function GetDone: Boolean;
   public
     property TurnOn:String read FTurnOn write FTurnOn;
-     [NeonInclude(Include.Always)]
+     [NeonInclude(IncludeIf.Always)]
     property CardsThrown:TCardsThrown read FCardsThrown write FCardsThrown;
     [NeonIgnore]
     property Done:Boolean read GetDone;
